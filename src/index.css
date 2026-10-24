@@ -666,7 +666,7 @@ p {
 }
 
 /* Themes (bought in the shop) */
-.app[data-theme="theme-zee"] {
+[data-theme="theme-zee"] {
   --bg: #eef5f7;
   --card: #ffffff;
   --accent: #0e7c86;
@@ -676,7 +676,7 @@ p {
   --line: #cfdde0;
 }
 
-.app[data-theme="theme-bos"] {
+[data-theme="theme-bos"] {
   --bg: #f1f4ec;
   --accent: #3a7d3b;
   --accent-soft: #dfeedd;
@@ -685,7 +685,7 @@ p {
   --line: #d2dac9;
 }
 
-.app[data-theme="theme-zon"] {
+[data-theme="theme-zon"] {
   --bg: #fdf1ea;
   --accent: #d8542c;
   --accent-soft: #fbe0d5;
@@ -694,7 +694,7 @@ p {
   --line: #ead3c6;
 }
 
-.app[data-theme="theme-nacht"] {
+[data-theme="theme-nacht"] {
   --bg: #1d1f2b;
   --card: #2a2d3d;
   --ink: #f1f0ea;
@@ -838,5 +838,69 @@ p {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
+  font-weight: 600;
+}
+
+/* Purchase confirmation */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 20;
+}
+
+.modal {
+  width: 100%;
+  max-width: 480px;
+  background: var(--card);
+  color: var(--ink);
+  border-radius: 20px 20px 0 0;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: rise 0.25s ease-out;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.theme-preview {
+  background: var(--bg);
+  color: var(--ink);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid var(--line);
+}
+
+.theme-preview .mini-card {
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-preview .mini-btn {
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
   font-weight: 600;
 }

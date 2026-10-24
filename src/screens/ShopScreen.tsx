@@ -1,6 +1,7 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { Avatar } from "../components/common/Avatar.tsx";
+import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Chip } from "../components/common/Chip.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
@@ -32,6 +33,8 @@ export function ShopScreen() {
   const { profile, wallet } = useApp();
   const [category, setCategory] = useState<ShopCategory>("avatar");
   const [message, setMessage] = useState<string | null>(null);
+  /** The item shown in the confirmation sheet before it is paid for. */
+  const [preview, setPreview] = useState<ShopItem | null>(null);
   const purchases =
     useLiveQuery(() => (profile ? db.purchases.where("profileId").equals(profile.id).toArray() : Promise.resolve([] as { itemId: string }[])), [profile?.id]) ??
     [];
@@ -52,11 +55,23 @@ export function ShopScreen() {
       setMessage(REFUSAL[refusal]);
       return;
     }
+    setMessage(null);
+    setPreview(item);
+  };
+
+  /** Pay and put the item on; only after the player confirmed the preview. */
+  const confirm = async () => {
+    const item = preview;
+    if (!item) return;
+    setPreview(null);
+    if (buyRefusal(item, wallet.coins, owned, wallet.shields, MAX_SHIELDS)) return;
     await buyItem(profile.id, item);
     setMessage(`${item.title} gekocht!`);
     if (item.category === "theme") await updateProfile(profile.id, { theme: item.id });
     else if (item.slot) await updateProfile(profile.id, { avatar: { ...profile.avatar, [item.slot]: item.id } });
   };
+
+  const previewAvatar = preview?.slot ? { ...profile.avatar, [preview.slot]: preview.id } : profile.avatar;
 
   const items = SHOP_ITEMS.filter((i) => i.category === category);
   const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Klassiek";
@@ -125,6 +140,62 @@ export function ShopScreen() {
         </div>
       )}
       {category !== "extra" && <p className="muted center">Tik op iets dat je hebt om het aan of uit te zetten.</p>}
+      {preview && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`${preview.title} kopen`} onClick={() => setPreview(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="row spread">
+              <b style={{ fontSize: 18 }}>{preview.title}</b>
+              <Chip tone="gold" big>
+                ● {preview.price}
+              </Chip>
+            </div>
+            {preview.slot && (
+              <div className="row" style={{ justifyContent: "center", gap: 24 }}>
+                <div className="center">
+                  <Avatar avatar={profile.avatar} name={profile.name} size={72} />
+                  <div className="muted">nu</div>
+                </div>
+                <span style={{ fontSize: 24, color: "var(--muted)" }}>→</span>
+                <div className="center">
+                  <Avatar avatar={previewAvatar} name={profile.name} size={110} />
+                  <div className="muted">met {preview.title.toLowerCase()}</div>
+                </div>
+              </div>
+            )}
+            {preview.category === "theme" && (
+              <div className="theme-preview" data-theme={preview.id}>
+                <div className="row spread">
+                  <b>Thema {preview.title}</b>
+                  <span className="chip">⭐ {wallet.xp} XP</span>
+                </div>
+                <div className="mini-card">
+                  <Avatar avatar={profile.avatar} name={profile.name} size={32} />
+                  <div className="grow">
+                    <b>{profile.name}</b>
+                    <div className="muted">Zo zien de kaarten eruit</div>
+                  </div>
+                </div>
+                <div className="mini-btn">Zo zien de knoppen eruit</div>
+              </div>
+            )}
+            {preview.id === SHIELD_ITEM_ID && (
+              <div className="row">
+                <div style={{ fontSize: 40 }}>🛡️</div>
+                <div className="muted grow">Vangt één gemiste dag op, zodat je reeks doorloopt. Je hebt er na aankoop {wallet.shields + 1}.</div>
+              </div>
+            )}
+            <p className="muted">
+              Je hebt {wallet.coins} munten; na deze aankoop {wallet.coins - preview.price}.
+            </p>
+            <Button block onClick={() => void confirm()}>
+              Kopen voor ● {preview.price}
+            </Button>
+            <Button block variant="ghost" onClick={() => setPreview(null)}>
+              Annuleren
+            </Button>
+          </div>
+        </div>
+      )}
     </Screen>
   );
 }
