@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
+import { AudioDebug } from "../components/common/AudioDebug.tsx";
+import { playChord, playNote, unlockAudio } from "../audio/sampler.ts";
 import { restoreBackupFile, saveBackupFile } from "../storage/backupFile.ts";
 import { deleteProfile, updateProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
@@ -14,6 +16,7 @@ export function ProfileScreen() {
     profile ? { name: profile.name, color: profile.avatar.color, kidMode: profile.kidMode, dayGoal: profile.dayGoal } : null,
   );
   const [message, setMessage] = useState<string | null>(null);
+  const [soundTest, setSoundTest] = useState(false);
 
   if (!profile || !value) return null;
 
@@ -69,6 +72,37 @@ export function ProfileScreen() {
           </Button>
         </div>
         {message && <p className="muted">{message}</p>}
+      </Card>
+      <Card className="stack">
+        <h2>Geluid</h2>
+        <p className="muted">
+          Hoor je niets? Zet de stille-stand schakelaar van je iPhone uit en tik op de testtoon. De regel eronder laat zien wat de app meet.
+        </p>
+        <div className="row">
+          <Button
+            variant="ghost"
+            className="grow"
+            onClick={() => {
+              unlockAudio();
+              setSoundTest(true);
+              playNote(69);
+            }}
+          >
+            Speel een toon
+          </Button>
+          <Button
+            variant="ghost"
+            className="grow"
+            onClick={() => {
+              unlockAudio();
+              setSoundTest(true);
+              playChord([60, 64, 67], 2);
+            }}
+          >
+            Speel een akkoord
+          </Button>
+        </div>
+        {soundTest && <AudioDebug inline />}
       </Card>
       <Button variant="ghost" block onClick={switchProfile}>
         Ander profiel kiezen

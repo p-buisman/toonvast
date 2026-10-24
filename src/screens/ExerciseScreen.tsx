@@ -30,6 +30,7 @@ import { getCards, getSettings, lastSessionScore } from "../storage/repo.ts";
 import { finishSession } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
 import { ShapeGallery } from "./ShapesScreen.tsx";
+import { ItemGallery } from "../components/music/ItemGallery.tsx";
 
 const OK = "#2e9e5b";
 const BAD = "#d64545";
@@ -79,7 +80,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const [feedback, setFeedback] = useState<{ answer: Answer; verdict: Verdict } | null>(null);
   const [busy, setBusy] = useState(false);
   /** Shapes in this session the player has never been asked: shown first, so there is something to remember. */
-  const [intro, setIntro] = useState<ChordShape[] | null>(null);
+  const [intro, setIntro] = useState<LearnItem[] | null>(null);
   // Multi-step answers: chosen piano keys, notes placed on the staff, a fingering being built.
   const [selected, setSelected] = useState<number[]>([]);
   const [placed, setPlaced] = useState<Pitch[]>([]);
@@ -103,15 +104,12 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       );
       const shapes = items.flatMap((i) => (i.kind === "chord" ? (shapeFor(i.chord) ?? []) : []));
       if (!alive) return;
-      if (module.answer === "guitar" && module.kind === "chord") {
-        const fresh = new Map<string, ChordShape>();
-        for (const q of questions) {
-          const card = cards.get(q.key);
-          const shape = q.kind === "chord" ? shapeFor(q.chord) : undefined;
-          if (shape && (!card || card.reps === 0)) fresh.set(q.key, shape);
-        }
-        if (fresh.size > 0) setIntro([...fresh.values()]);
+      const fresh = new Map<string, LearnItem>();
+      for (const q of questions) {
+        const card = cards.get(q.key);
+        if (!card || card.reps === 0) fresh.set(q.key, q);
       }
+      if (fresh.size > 0) setIntro([...fresh.values()]);
       setLoaded({ settings, items, cards, questions, pianoRange, maxFret: highestFret(shapes) });
     })();
     return () => {
@@ -218,6 +216,21 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       </Screen>
     );
   if (intro) {
+    const one = intro.length === 1;
+    const what =
+      module.kind === "note"
+        ? one
+          ? "Nieuwe noot"
+          : "Nieuwe noten"
+        : module.answer === "guitar"
+          ? one
+            ? "Nieuwe greep"
+            : "Nieuwe grepen"
+          : one
+            ? "Nieuw akkoord"
+            : "Nieuwe akkoorden";
+    const introShapes: ChordShape[] =
+      module.answer === "guitar" && module.kind === "chord" ? intro.flatMap((i) => (i.kind === "chord" ? (shapeFor(i.chord) ?? []) : [])) : [];
     return (
       <Screen
         left={
@@ -225,16 +238,15 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
             ✕
           </IconButton>
         }
-        title={intro.length === 1 ? "Nieuwe greep" : "Nieuwe grepen"}
+        title={what}
       >
         <p className="muted">
-          {intro.length === 1 ? "Deze greep komt" : "Deze grepen komen"} voor het eerst voorbij in deze ronde. Bekijk {intro.length === 1 ? "hem" : "ze"} even
-          en tik erop om {intro.length === 1 ? "hem" : "ze"} te horen.
+          {one ? "Dit komt" : "Deze komen"} voor het eerst voorbij in deze ronde. Bekijk {one ? "het" : "ze"} even en tik erop om {one ? "het" : "ze"} te horen.
         </p>
-        <ShapeGallery shapes={intro} />
+        {introShapes.length > 0 ? <ShapeGallery shapes={introShapes} /> : <ItemGallery module={module} items={intro} />}
         <div className="grow" />
         <Button block onClick={() => setIntro(null)}>
-          Ik heb ze gezien, start
+          {one ? "Gezien, start" : "Ik heb ze gezien, start"}
         </Button>
       </Screen>
     );

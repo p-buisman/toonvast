@@ -52,20 +52,88 @@ function getContext(): AudioContext | null {
   if (!Ctor) return null;
   context = new Ctor();
   master = context.createGain();
-  master.gain.value = 0.9;
+  master.gain.value = 0.8;
+  // Several notes at once would clip the output and sound muffled; the compressor catches the peaks.
+  const compressor = context.createDynamicsCompressor();
+  compressor.threshold.value = -14;
+  compressor.knee.value = 12;
+  compressor.ratio.value = 4;
+  compressor.attack.value = 0.003;
+  compressor.release.value = 0.25;
   analyser = context.createAnalyser();
   analyser.fftSize = 256;
-  master.connect(analyser);
+  master.connect(compressor);
+  compressor.connect(analyser);
   analyser.connect(context.destination);
   return context;
 }
 
-/** Call from a tap or click: resumes the context (iOS) and starts loading the samples. */
+let mediaUnlocked = false;
+let mediaUrl: string | null = null;
+
+/** A tenth of a second of silence as a WAV file, built here so no asset is needed. */
+function silentWavUrl(): string {
+  if (mediaUrl) return mediaUrl;
+  const rate = 8000;
+  const samples = rate / 10;
+  const buf = new ArrayBuffer(44 + samples);
+  const v = new DataView(buf);
+  const str = (o: number, s: string) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, "RIFF");
+  v.setUint32(4, 36 + samples, true);
+  str(8, "WAVE");
+  str(12, "fmt ");
+  v.setUint32(16, 16, true);
+  v.setUint16(20, 1, true);
+  v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true);
+  v.setUint32(28, rate, true);
+  v.setUint16(32, 1, true);
+  v.setUint16(34, 8, true);
+  str(36, "data");
+  v.setUint32(40, samples, true);
+  for (let i = 0; i < samples; i++) v.setUint8(44 + i, 128);
+  mediaUrl = URL.createObjectURL(new Blob([buf], { type: "audio/wav" }));
+  return mediaUrl;
+}
+
+/**
+ * iOS keeps Web Audio silent in an installed web app (and with the ring/silent switch on) until a media
+ * element has played: this plays a moment of silence through one, inside the user's gesture.
+ */
+function unlockMedia(): void {
+  if (mediaUnlocked || typeof Audio === "undefined") return;
+  try {
+    const el = new Audio(silentWavUrl());
+    el.setAttribute("playsinline", "");
+    el.volume = 0.01;
+    const p = el.play();
+    if (p) {
+      p.then(() => {
+        mediaUnlocked = true;
+      }).catch((e: unknown) => {
+        lastError = `media: ${e instanceof Error ? e.message : String(e)}`;
+      });
+    }
+  } catch (e) {
+    lastError = `media: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+/** Call from a tap or click: resumes the context (iOS), unlocks media playback and starts loading the samples. */
 export function unlockAudio(): void {
   const ctx = getContext();
   if (!ctx) return;
-  if (ctx.state === "suspended") void ctx.resume();
+  if (ctx.state !== "running") void ctx.resume();
+  unlockMedia();
   void loadSamples();
+}
+
+if (typeof document !== "undefined") {
+  // Back from the background: iOS may have suspended or interrupted the context.
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && context && context.state !== "running") void context.resume();
+  });
 }
 
 export function loadSamples(): Promise<void> {
@@ -121,7 +189,7 @@ export function audioDiagnostics(): AudioDiagnostics {
     analyser.getByteTimeDomainData(peakData);
     for (const v of peakData) peak = Math.max(peak, Math.abs(v - 128) / 128);
   }
-  return { state: context?.state ?? "none", buffers: buffers.size, decodeErrors, lastPath, lastError, peak };
+  return { state: context?.state ?? "none", buffers: buffers.size, decodeErrors, lastPath: `${lastPath}${mediaUnlocked ? " · media" : ""}`, lastError, peak };
 }
 
 export function samplesReady(): boolean {
@@ -166,8 +234,11 @@ export function playNote(midi: number, seconds = 1.6, velocity = 1): void {
   }
 }
 
+/** Several notes together, each softer so the sum stays clean; a small stagger keeps it natural. */
 export function playChord(midis: number[], seconds = 2, strumMs = 0): void {
-  midis.forEach((m, i) => setTimeout(() => playNote(m, seconds), i * strumMs));
+  const velocity = Math.min(1, 1.1 / Math.sqrt(midis.length));
+  const gap = strumMs > 0 ? strumMs : 12;
+  midis.forEach((m, i) => setTimeout(() => playNote(m, seconds, velocity), i * gap));
 }
 
 function playTone(ctx: AudioContext, out: AudioNode, hz: number, seconds: number, level: number, type: OscillatorType = "sine"): void {

@@ -459,6 +459,11 @@ p {
   -webkit-user-select: none;
 }
 
+.debug.inline {
+  position: static;
+  border-radius: 10px;
+}
+
 .debug {
   position: fixed;
   left: 0;
@@ -476,7 +481,12 @@ p {
 
 .piano-scroll svg {
   display: block;
-  height: 150px;
+}
+
+.gallery-item {
+  display: block;
+  width: 100%;
+  text-align: left;
 }
 
 .staff svg,

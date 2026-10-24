@@ -14,16 +14,18 @@ interface Props {
   /** The key to scroll to the middle at first; the centre of the range otherwise. */
   focusMidi?: number;
   disabled?: boolean;
+  height?: number;
 }
 
-const HEIGHT = 150;
-const BLACK_H = 92;
+const BLACK_H_RATIO = 0.61;
 
 /**
  * The screen piano: white and black keys in an SVG that scrolls sideways when the range is wide.
  * Keys answer on click, not on pointerdown: a finger that starts a scroll then never picks a key.
  */
-export function Piano({ range, highlights = {}, labels = true, onTap, keyWidth = 30, focusMidi, disabled }: Props) {
+export function Piano({ range, highlights = {}, labels = true, onTap, keyWidth = 30, focusMidi, disabled, height = 150 }: Props) {
+  const HEIGHT = height;
+  const BLACK_H = Math.round(height * BLACK_H_RATIO);
   const scroller = useRef<HTMLDivElement>(null);
   const whites = whiteKeys(range);
   const blacks = blackKeys(range);
