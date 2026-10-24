@@ -76,6 +76,7 @@ Instellingen horen bij een profiel en bij een module. Standaardwaarden zijn bewu
 | Gitaarhals                                 | Fret 0–4 (later: 0–12)                                             | 0–4              |
 | Greepinvoer (M5)                           | Kiezen uit diagrammen; vingers zelf plaatsen                       | Kiezen           |
 | Sessielengte                               | 5, 10, 20 vragen                                                   | 10               |
+| Noten tegelijk leren (werkvoorraad)        | 2, 4, 6                                                            | 4                |
 
 De adaptieve vraagkeuze (§6) werkt _binnen_ deze instellingen: wat uitgeschakeld is komt niet voor, en nieuwe items komen er geleidelijk bij.
 
@@ -109,8 +110,9 @@ Alle noten worden intern opgeslagen als _toonhoogte_ (MIDI-nummer) plus _spellin
 Per profiel, per module en per _item_ (bijvoorbeeld "E4 in vioolsleutel → pianotoets" of "Dm eerste omkering → piano") wordt een leerkaart bijgehouden met het FSRS-algoritme (bibliotheek `ts-fsrs`, zoals ook bedoeld voor de bijbel-app).
 
 - **Beoordeling** komt uit het antwoord en de reactietijd: fout → _Again_; goed maar langzaam (boven de persoonlijke mediaan × 1,5) → _Hard_; goed → _Good_; goed en snel (onder de mediaan × 0,7) → _Easy_.
-- **Sessie-opbouw** (10 vragen): eerst items die "due" zijn, dan nieuwe items (max. 3 per sessie, instelbaar), aangevuld met willekeurige herhaling binnen de instellingen. Nooit twee keer dezelfde vraag achter elkaar.
-- **Uitbreiden**: nieuwe items worden toegevoegd in een vaste didactische volgorde (vioolsleutel binnen de lijnen van binnen naar buiten, dan hulplijnen, dan bassleutel, dan voortekens), maar alleen voor zover de instellingen het toelaten. De speler kan altijd zelf méér aanzetten.
+- **Sessie-opbouw** (10 vragen): eerst items die "due" zijn, dan nieuwe items voor zover de werkvoorraad ruimte heeft, aangevuld met herhaling van bekende items binnen de instellingen. Nooit twee keer dezelfde vraag achter elkaar.
+- **Werkvoorraad**: er mogen hoogstens een instelbaar aantal items (2, 4 of 6; standaard 4) tegelijk "in de leerfase" zitten: gezien, maar nog niet stabiel genoeg om twee dagen of langer weg te blijven. Een nieuw item komt er pas bij als een item uit de werkvoorraad stabiel is geworden, en alleen na een sessie met minstens 80% goed. Zo blijft het tempo vanzelf laag zolang de huidige noten nog wankel zijn.
+- **Uitbreiden**: nieuwe items worden toegevoegd in een vaste didactische volgorde, alleen voor zover de instellingen het toelaten. Piano en theorie: vioolsleutel binnen de lijnen van binnen naar buiten, dan hulplijnen, dan bassleutel, dan voortekens. Gitaar: snaar voor snaar van de hoge e naar de lage E, zoals de gitaarmethodes, per snaar eerst de stamtonen en dan omhoog langs de frets. De speler kan altijd zelf méér aanzetten.
 - **Reactietijd** per item wordt bewaard als lopend gemiddelde en gebruikt voor badges en de voortgangsgrafiek ("gemiddeld 1,8 s per noot").
 
 Het leerplan is dus niet handgemaakt per level, maar de didactische volgorde is wel vastgelegd in één tabel per module, zodat het gedrag voorspelbaar en testbaar is.

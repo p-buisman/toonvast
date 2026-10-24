@@ -1,17 +1,35 @@
 import { shuffle } from "../common/random.ts";
 import type { LearnItem } from "./items.ts";
-import { isDue, type CardRecord } from "./scheduler.ts";
+import { isDue, isLearning, type CardRecord } from "./scheduler.ts";
 
 export interface SessionOptions {
   length: number;
-  maxNew: number;
+  /** How many items may be in the learning phase at once. */
+  workingSet: number;
+  /** Share of correct answers in the previous session of this module (0..1), or null when there was none. */
+  lastScore: number | null;
   now: Date;
   rnd?: () => number;
 }
 
+/** New items only come in after a decent session; below this the learner first settles what is there. */
+export const NEW_ITEMS_MIN_SCORE = 0.8;
+
+/** How many new items a session may introduce: the free slots of the working set, none after a weak session. */
+export function newItemBudget(
+  cards: ReadonlyMap<string, CardRecord>,
+  items: readonly LearnItem[],
+  opts: Pick<SessionOptions, "workingSet" | "lastScore">,
+): number {
+  if (opts.lastScore !== null && opts.lastScore < NEW_ITEMS_MIN_SCORE) return 0;
+  const learning = items.filter((i) => isLearning(cards.get(i.key))).length;
+  return Math.max(0, opts.workingSet - learning);
+}
+
 /**
- * Pick the questions of a session: first what is due, then a few new items, then the other known items
- * (soonest due first). A short pool is repeated until the session is full, never the same item twice in a row.
+ * Pick the questions of a session: first what is due, then new items as far as the working set has room,
+ * then the other known items (soonest due first). A short pool is repeated until the session is full,
+ * never the same item twice in a row.
  */
 export function buildSession(items: readonly LearnItem[], cards: ReadonlyMap<string, CardRecord>, opts: SessionOptions): LearnItem[] {
   const rnd = opts.rnd ?? Math.random;
@@ -27,7 +45,8 @@ export function buildSession(items: readonly LearnItem[], cards: ReadonlyMap<str
   due.sort((a, b) => a.at - b.at);
   known.sort((a, b) => a.at - b.at);
 
-  const pool = [...shuffle(due.map((d) => d.item).slice(0, opts.length), rnd), ...fresh.slice(0, opts.maxNew)];
+  const budget = newItemBudget(cards, items, opts);
+  const pool = [...shuffle(due.map((d) => d.item).slice(0, opts.length), rnd), ...fresh.slice(0, budget)];
   const questions: LearnItem[] = [];
   for (const item of pool) if (questions.length < opts.length) questions.push(item);
   for (const k of known) if (questions.length < opts.length) questions.push(k.item);

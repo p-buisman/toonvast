@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fretRange, midiAt, positionsFor } from "../instruments/guitar.ts";
+import { fretRange, midiAt, positionsFor, preferredPosition } from "../instruments/guitar.ts";
 import { blackKeys, isBlackKey, rangeCovering, whiteKeys } from "../instruments/piano.ts";
 
 describe("guitar", () => {
@@ -13,6 +13,8 @@ describe("guitar", () => {
     expect(positionsFor(70)).toEqual([]);
     expect(midiAt({ string: 0, fret: 3 })).toBe(43);
     expect(fretRange(4)).toEqual({ low: 40, high: 68 });
+    expect(preferredPosition(59)).toEqual({ string: 4, fret: 0 });
+    expect(preferredPosition(70)).toBeNull();
   });
 });
 

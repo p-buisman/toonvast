@@ -29,6 +29,12 @@ export function fretRange(maxFret = 4): { low: number; high: number } {
   return { low: STANDARD_TUNING[0], high: STANDARD_TUNING[5] + maxFret };
 }
 
+/** The fingering a beginner learns first: the highest string that has the note, so the lowest fret. */
+export function preferredPosition(midi: number, maxFret = 4): FretPosition | null {
+  const all = positionsFor(midi, maxFret);
+  return all.length === 0 ? null : all[all.length - 1];
+}
+
 export function samePosition(a: FretPosition, b: FretPosition): boolean {
   return a.string === b.string && a.fret === b.fret;
 }

@@ -92,6 +92,15 @@ export async function saveSession(session: SessionRecord): Promise<void> {
   await db.sessions.put(session);
 }
 
+/** Share of correct answers in the most recent session of a module, or null when there is none. */
+export async function lastSessionScore(profileId: string, moduleId: ModuleId): Promise<number | null> {
+  const rows = await db.sessions.where("[profileId+moduleId]").equals([profileId, moduleId]).toArray();
+  if (rows.length === 0) return null;
+  const last = rows.reduce((a, b) => (b.endedAt > a.endedAt ? b : a));
+  if (last.answers.length === 0) return null;
+  return last.answers.filter((a) => a.correct).length / last.answers.length;
+}
+
 export async function countSessions(profileId: string, moduleId: ModuleId): Promise<number> {
   return db.sessions.where("[profileId+moduleId]").equals([profileId, moduleId]).count();
 }

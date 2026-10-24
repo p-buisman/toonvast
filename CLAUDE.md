@@ -33,11 +33,13 @@ Engine (`src/engine/`):
 - `common/clef.ts` - notenbalkpositie per sleutel: `staffPosition`, `pitchAtPosition`, `ledgerLines`, `rangeForLevel`.
 - `common/random.ts` - `pick`, `shuffle`, `weightedPick`.
 - `instruments/piano.ts` - toetsindeling voor een bereik: `whiteKeys`, `blackKeys`, `PIANO_RANGES`, `rangeCovering`.
-- `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
+- `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `preferredPosition` (hoogste snaar, laagste
+  fret), `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
 - `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, vraag- en antwoordvorm.
 - `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`).
 - `learning/scheduler.ts` - FSRS-koppeling: `rate` (goed/fout + reactietijd → beoordeling), `review`, `isMastered`.
-- `learning/session.ts` - sessie-opbouw (`buildSession`): eerst wat aan de beurt is, dan nieuw, dan herhaling.
+- `learning/session.ts` - sessie-opbouw (`buildSession`): eerst wat aan de beurt is, dan nieuw voor zover de werkvoorraad
+  ruimte heeft (`newItemBudget`: vrije plekken, niets na een sessie onder 80%), dan herhaling.
 - `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten.
 
 Opslag (`src/storage/`): `db.ts` (Dexie-schema), `repo.ts` (alle lees/schrijf-functies), `backup.ts` (export/import).

@@ -1,6 +1,6 @@
 import { CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../common/clef.ts";
 import { midiOf, pitchKey, type Accidental, type Pitch } from "../common/pitch.ts";
-import { fretRange } from "../instruments/guitar.ts";
+import { fretRange, preferredPosition } from "../instruments/guitar.ts";
 import type { ModuleDef } from "./modules.ts";
 import type { ModuleSettings } from "./settings.ts";
 
@@ -39,8 +39,10 @@ function clefsFor(module: ModuleDef, choice: ModuleSettings["clefs"]): Clef[] {
 }
 
 /**
- * All items of a module within the settings, in the order they are introduced:
- * naturals before accidentals, treble before bass, and from the middle of the staff outward.
+ * All items of a module within the settings, in the order they are introduced.
+ * Piano and theory: naturals before accidentals, treble before bass, from the middle of the staff outward.
+ * Guitar: string by string from the high e down to the low E (as the guitar methods do), naturals first,
+ * then up the frets.
  */
 export function itemsFor(module: ModuleDef, settings: ModuleSettings): LearnItem[] {
   const { min, max } = rangeForLevel(settings.range);
@@ -51,11 +53,14 @@ export function itemsFor(module: ModuleDef, settings: ModuleSettings): LearnItem
       for (let pos = min; pos <= max; pos++) {
         const pitch = pitchAtPosition(pos, clef, acc);
         if (isOddSpelling(pitch)) continue;
+        let order = [acc === 0 ? 0 : 1, clef === "treble" ? 0 : 1, Math.abs(pos - 4), pos];
         if (sounding) {
           const midi = midiOf(pitch) - module.writtenOffset;
           if (midi < sounding.low || midi > sounding.high) continue;
+          const position = preferredPosition(midi)!;
+          order = [5 - position.string, acc === 0 ? 0 : 1, position.fret];
         }
-        items.push({ item: { key: itemKey(clef, pitch), clef, pitch }, order: [acc === 0 ? 0 : 1, clef === "treble" ? 0 : 1, Math.abs(pos - 4), pos] });
+        items.push({ item: { key: itemKey(clef, pitch), clef, pitch }, order });
       }
     }
   }

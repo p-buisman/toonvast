@@ -19,7 +19,7 @@ import type { CardRecord } from "../engine/learning/scheduler.ts";
 import { buildSession } from "../engine/learning/session.ts";
 import type { ModuleSettings } from "../engine/learning/settings.ts";
 import type { SessionAnswer } from "../storage/db.ts";
-import { getCards, getSettings } from "../storage/repo.ts";
+import { getCards, getSettings, lastSessionScore } from "../storage/repo.ts";
 import { finishSession } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
 
@@ -58,7 +58,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       const settings = await getSettings(profile.id, moduleId);
       const items = itemsFor(module, settings);
       const cards = await getCards(profile.id, moduleId);
-      const questions = buildSession(items, cards, { length: settings.sessionLength, maxNew: settings.maxNew, now: new Date() });
+      const lastScore = await lastSessionScore(profile.id, moduleId);
+      const questions = buildSession(items, cards, { length: settings.sessionLength, workingSet: settings.workingSet, lastScore, now: new Date() });
       const pianoRange = resolvePianoRange(
         settings.pianoRange,
         items.map((i) => soundingMidi(module, i.pitch)),

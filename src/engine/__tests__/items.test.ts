@@ -23,6 +23,17 @@ describe("itemsFor", () => {
     expect(keys).not.toContain("treble:B#4");
   });
 
+  it("orders guitar items string by string, from the high e down", () => {
+    const items = itemsFor(moduleById("note-guitar"), { ...DEFAULT_SETTINGS, range: 2, accidentals: "sharp" });
+    const keys = items.map((i) => i.key);
+    // High e string: E F F# G G# (written an octave up), naturals first.
+    expect(keys.slice(0, 5)).toEqual(["treble:E5", "treble:F5", "treble:G5", "treble:F#5", "treble:G#5"]);
+    // Then the B string, open first.
+    expect(keys[5]).toBe("treble:B4");
+    expect(keys.indexOf("treble:D4")).toBeGreaterThan(keys.indexOf("treble:G4")); // D string after G string
+    expect(keys[keys.length - 1]).toBe("treble:G#3"); // low E string, fret 4
+  });
+
   it("keeps guitar items within the first position, written an octave up", () => {
     const items = itemsFor(moduleById("note-guitar"), { ...DEFAULT_SETTINGS, clefs: "both", range: 2 });
     const keys = items.map((i) => i.key);

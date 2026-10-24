@@ -87,6 +87,15 @@ export function masteryOf(rec: CardRecord | undefined): Mastery {
   return "learning";
 }
 
+/** Stability (in days) from which an item has left the learning phase and no longer takes a working-set slot. */
+export const SETTLED_STABILITY_DAYS = 2;
+
+/** Seen before, but not yet settled: it still occupies a slot in the working set. */
+export function isLearning(rec: CardRecord | undefined): boolean {
+  if (!rec || rec.reps === 0) return false;
+  return rec.state !== State.Review || rec.stability < SETTLED_STABILITY_DAYS;
+}
+
 export function isDue(rec: CardRecord, now: Date): boolean {
   return rec.due <= now.getTime();
 }

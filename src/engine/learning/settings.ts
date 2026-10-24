@@ -13,9 +13,12 @@ export interface ModuleSettings {
   /** Octave letters on the C keys of the screen piano. */
   keyLabels: boolean;
   sessionLength: SessionLength;
-  /** New items introduced per session at most. */
-  maxNew: number;
+  /** How many items may be in the learning phase at once; new items only come in when there is room. */
+  workingSet: WorkingSet;
 }
+
+export type WorkingSet = 2 | 4 | 6;
+export const WORKING_SETS: readonly WorkingSet[] = [2, 4, 6];
 
 export const DEFAULT_SETTINGS: ModuleSettings = {
   clefs: "treble",
@@ -24,9 +27,13 @@ export const DEFAULT_SETTINGS: ModuleSettings = {
   pianoRange: "auto",
   keyLabels: true,
   sessionLength: 10,
-  maxNew: 3,
+  workingSet: 4,
 };
 
 export function withDefaults(partial: Partial<ModuleSettings> | undefined): ModuleSettings {
-  return { ...DEFAULT_SETTINGS, ...(partial ?? {}) };
+  const merged = { ...DEFAULT_SETTINGS, ...(partial ?? {}) } as ModuleSettings & { maxNew?: number };
+  // Settings saved before the working-set rule carried `maxNew`; it has no meaning any more.
+  delete merged.maxNew;
+  if (!WORKING_SETS.includes(merged.workingSet)) merged.workingSet = DEFAULT_SETTINGS.workingSet;
+  return merged;
 }

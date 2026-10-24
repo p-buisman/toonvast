@@ -7,7 +7,7 @@ import { RANGE_LEVEL_NAME, type RangeLevel } from "../engine/common/clef.ts";
 import { PIANO_RANGE_NAME, type PianoRangeId } from "../engine/instruments/piano.ts";
 import { itemsFor } from "../engine/learning/items.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
-import type { AccidentalChoice, ClefChoice, ModuleSettings, SessionLength } from "../engine/learning/settings.ts";
+import { WORKING_SETS, type AccidentalChoice, type ClefChoice, type ModuleSettings, type SessionLength, type WorkingSet } from "../engine/learning/settings.ts";
 import { getSettings, saveSettings } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
 
@@ -118,10 +118,17 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
           value={settings.sessionLength}
           onChange={(sessionLength) => update({ sessionLength })}
         />
-        <div className="row" style={{ marginTop: 10 }}>
-          <span className="muted grow">Nieuwe noten per sessie</span>
-          <Segmented options={[1, 3, 5].map((n) => ({ value: n, label: String(n) }))} value={settings.maxNew} onChange={(maxNew) => update({ maxNew })} />
-        </div>
+      </Card>
+      <Card>
+        <h2>Noten tegelijk leren</h2>
+        <Segmented<WorkingSet>
+          options={WORKING_SETS.map((n) => ({ value: n, label: String(n) }))}
+          value={settings.workingSet}
+          onChange={(workingSet) => update({ workingSet })}
+        />
+        <p className="muted" style={{ marginTop: 6 }}>
+          Er komt pas een nieuwe noot bij als een noot uit deze groep stabiel is, en alleen na een sessie met minstens 80% goed.
+        </p>
       </Card>
       <p className="muted center">
         {count} {count === 1 ? "noot" : "noten"} binnen deze instellingen
