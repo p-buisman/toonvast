@@ -1,17 +1,91 @@
+import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { Card } from "../components/common/Card.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
+import { chordName, INVERSION_NAME } from "../engine/common/chord.ts";
 import { CLEF_NAME, CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../engine/common/clef.ts";
 import { pitchName } from "../engine/common/pitch.ts";
-import { itemKey } from "../engine/learning/items.ts";
-import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrument } from "../engine/learning/modules.ts";
+import { BADGES } from "../engine/game/badges.ts";
+import { chordItemsFor, itemKey } from "../engine/learning/items.ts";
+import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrument, type ModuleDef } from "../engine/learning/modules.ts";
 import { masteryOf, type Mastery } from "../engine/learning/scheduler.ts";
+import { withDefaults } from "../engine/learning/settings.ts";
+import { db, type StoredCard } from "../storage/db.ts";
 import { useApp } from "../state/useApp.ts";
-import { useProfileCards, useProfileSessions, useProfileStats } from "../state/queries.ts";
+import { useProfileCards, useProfileSessions, useProfileSettings, useProfileStats } from "../state/queries.ts";
 import { MainTabs } from "./MainTabs.tsx";
 
 const MASTERY_CLASS: Record<Mastery, string> = { none: "n-none", learning: "n-learning", mastered: "n-mastered" };
+
+function Legend() {
+  return (
+    <div className="legend muted">
+      <span>
+        <i style={{ background: "var(--ok)" }} />
+        beheerst
+      </span>
+      <span>
+        <i style={{ background: "var(--gold)" }} />
+        bezig
+      </span>
+      <span>
+        <i style={{ background: "#d9d4c9" }} />
+        nog niet
+      </span>
+    </div>
+  );
+}
+
+function NoteMaps({ module, cards }: { module: ModuleDef; cards: StoredCard[] }) {
+  const byKey = new Map(cards.map((c) => [c.itemKey, c]));
+  const clefs: Clef[] = module.clefs === "treble" ? ["treble"] : [...CLEFS];
+  const { min, max } = rangeForLevel(2);
+  return (
+    <>
+      {clefs.map((clef) => (
+        <Card key={clef}>
+          <h2>
+            Notenkaart · {CLEF_NAME[clef].toLowerCase()} · {module.title.toLowerCase()}
+          </h2>
+          <div className="notemap">
+            {Array.from({ length: max - min + 1 }, (_, i) => pitchAtPosition(min + i, clef)).map((p) => {
+              const m = masteryOf(byKey.get(itemKey(clef, p)));
+              return (
+                <span key={pitchName(p, true)} className={MASTERY_CLASS[m]} title={m}>
+                  {pitchName(p, true)}
+                </span>
+              );
+            })}
+          </div>
+          <Legend />
+        </Card>
+      ))}
+    </>
+  );
+}
+
+function ChordMap({ module, cards, keys }: { module: ModuleDef; cards: StoredCard[]; keys: string[] }) {
+  const byKey = new Map(cards.map((c) => [c.itemKey, c]));
+  // Everything the player could meet: the chosen keys, both qualities, inversions, both clefs.
+  const items = chordItemsFor(module, { ...withDefaults(undefined), keys, qualities: "both", inversions: true, clefs: "both" });
+  const touched = items.filter((i) => byKey.has(i.key));
+  if (touched.length === 0) return null;
+  return (
+    <Card>
+      <h2>Akkoordkaart · {module.title.toLowerCase()}</h2>
+      <div className="notemap" style={{ gridTemplateColumns: "repeat(5, 1fr)" }}>
+        {touched.map((i) => (
+          <span key={i.key} className={MASTERY_CLASS[masteryOf(byKey.get(i.key))]} title={`${INVERSION_NAME[i.chord.inversion]} · ${CLEF_NAME[i.clef]}`}>
+            {chordName(i.chord)}
+            {i.chord.inversion ? `/${i.chord.inversion}` : ""}
+          </span>
+        ))}
+      </div>
+      <Legend />
+    </Card>
+  );
+}
 
 export function ProgressScreen() {
   const { profile } = useApp();
@@ -19,18 +93,21 @@ export function ProgressScreen() {
   const cards = useProfileCards(profile?.id);
   const stats = useProfileStats(profile?.id);
   const sessions = useProfileSessions(profile?.id);
+  const settings = useProfileSettings(profile?.id);
+  const badges =
+    useLiveQuery(() => (profile ? db.badges.where("profileId").equals(profile.id).toArray() : Promise.resolve([] as { badgeId: string }[])), [profile?.id]) ??
+    [];
   if (!profile) return null;
 
   const modules = modulesFor(instrument).filter((m) => m.phase <= PLAYABLE_PHASE);
-  const module = modules[0];
-  const own = cards.filter((c) => c.moduleId === module.id);
-  const byKey = new Map(own.map((c) => [c.itemKey, c]));
+  const own = cards.filter((c) => modules.some((m) => m.id === c.moduleId));
   const mastered = own.filter((c) => masteryOf(c) === "mastered").length;
   const touched = own.filter((c) => c.reps > 0).length;
-  const stat = stats.find((s) => s.moduleId === module.id);
-  const count = sessions.filter((s) => s.moduleId === module.id).length;
-  const clefs: Clef[] = module.clefs === "treble" ? ["treble"] : [...CLEFS];
-  const { min, max } = rangeForLevel(2);
+  const noteModule = modules.find((m) => m.kind === "note")!;
+  const stat = stats.find((s) => s.moduleId === noteModule.id);
+  const count = sessions.filter((s) => modules.some((m) => m.id === s.moduleId)).length;
+  const earned = new Set(badges.map((b) => b.badgeId));
+  const shown = BADGES.filter((b) => !b.instrument || b.instrument === instrument);
 
   return (
     <Screen title="Voortgang" footer={<MainTabs active="progress" />}>
@@ -49,38 +126,30 @@ export function ProgressScreen() {
           <small>sessies</small>
         </div>
       </Card>
-      {clefs.map((clef) => (
-        <Card key={clef}>
-          <h2>
-            Notenkaart · {CLEF_NAME[clef].toLowerCase()} · {module.title.toLowerCase()}
-          </h2>
-          <div className="notemap">
-            {Array.from({ length: max - min + 1 }, (_, i) => pitchAtPosition(min + i, clef)).map((p) => {
-              const m = masteryOf(byKey.get(itemKey(clef, p)));
-              return (
-                <span key={pitchName(p, true)} className={MASTERY_CLASS[m]} title={m}>
-                  {pitchName(p, true)}
-                </span>
-              );
-            })}
-          </div>
-          <div className="legend muted">
-            <span>
-              <i className="n-mastered" style={{ background: "var(--ok)" }} />
-              beheerst
-            </span>
-            <span>
-              <i style={{ background: "var(--gold)" }} />
-              bezig
-            </span>
-            <span>
-              <i style={{ background: "#d9d4c9" }} />
-              nog niet
-            </span>
-          </div>
-        </Card>
-      ))}
-      <p className="muted center">Badges komen in versie 2.</p>
+      <NoteMaps module={noteModule} cards={cards.filter((c) => c.moduleId === noteModule.id)} />
+      {modules
+        .filter((m) => m.kind === "chord")
+        .map((m) => (
+          <ChordMap
+            key={m.id}
+            module={m}
+            cards={cards.filter((c) => c.moduleId === m.id)}
+            keys={withDefaults(settings.find((s) => s.moduleId === m.id)?.settings).keys}
+          />
+        ))}
+      <Card>
+        <h2>Badges · {INSTRUMENT_NAME[instrument].toLowerCase()}</h2>
+        <div className="badges">
+          {shown.map((b) => (
+            <div key={b.id} className={earned.has(b.id) ? "badge" : "badge off"} title={b.description}>
+              {b.title}
+            </div>
+          ))}
+        </div>
+        <p className="muted" style={{ marginTop: 8 }}>
+          Elke badge is 15 munten waard. Houd je vinger op een badge voor de uitleg.
+        </p>
+      </Card>
     </Screen>
   );
 }

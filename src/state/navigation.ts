@@ -11,6 +11,7 @@ export type Route =
   | { name: "exercise"; moduleId: ModuleId; nonce: number }
   | { name: "result"; moduleId: ModuleId; summary: SessionSummary }
   | { name: "progress" }
+  | { name: "shop" }
   | { name: "profile" };
 
 export interface Nav {

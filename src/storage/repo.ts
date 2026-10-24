@@ -4,6 +4,8 @@ import type { ModuleId } from "../engine/learning/modules.ts";
 import type { CardRecord } from "../engine/learning/scheduler.ts";
 import { withDefaults, type ModuleSettings } from "../engine/learning/settings.ts";
 import { db, type Avatar, type ModuleStats, type Profile, type SessionRecord, type StoredCard } from "./db.ts";
+import { COINS_BADGE } from "../engine/game/badges.ts";
+import { SHIELD_ITEM_ID, type ShopItem } from "../engine/game/shop.ts";
 
 export function newId(): string {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -32,13 +34,15 @@ export async function touchProfile(id: string): Promise<void> {
 }
 
 export async function deleteProfile(id: string): Promise<void> {
-  await db.transaction("rw", [db.profiles, db.wallets, db.settings, db.cards, db.sessions, db.moduleStats], async () => {
+  await db.transaction("rw", [db.profiles, db.wallets, db.settings, db.cards, db.sessions, db.moduleStats, db.purchases, db.badges], async () => {
     await db.profiles.delete(id);
     await db.wallets.delete(id);
     await db.settings.where("profileId").equals(id).delete();
     await db.cards.where("profileId").equals(id).delete();
     await db.sessions.where("profileId").equals(id).delete();
     await db.moduleStats.where("profileId").equals(id).delete();
+    await db.purchases.where("profileId").equals(id).delete();
+    await db.badges.where("profileId").equals(id).delete();
   });
 }
 
@@ -120,6 +124,50 @@ export async function updateModuleStats(profileId: string, moduleId: ModuleId, c
     count++;
   }
   await db.moduleStats.put({ id, profileId, moduleId, emaMs, count });
+}
+
+// Shop and badges
+
+export async function getPurchases(profileId: string): Promise<Set<string>> {
+  const rows = await db.purchases.where("profileId").equals(profileId).toArray();
+  return new Set(rows.map((r) => r.itemId));
+}
+
+/** Pay for an item: coins off, the item owned (or a shield added). The caller has checked `buyRefusal`. */
+export async function buyItem(profileId: string, item: ShopItem): Promise<void> {
+  await db.transaction("rw", [db.wallets, db.purchases], async () => {
+    const wallet = await db.wallets.get(profileId);
+    if (!wallet || wallet.coins < item.price) throw new Error("Niet genoeg munten.");
+    const changes: Partial<typeof wallet> = { coins: wallet.coins - item.price };
+    if (item.id === SHIELD_ITEM_ID) changes.shields = wallet.shields + 1;
+    else await db.purchases.put({ id: `${profileId}:${item.id}`, profileId, itemId: item.id, boughtAt: Date.now() });
+    await db.wallets.update(profileId, changes);
+  });
+}
+
+export async function getBadges(profileId: string): Promise<Set<string>> {
+  const rows = await db.badges.where("profileId").equals(profileId).toArray();
+  return new Set(rows.map((r) => r.badgeId));
+}
+
+/** Store badges that are new for this profile and pay their coins; returns the new ones. */
+export async function awardBadges(profileId: string, earned: string[]): Promise<string[]> {
+  const owned = await getBadges(profileId);
+  const fresh = earned.filter((b) => !owned.has(b));
+  if (fresh.length === 0) return [];
+  await db.transaction("rw", [db.badges, db.wallets], async () => {
+    const now = Date.now();
+    await db.badges.bulkPut(fresh.map((badgeId) => ({ id: `${profileId}:${badgeId}`, profileId, badgeId, earnedAt: now })));
+    const wallet = await db.wallets.get(profileId);
+    if (wallet) await db.wallets.update(profileId, { coins: wallet.coins + fresh.length * COINS_BADGE });
+  });
+  return fresh;
+}
+
+/** Total correct answers of a profile, for the counting badges. */
+export async function totalCorrect(profileId: string): Promise<number> {
+  const rows = await db.sessions.where("profileId").equals(profileId).toArray();
+  return rows.reduce((n, s) => n + s.answers.filter((a) => a.correct).length, 0);
 }
 
 /** The typical reaction time once there is enough to go on. */

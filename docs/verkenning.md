@@ -1,6 +1,6 @@
 # Verkenning muziek-app Toonvast
 
-Datum: 24 oktober 2026, bijgewerkt na bespreking. Status: verkenning, nog niets gebouwd.
+Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 2 gebouwd (noten lezen, akkoorden, badges, winkel); zie §11.
 
 Een educatieve web-app (PWA) voor een gezin dat piano en gitaar leert. De speler leert noten op de notenbalk, pianotoetsen, gitaargrepen, akkoorden, toonsoorten en gehoor. Per persoon en per instrument wordt de voortgang bijgehouden, met een spelelement om te blijven oefenen.
 

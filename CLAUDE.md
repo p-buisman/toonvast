@@ -31,18 +31,27 @@ Engine (`src/engine/`):
 - `common/pitch.ts` - toonhoogte met spelling: `Pitch` (letter, voorteken, octaaf), `midiOf`, `pitchKey`, `pitchName`,
   `sameSound` (enharmonisch gelijk), `spellMidi` (een MIDI-nummer spellen met ♯ of ♭).
 - `common/clef.ts` - notenbalkpositie per sleutel: `staffPosition`, `pitchAtPosition`, `ledgerLines`, `rangeForLevel`.
-- `common/random.ts` - `pick`, `shuffle`, `weightedPick`.
+- `common/random.ts` - `pick`, `shuffle`, `seeded` (vaste reeks voor tests en vaste keuzes per vraag).
+- `common/chord.ts` - drieklanken met spelling: `PitchClass`, `triadPcs`, `chordPcs` (per ligging), `voicing` (ligging op de
+  notenbalk per sleutel), `chordName`/`chordKey`, de majeurtoonsoorten (`MAJOR_KEYS`) en `diatonicTriads`.
 - `instruments/piano.ts` - toetsindeling voor een bereik: `whiteKeys`, `blackKeys`, `PIANO_RANGES`, `rangeCovering`.
 - `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `preferredPosition` (hoogste snaar, laagste
   fret), `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
-- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, vraag- en antwoordvorm.
-- `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`).
+- `instruments/guitarChords.ts` - de greeptabel (`CHORD_SHAPES`, één standaardgreep per akkoord), `shapeFor`, `shapeMidis`.
+- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord), vraag- en antwoordvorm.
+- `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`:
+  `noteItemsFor` en `chordItemsFor`); een `LearnItem` is een `NoteItem` of een `ChordItem` met zijn ligging.
+- `learning/answers.ts` - `checkAnswer` voor alle antwoordvormen (naam, toets, hals, akkoordnaam, toetsenset, notenset,
+  greep) met uitleg bij een bijna-goed antwoord; `describeTarget` voor de feedbackkaart.
 - `learning/scheduler.ts` - FSRS-koppeling: `rate` (goed/fout + reactietijd → beoordeling), `review`, `isMastered`.
 - `learning/session.ts` - sessie-opbouw (`buildSession`): eerst wat aan de beurt is, dan nieuw voor zover de werkvoorraad
   ruimte heeft (`newItemBudget`: vrije plekken, niets na een sessie onder 80%), dan herhaling.
 - `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten.
+- `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is) en `earnedBadges` (welke nu gelden).
+- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen per slot, thema's, streakbeschermer), `buyRefusal`.
 
-Opslag (`src/storage/`): `db.ts` (Dexie-schema), `repo.ts` (alle lees/schrijf-functies), `backup.ts` (export/import).
+Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
+ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
 
 Audio (`src/audio/`): `sampler.ts` (Web Audio, piano-samples, ontgrendelen op iOS), `cues.ts` (goed/fout-tonen).
 
@@ -52,7 +61,13 @@ Componenten (`src/components/`):
 - `music/Piano.tsx` - schermpiano (SVG, scrollbaar) met oplichtende toetsen.
 - `music/Fretboard.tsx` - gitaarhals (SVG) met frets 0-4, stippen en open snaren.
 - `music/NoteNameButtons.tsx` - letterknoppen met ♯/♭-schakelaar.
-- `common/` - `Button`, `Card`, `Segmented`, `Chip`, `ProgressBar`, `Avatar`, `TabBar`, `GoalRing`, `ProgressDots`.
+- `music/ChordNameButtons.tsx` - akkoordnaam: ♯/♭, majeur/mineur, ligging, dan de letter.
+- `music/AccidentalToggle.tsx` - ♭ ♮ ♯ voor noten op de notenbalk zetten.
+- `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
+- `common/` - `Button`, `Card`, `Segmented`, `Tabs`, `Chip`, `ProgressBar`, `Avatar` (SVG met gekochte onderdelen), `TabBar`,
+  `GoalRing`, `ProgressDots`, `AudioDebug` (`?debug=1`).
 - `layout/Screen.tsx` - de schermopbouw (kop, inhoud, tabbalk).
 
 Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen muziektheorie en geen opslagcode.
+`ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat.
+Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.

@@ -35,5 +35,6 @@ describe("backup", () => {
     expect(() => parseBackup("{}")).toThrow(/geen Toonvast/);
     expect(() => parseBackup(JSON.stringify({ app: "toonvast", version: 99 }))).toThrow(/nieuwere/);
     expect(parseBackup(JSON.stringify({ app: "toonvast", version: 1 })).profiles).toEqual([]);
+    expect(parseBackup(JSON.stringify({ app: "toonvast", version: 1 })).badges).toEqual([]);
   });
 });

@@ -7,6 +7,7 @@ import { NewProfileScreen } from "./screens/NewProfileScreen.tsx";
 import { ProfileScreen } from "./screens/ProfileScreen.tsx";
 import { ProfilesScreen } from "./screens/ProfilesScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
+import { ShopScreen } from "./screens/ShopScreen.tsx";
 import { ResultScreen } from "./screens/ResultScreen.tsx";
 import { SettingsScreen } from "./screens/SettingsScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
@@ -54,13 +55,16 @@ function Router() {
     case "progress":
       screen = <ProgressScreen />;
       break;
+    case "shop":
+      screen = <ShopScreen />;
+      break;
     case "profile":
       screen = <ProfileScreen />;
       break;
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");
   return (
-    <div className={profile?.kidMode ? "app kid" : "app"}>
+    <div className={profile?.kidMode ? "app kid" : "app"} data-theme={profile?.theme ?? "klassiek"}>
       {screen}
       {debug && <AudioDebug />}
     </div>

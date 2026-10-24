@@ -414,35 +414,6 @@ p {
 }
 
 /* Avatar */
-.avatar {
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  color: #fff;
-  position: relative;
-  flex: none;
-}
-
-.avatar .hat {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #1c1c1e;
-  border-radius: 10% 10% 4% 4%;
-}
-
-.avatar .hat::after {
-  content: "";
-  position: absolute;
-  left: -25%;
-  right: -25%;
-  bottom: -14%;
-  height: 22%;
-  background: #1c1c1e;
-  border-radius: 999px;
-}
 
 /* Exercise */
 .exercise-list .item {
@@ -692,4 +663,180 @@ p {
 .kid .name-keys button {
   min-height: 64px;
   font-size: 24px;
+}
+
+/* Themes (bought in the shop) */
+.app[data-theme="theme-zee"] {
+  --bg: #eef5f7;
+  --card: #ffffff;
+  --accent: #0e7c86;
+  --accent-soft: #d8eef0;
+  --gold: #f2a93b;
+  --soft: #dfe9eb;
+  --line: #cfdde0;
+}
+
+.app[data-theme="theme-bos"] {
+  --bg: #f1f4ec;
+  --accent: #3a7d3b;
+  --accent-soft: #dfeedd;
+  --gold: #d99a1c;
+  --soft: #e3e8dc;
+  --line: #d2dac9;
+}
+
+.app[data-theme="theme-zon"] {
+  --bg: #fdf1ea;
+  --accent: #d8542c;
+  --accent-soft: #fbe0d5;
+  --gold: #f0a500;
+  --soft: #f3e2d8;
+  --line: #ead3c6;
+}
+
+.app[data-theme="theme-nacht"] {
+  --bg: #1d1f2b;
+  --card: #2a2d3d;
+  --ink: #f1f0ea;
+  --muted: #a9adc1;
+  --accent: #7aa2ff;
+  --accent-soft: #38415f;
+  --gold: #f4c04f;
+  --gold-soft: #4b4120;
+  --ok-soft: #244434;
+  --bad-soft: #4a2a2a;
+  --line: #3b3f55;
+  --soft: #353949;
+}
+
+.app {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Chord diagrams and the shop */
+.chord-diagram {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 6px;
+}
+
+.chord-diagram.pick {
+  border: 2px solid var(--line);
+  width: 100%;
+}
+
+.chord-diagram.pick.on {
+  border-color: var(--accent);
+}
+
+.chord-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.chord-prompt {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.chord-prompt small {
+  display: block;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.shop-item {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 10px 6px;
+  text-align: center;
+  border: 1.5px solid var(--line);
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.shop-item.owned {
+  border-color: var(--ok);
+}
+
+.shop-item.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.shop-item .pic {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--gold-soft);
+  border: 2px solid var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  text-align: center;
+  font-weight: 600;
+  color: #9a6400;
+  padding: 4px;
+  line-height: 1.1;
+}
+
+.badge.off {
+  background: var(--soft);
+  border-color: var(--line);
+  color: var(--muted);
+}
+
+.keys-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.keys-grid button {
+  min-height: 40px;
+  border-radius: 10px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.keys-grid button.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 600;
 }

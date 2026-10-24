@@ -1,9 +1,30 @@
-import { midiOf, pitchName, type Accidental, type Letter, type Pitch } from "../common/pitch.ts";
+import {
+  chordName,
+  chordPcs,
+  INVERSION_NAME,
+  pcKey,
+  pcName,
+  pcSemitone,
+  QUALITY_NAME,
+  type Inversion,
+  type PitchClass,
+  type Quality,
+} from "../common/chord.ts";
+import { midiOf, pitchName, sameSpelling, type Accidental, type Letter, type Pitch } from "../common/pitch.ts";
 import { midiAt, positionsFor, type FretPosition } from "../instruments/guitar.ts";
-import type { LearnItem } from "./items.ts";
+import { sameShape, shapeFor, shapeMidis, type ChordShape, type Shape } from "../instruments/guitarChords.ts";
+import type { ChordItem, LearnItem, NoteItem } from "./items.ts";
 import type { ModuleDef } from "./modules.ts";
 
-export type Answer = { kind: "name"; letter: Letter; acc: Accidental } | { kind: "piano"; midi: number } | { kind: "guitar"; pos: FretPosition };
+export type Answer =
+  | { kind: "name"; letter: Letter; acc: Accidental }
+  | { kind: "piano"; midi: number }
+  | { kind: "guitar"; pos: FretPosition }
+  | { kind: "chordName"; root: PitchClass; quality: Quality; inversion: Inversion | null }
+  | { kind: "pianoSet"; midis: number[] }
+  | { kind: "staffSet"; pitches: Pitch[] }
+  | { kind: "shape"; frets: Shape }
+  | { kind: "shapeChoice"; shape: ChordShape };
 
 export interface Verdict {
   correct: boolean;
@@ -11,9 +32,19 @@ export interface Verdict {
   note?: string;
 }
 
-/** The MIDI number that sounds for an item (the guitar is written an octave up). */
+/** The MIDI number that sounds for a written pitch (the guitar is written an octave up). */
 export function soundingMidi(module: ModuleDef, pitch: Pitch): number {
   return midiOf(pitch) - module.writtenOffset;
+}
+
+/** What the player had to give, in words, for the feedback card. */
+export function describeTarget(module: ModuleDef, item: LearnItem): string {
+  if (item.kind === "note") return pitchName(item.pitch);
+  const name = chordName(item.chord);
+  const inversion = item.chord.inversion !== 0 || module.answer === "staff" || module.question === "staff" ? ` (${INVERSION_NAME[item.chord.inversion]})` : "";
+  // When the notes had to be given, name them too, from the bass up.
+  const notes = module.answer === "piano" || module.answer === "staff" ? `: ${chordPcs(item.chord).map(pcName).join(" – ")}` : "";
+  return `${name}${inversion}${notes}`;
 }
 
 function octaveNote(target: number, given: number): string | undefined {
@@ -22,7 +53,7 @@ function octaveNote(target: number, given: number): string | undefined {
   return `Dat is wel dezelfde noot, maar ${Math.abs(diff) === 1 ? "een octaaf" : `${Math.abs(diff)} octaven`} te ${diff > 0 ? "hoog" : "laag"}.`;
 }
 
-export function checkAnswer(module: ModuleDef, item: LearnItem, answer: Answer): Verdict {
+function checkNote(module: ModuleDef, item: NoteItem, answer: Answer): Verdict {
   const target = soundingMidi(module, item.pitch);
   switch (answer.kind) {
     case "name": {
@@ -49,5 +80,79 @@ export function checkAnswer(module: ModuleDef, item: LearnItem, answer: Answer):
       if (answer.pos.string === positionsFor(target, 4)[0]?.string) return { correct: false, note: "Goede snaar, verkeerde fret." };
       return { correct: false };
     }
+    default:
+      return { correct: false };
   }
+}
+
+const pcSet = (midis: number[]) => new Set(midis.map((m) => ((m % 12) + 12) % 12));
+const sameSet = (a: Set<number>, b: Set<number>) => a.size === b.size && [...a].every((x) => b.has(x));
+
+function checkChord(module: ModuleDef, item: ChordItem, answer: Answer): Verdict {
+  const chord = item.chord;
+  const pcs = chordPcs(chord);
+  const targetPcs = new Set(pcs.map(pcSemitone));
+  const bassPc = pcSemitone(pcs[0]);
+  switch (answer.kind) {
+    case "chordName": {
+      const rootOk = pcKey(answer.root) === pcKey(chord.root);
+      const qualityOk = answer.quality === chord.quality;
+      const inversionOk = answer.inversion === null || answer.inversion === chord.inversion;
+      if (rootOk && qualityOk && inversionOk) return { correct: true };
+      if (rootOk && qualityOk)
+        return { correct: false, note: `Goed akkoord, maar de ligging is ${INVERSION_NAME[chord.inversion]}: de laagste noot is ${pcName(pcs[0])}.` };
+      if (rootOk) return { correct: false, note: `De grondtoon klopt, maar het is ${QUALITY_NAME[chord.quality]}: kijk naar de terts.` };
+      if (pcSemitone(answer.root) === pcSemitone(chord.root))
+        return { correct: false, note: `${pcName(answer.root)} klinkt hetzelfde, maar hier staat ${pcName(chord.root)} geschreven.` };
+      return { correct: false };
+    }
+    case "pianoSet": {
+      const given = [...answer.midis].sort((a, b) => a - b);
+      if (new Set(given).size !== 3) return { correct: false, note: "Een drieklank heeft drie verschillende toetsen." };
+      if (module.question === "staff") {
+        const target = item.voicing.map((p) => soundingMidi(module, p)).sort((a, b) => a - b);
+        if (given.every((m, i) => m === target[i])) return { correct: true };
+        if (sameSet(pcSet(given), targetPcs))
+          return { correct: false, note: "De juiste noten, maar niet in het octaaf en de ligging waarin ze geschreven staan." };
+        return { correct: false };
+      }
+      if (!sameSet(pcSet(given), targetPcs)) return { correct: false };
+      if (((given[0] % 12) + 12) % 12 !== bassPc)
+        return { correct: false, note: `De noten kloppen, maar in de ${INVERSION_NAME[chord.inversion]} is ${pcName(pcs[0])} de laagste toets.` };
+      return { correct: true };
+    }
+    case "staffSet": {
+      const given = [...answer.pitches].sort((a, b) => midiOf(a) - midiOf(b));
+      if (given.length !== 3) return { correct: false, note: "Een drieklank heeft drie noten." };
+      const shift = midiOf(given[0]) - midiOf(item.voicing[0]);
+      const exact = shift % 12 === 0 && given.every((p, i) => sameSpelling({ ...p, octave: p.octave - shift / 12 }, item.voicing[i]));
+      if (exact) return { correct: true };
+      if (sameSet(pcSet(given.map(midiOf)), targetPcs)) {
+        if (((midiOf(given[0]) % 12) + 12) % 12 !== bassPc)
+          return { correct: false, note: `De noten kloppen, maar in de ${INVERSION_NAME[chord.inversion]} staat ${pcName(pcs[0])} onderaan.` };
+        return { correct: false, note: "De toetsen kloppen, maar kijk naar de spelling of de ligging van de noten." };
+      }
+      return { correct: false };
+    }
+    case "shape": {
+      const target = shapeFor(chord);
+      if (!target) return { correct: false };
+      if (sameShape(answer.frets, target.frets)) return { correct: true };
+      if (sameSet(pcSet(shapeMidis(answer.frets)), targetPcs)) return { correct: false, note: "De noten kloppen, maar dit is niet de standaardgreep." };
+      return { correct: false };
+    }
+    case "shapeChoice": {
+      const ok = pcKey(answer.shape.root) === pcKey(chord.root) && answer.shape.quality === chord.quality;
+      if (ok) return { correct: true };
+      if (pcKey(answer.shape.root) === pcKey(chord.root))
+        return { correct: false, note: `Goede grondtoon, maar dat is ${QUALITY_NAME[answer.shape.quality]}.` };
+      return { correct: false };
+    }
+    default:
+      return { correct: false };
+  }
+}
+
+export function checkAnswer(module: ModuleDef, item: LearnItem, answer: Answer): Verdict {
+  return item.kind === "note" ? checkNote(module, item, answer) : checkChord(module, item, answer);
 }

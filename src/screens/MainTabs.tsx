@@ -2,10 +2,11 @@ import { TabBar } from "../components/common/TabBar.tsx";
 import type { Route } from "../state/navigation.ts";
 import { useApp } from "../state/useApp.ts";
 
-type Tab = "home" | "progress" | "profile";
+type Tab = "home" | "progress" | "shop" | "profile";
 const TABS = [
   { id: "home" as const, label: "Oefenen", icon: "🎵" },
   { id: "progress" as const, label: "Voortgang", icon: "📈" },
+  { id: "shop" as const, label: "Winkel", icon: "🛍️" },
   { id: "profile" as const, label: "Profiel", icon: "👤" },
 ];
 

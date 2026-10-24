@@ -1,6 +1,7 @@
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
+import { badgeById } from "../engine/game/badges.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
 import type { SessionSummary } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
@@ -50,6 +51,20 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
             </div>
           </Card>
         )}
+        {summary.newBadges.map((id) => {
+          const badge = badgeById(id);
+          return (
+            <Card key={id} className="feedback ok" style={{ width: "100%" }}>
+              <div className="row">
+                <div className="badge">{badge?.title ?? id}</div>
+                <div className="grow">
+                  <b>Nieuwe badge: {badge?.title ?? id}</b>
+                  <div className="muted">{badge?.description} · 15 munten erbij.</div>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
         <Button block onClick={() => nav.replace({ name: "exercise", moduleId, nonce: Date.now() })}>
           Nog een ronde
         </Button>

@@ -4,8 +4,8 @@ import { checkAnswer, soundingMidi } from "../learning/answers.ts";
 import { itemKey } from "../learning/items.ts";
 import { moduleById } from "../learning/modules.ts";
 
-const e4 = { key: itemKey("treble", pitch("E", 0, 4)), clef: "treble" as const, pitch: pitch("E", 0, 4) };
-const bb3 = { key: itemKey("bass", pitch("B", -1, 3)), clef: "bass" as const, pitch: pitch("B", -1, 3) };
+const e4 = { kind: "note" as const, key: itemKey("treble", pitch("E", 0, 4)), clef: "treble" as const, pitch: pitch("E", 0, 4) };
+const bb3 = { kind: "note" as const, key: itemKey("bass", pitch("B", -1, 3)), clef: "bass" as const, pitch: pitch("B", -1, 3) };
 
 describe("checkAnswer", () => {
   it("checks names by spelling", () => {

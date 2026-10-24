@@ -6,7 +6,27 @@ import type { ModuleSettings } from "../engine/learning/settings.ts";
 
 export interface Avatar {
   color: string;
+  /** Shop item ids per slot; null = nothing. `hat` kept its old name. */
   hat: string | null;
+  eyes?: string | null;
+  ears?: string | null;
+  background?: string | null;
+}
+
+export interface PurchaseRecord {
+  /** `${profileId}:${itemId}` */
+  id: string;
+  profileId: string;
+  itemId: string;
+  boughtAt: number;
+}
+
+export interface BadgeRecord {
+  /** `${profileId}:${badgeId}` */
+  id: string;
+  profileId: string;
+  badgeId: string;
+  earnedAt: number;
 }
 
 export interface Profile {
@@ -72,6 +92,8 @@ export class ToonvastDb extends Dexie {
   cards!: EntityTable<StoredCard, "id">;
   sessions!: EntityTable<SessionRecord, "id">;
   moduleStats!: EntityTable<ModuleStats, "id">;
+  purchases!: EntityTable<PurchaseRecord, "id">;
+  badges!: EntityTable<BadgeRecord, "id">;
 
   constructor(name = "toonvast") {
     super(name);
@@ -82,6 +104,11 @@ export class ToonvastDb extends Dexie {
       cards: "id, profileId, [profileId+moduleId]",
       sessions: "id, profileId, [profileId+moduleId], startedAt",
       moduleStats: "id, profileId",
+    });
+    // Phase 2: the shop and the badges.
+    this.version(2).stores({
+      purchases: "id, profileId",
+      badges: "id, profileId",
     });
   }
 }
