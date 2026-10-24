@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>05 · Instellingen van een oefening</title><style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#1e1b16;--muted:#6f685d;--accent:#2f6fed;--accent-soft:#e4ecfd;--gold:#f4a300;--gold-soft:#fff1d6;--ok:#2e9e5b;--ok-soft:#e1f4e8;--bad:#d64545;--bad-soft:#fbe4e4;--line:#dcd7cc;--r:16px}
+*{box-sizing:border-box}
+body{margin:0;background:#e5e2da;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px}
+.caption{font-size:13px;color:var(--muted);max-width:390px;text-align:center}
+.phone{width:390px;min-height:844px;background:var(--bg);border-radius:44px;border:10px solid #1c1c1e;box-shadow:0 20px 50px rgba(0,0,0,.25);overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 24px;font-size:14px;font-weight:600}
+.screen{padding:8px 16px 16px;flex:1;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--card);border-radius:var(--r);padding:14px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+h1{font-size:22px;margin:4px 0;font-weight:700}
+h2{font-size:15px;margin:0 0 8px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.row{display:flex;gap:10px;align-items:center}
+.spread{justify-content:space-between}
+.grow{flex:1}
+.muted{color:var(--muted);font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 18px;border-radius:14px;font-weight:600;font-size:15px;background:var(--accent);color:#fff}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn.block{width:100%}
+.btn.ok{background:var(--ok)}
+.chip{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--accent-soft);color:var(--accent)}
+.chip.gold{background:var(--gold-soft);color:#9a6400}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.chip.grey{background:#eeebe4;color:var(--muted)}
+.avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:18px;position:relative;flex:none}
+.avatar.lg{width:88px;height:88px;font-size:32px}
+.avatar .hat{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:34px;height:14px;background:#1c1c1e;border-radius:4px 4px 2px 2px}
+.avatar .hat::after{content:"";position:absolute;left:-8px;right:-8px;bottom:-3px;height:4px;background:#1c1c1e;border-radius:2px}
+.avatar.lg .hat{width:60px;height:24px;top:-16px}
+.avatar.lg .hat::after{left:-14px;right:-14px;height:6px;bottom:-5px}
+.bar{height:10px;border-radius:999px;background:#ebe7df;overflow:hidden}
+.bar > i{display:block;height:100%;background:var(--accent);border-radius:999px}
+.bar.gold > i{background:var(--gold)}
+.tabs{display:flex;background:#ebe7df;border-radius:12px;padding:4px;gap:4px}
+.tabs span{flex:1;text-align:center;padding:8px 0;border-radius:9px;font-size:14px;font-weight:600;color:var(--muted)}
+.tabs span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg span{padding:8px 12px;border-radius:10px;border:1.5px solid var(--line);font-size:14px;color:var(--muted)}
+.seg span.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.tabbar{display:flex;border-top:1px solid var(--line);background:#fff;padding:10px 0 26px}
+.tabbar div{flex:1;text-align:center;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px}
+.tabbar div.on{color:var(--accent);font-weight:600}
+.tabbar i{width:22px;height:22px;border-radius:6px;background:currentColor;opacity:.85;display:block}
+.exercise{display:flex;align-items:center;gap:12px}
+.exercise .icon{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);flex:none}
+.exercise.locked{opacity:.55}
+.exercise.locked .icon{background:#eeebe4}
+.progress{display:flex;gap:4px}
+.progress i{flex:1;height:6px;border-radius:3px;background:#ddd8cd}
+.progress i.ok{background:var(--ok)}
+.progress i.bad{background:var(--bad)}
+.progress i.now{background:var(--accent)}
+.ring{width:72px;height:72px;border-radius:50%;background:conic-gradient(var(--gold) 0 70%,#ebe7df 70% 100%);display:flex;align-items:center;justify-content:center;flex:none}
+.ring b{width:56px;height:56px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:13px}
+.flame{font-size:28px;line-height:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.shopitem{background:#fff;border-radius:14px;padding:10px;text-align:center;border:1.5px solid var(--line);font-size:13px}
+.shopitem .pic{height:56px;border-radius:10px;margin-bottom:8px}
+.shopitem.owned{border-color:var(--ok)}
+.notemap{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+.notemap span{height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff}
+.n0{background:#d9d4c9;color:#6f685d !important}.n1{background:var(--gold)}.n2{background:var(--ok)}
+.keys{display:flex;gap:6px;flex-wrap:wrap}
+.keys span{flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#fff;border:1.5px solid var(--line);font-weight:700;font-size:18px}
+.stat{text-align:center}
+.stat b{display:block;font-size:22px}
+.stat small{color:var(--muted);font-size:12px}
+.badge{width:52px;height:52px;border-radius:50%;background:var(--gold-soft);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;font-weight:600;color:#9a6400;padding:4px;line-height:1.1}
+.badge.off{background:#eeebe4;border-color:#ddd8cd;color:var(--muted)}
+.feedback{border-left:5px solid var(--bad);background:var(--bad-soft)}
+.feedback.ok{border-left-color:var(--ok);background:var(--ok-soft)}
+svg{display:block;width:100%;height:auto}
+</style></head>
+<body>
+<div class="caption"><b>05 · Instellingen van een oefening</b><br>Per profiel en per oefening. De adaptieve vraagkeuze werkt binnen deze grenzen; uitgeschakelde dingen komen niet voor.</div>
+<div class="phone">
+<div class="status"><span>9:41</span><span>●●● ▮</span></div>
+
+<div class="screen">
+  <div class="row"><span style="font-size:22px;color:var(--muted)">‹</span><h1 class="grow" style="font-size:19px">Noten lezen → piano</h1></div>
+  <div class="card"><h2>Sleutels</h2><div class="seg"><span class="on">Viool</span><span class="">Bas</span><span class="">Beide</span></div></div>
+  <div class="card"><h2>Bereik notenbalk</h2><div class="seg"><span class="">Binnen de lijnen</span><span class="on">1 hulplijn</span><span class="">2 hulplijnen</span></div><div class="muted" style="margin-top:6px">Nieuwe noten komen er stap voor stap bij.</div></div>
+  <div class="card"><h2>Voortekens</h2><div class="seg"><span class="on">Geen</span><span class="">♯</span><span class="">♭</span><span class="">Beide</span></div></div>
+  <div class="card"><h2>Pianobereik</h2><div class="seg"><span class="on">2 octaven</span><span class="">4 octaven</span><span class="">Volledig</span></div><div class="muted" style="margin-top:6px">Letters op de C-toetsen: aan</div></div>
+  <div class="card"><h2>Sessie</h2><div class="seg"><span class="">5</span><span class="on">10</span><span class="">20</span></div><div class="muted" style="margin-top:6px">Max. 3 nieuwe noten per sessie</div></div>
+  <div class="grow"></div>
+  <div class="btn block">Start oefening</div>
+</div>
+
+</div>
+</body></html>
