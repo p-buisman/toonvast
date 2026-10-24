@@ -25,7 +25,9 @@ import { useApp } from "../state/useApp.ts";
 
 const OK = "#2e9e5b";
 const BAD = "#d64545";
-const AUTO_NEXT_MS = 700;
+// The tapped note sounds first; the "right" cue follows once it has been heard.
+const CUE_DELAY_MS = 500;
+const AUTO_NEXT_MS = 1200;
 
 interface Loaded {
   settings: ModuleSettings;
@@ -103,7 +105,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     if (a.kind === "piano") playNote(a.midi);
     if (verdict.correct) {
       if (a.kind !== "piano") playNote(target);
-      playCue("right");
+      setTimeout(() => playCue("right"), CUE_DELAY_MS);
       setTimeout(() => next(all), AUTO_NEXT_MS);
     } else {
       playCue("wrong");

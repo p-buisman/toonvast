@@ -191,8 +191,9 @@ export function playCue(kind: "right" | "wrong"): void {
   if (!ctx || !master) return;
   ensureRunning(ctx);
   if (kind === "right") {
-    playTone(ctx, master, 880, 0.12, 0.12, "triangle");
-    setTimeout(() => ctx && master && playTone(ctx, master, 1320, 0.18, 0.12, "triangle"), 90);
+    // Soft and short, so it sits behind the note instead of fighting it.
+    playTone(ctx, master, 1320, 0.09, 0.05, "triangle");
+    setTimeout(() => ctx && master && playTone(ctx, master, 1760, 0.14, 0.05, "triangle"), 80);
   } else {
     playTone(ctx, master, 180, 0.25, 0.15, "square");
   }
