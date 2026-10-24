@@ -74,7 +74,14 @@ export function Fretboard({ maxFret = 4, dots = [], onTap, disabled }: Props) {
         )}
         {dots.map((d, i) => (
           <g key={i} style={{ pointerEvents: "none" }}>
-            {d.fret === 0 ? <circle cx={sx(d.string)} cy={cy(0)} r="12" fill={d.color} /> : <circle cx={sx(d.string)} cy={cy(d.fret)} r="15" fill={d.color} />}
+            {d.fret === 0 && !d.label ? (
+              // An open string: a ring, like in chord books.
+              <circle cx={sx(d.string)} cy={cy(0)} r="10" fill="none" stroke={d.color} strokeWidth="3.5" />
+            ) : d.fret === 0 ? (
+              <circle cx={sx(d.string)} cy={cy(0)} r="12" fill={d.color} />
+            ) : (
+              <circle cx={sx(d.string)} cy={cy(d.fret)} r="15" fill={d.color} />
+            )}
             {d.label && (
               <text x={sx(d.string)} y={cy(d.fret) + 5} fontSize="13" textAnchor="middle" fill="#fff" fontWeight="700">
                 {d.label}
