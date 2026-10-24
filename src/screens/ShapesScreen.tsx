@@ -84,7 +84,7 @@ export function ShapeGallery({ shapes }: { shapes: readonly ChordShape[] }) {
             title={shapeName(s) + (s.barre ? " (barré)" : "")}
             onClick={() => {
               unlockAudio();
-              playChord(shapeMidis(s.frets), 2, STRUM_MS);
+              playChord(shapeMidis(s.frets), 2, STRUM_MS, "guitar");
             }}
           />
         </Card>

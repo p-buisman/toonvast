@@ -10,11 +10,11 @@ import {
   type PitchClass,
   type Quality,
 } from "../common/chord.ts";
-import { midiOf, pitchName, sameSpelling, type Accidental, type Letter, type Pitch } from "../common/pitch.ts";
+import { midiOf, pitchName, sameSpelling, spellMidi, type Accidental, type Letter, type Pitch } from "../common/pitch.ts";
 import { midiAt, positionsFor, type FretPosition } from "../instruments/guitar.ts";
 import { sameShape, shapeFor, shapeMidis, type ChordShape, type Shape } from "../instruments/guitarChords.ts";
 import type { ChordItem, LearnItem, NoteItem } from "./items.ts";
-import type { ModuleDef } from "./modules.ts";
+import { playsShape, type ModuleDef } from "./modules.ts";
 
 export type Answer =
   | { kind: "name"; letter: Letter; acc: Accidental }
@@ -37,9 +37,16 @@ export function soundingMidi(module: ModuleDef, pitch: Pitch): number {
   return midiOf(pitch) - module.writtenOffset;
 }
 
+/** Both spellings of a black key: "C♯ (D♭)". */
+export function heardName(p: Pitch): string {
+  if (p.acc === 0) return pitchName(p);
+  const other = spellMidi(midiOf(p), p.acc === 1 ? "flat" : "sharp");
+  return `${pitchName(p)} (${pitchName(other)})`;
+}
+
 /** What the player had to give, in words, for the feedback card. */
 export function describeTarget(module: ModuleDef, item: LearnItem): string {
-  if (item.kind === "note") return pitchName(item.pitch);
+  if (item.kind === "note") return module.question === "sound" ? heardName(item.pitch) : pitchName(item.pitch);
   const name = chordName(item.chord);
   const inversion = item.chord.inversion !== 0 || module.answer === "staff" || module.question === "staff" ? ` (${INVERSION_NAME[item.chord.inversion]})` : "";
   // When the notes had to be given, name them too, from the bass up.
@@ -80,6 +87,13 @@ function checkNote(module: ModuleDef, item: NoteItem, answer: Answer): Verdict {
       if (answer.pos.string === positionsFor(target, 4)[0]?.string) return { correct: false, note: "Goede snaar, verkeerde fret." };
       return { correct: false };
     }
+    case "staffSet": {
+      // A heard note put on the staff: the pitch must match, the spelling is free.
+      if (answer.pitches.length !== 1) return { correct: false, note: "Zet één noot neer." };
+      const given = midiOf(answer.pitches[0]);
+      if (given === midiOf(item.pitch)) return { correct: true };
+      return { correct: false, note: octaveNote(midiOf(item.pitch), given) };
+    }
     default:
       return { correct: false };
   }
@@ -109,11 +123,17 @@ function checkChord(module: ModuleDef, item: ChordItem, answer: Answer): Verdict
     case "pianoSet": {
       const given = [...answer.midis].sort((a, b) => a - b);
       if (new Set(given).size !== 3) return { correct: false, note: "Een drieklank heeft drie verschillende toetsen." };
-      if (module.question === "staff") {
+      if (module.question === "staff" || module.question === "sound") {
         const target = item.voicing.map((p) => soundingMidi(module, p)).sort((a, b) => a - b);
         if (given.every((m, i) => m === target[i])) return { correct: true };
         if (sameSet(pcSet(given), targetPcs))
-          return { correct: false, note: "De juiste noten, maar niet in het octaaf en de ligging waarin ze geschreven staan." };
+          return {
+            correct: false,
+            note:
+              module.question === "sound"
+                ? "De juiste noten, maar niet in het octaaf waarin ze klonken."
+                : "De juiste noten, maar niet in het octaaf en de ligging waarin ze geschreven staan.",
+          };
         return { correct: false };
       }
       if (!sameSet(pcSet(given), targetPcs)) return { correct: false };
@@ -124,6 +144,18 @@ function checkChord(module: ModuleDef, item: ChordItem, answer: Answer): Verdict
     case "staffSet": {
       const given = [...answer.pitches].sort((a, b) => midiOf(a) - midiOf(b));
       if (given.length !== 3) return { correct: false, note: "Een drieklank heeft drie noten." };
+      if (module.question === "sound") {
+        // Heard: the pitches count, not the spelling. A guitar chord has no single octave, so its pitch classes count.
+        if (playsShape(module)) {
+          if (sameSet(pcSet(given.map(midiOf)), targetPcs)) return { correct: true };
+          return { correct: false };
+        }
+        const target = item.voicing.map(midiOf).sort((a, b) => a - b);
+        if (given.every((p, i) => midiOf(p) === target[i])) return { correct: true };
+        if (sameSet(pcSet(given.map(midiOf)), targetPcs))
+          return { correct: false, note: "De juiste noten, maar niet in het octaaf en de ligging waarin ze klonken." };
+        return { correct: false };
+      }
       const shift = midiOf(given[0]) - midiOf(item.voicing[0]);
       const exact = shift % 12 === 0 && given.every((p, i) => sameSpelling({ ...p, octave: p.octave - shift / 12 }, item.voicing[i]));
       if (exact) return { correct: true };

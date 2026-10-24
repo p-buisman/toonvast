@@ -1,6 +1,6 @@
 # Verkenning muziek-app Toonvast
 
-Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 2 gebouwd (noten lezen, akkoorden, badges, winkel); zie §11.
+Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 3 gebouwd (noten lezen, akkoorden, badges, winkel, gehoortraining); zie §11.
 
 Een educatieve web-app (PWA) voor een gezin dat piano en gitaar leert. De speler leert noten op de notenbalk, pianotoetsen, gitaargrepen, akkoorden, toonsoorten en gehoor. Per persoon en per instrument wordt de voortgang bijgehouden, met een spelelement om te blijven oefenen.
 
@@ -205,7 +205,7 @@ Versienummers van bibliotheken worden bij het opzetten gecontroleerd; deze verke
 | 0    | Repo, Vite/PWA-opzet, theorie-engine met tests, SVG-notenbalk, schermpiano, gitaarhals, sampler met piano-geluid, GitHub Pages | Lege app die noten toont en toetsen laat klinken           |
 | 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                         | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
 | 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                              | Versie 2: akkoorden en winkel                              |
-| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum                                                                                   | Versie 3: gehoortraining                                   |
+| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)   | Versie 3: gehoortraining                                   |
 | 4    | M7 toonsoort (drie varianten), daarna mineur; eventueel fret 5–12 en barré-vormen                                              | Versie 4: toonsoorten                                      |
 
 ---

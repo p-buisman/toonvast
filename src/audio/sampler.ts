@@ -1,50 +1,79 @@
 /**
- * A small Web Audio sampler for the piano. The samples (Salamander Grand, every three semitones) are
- * fetched once; notes in between are pitched by playback rate. Audio starts only after a user gesture.
+ * A small Web Audio sampler for the piano and the guitar. The samples (every three semitones) are fetched
+ * once per instrument; notes in between are pitched by playback rate. Audio starts only after a user gesture.
  */
-const SAMPLE_NOTES: readonly [string, number][] = [
-  ["A0", 21],
-  ["C1", 24],
-  ["Ds1", 27],
-  ["Fs1", 30],
-  ["A1", 33],
-  ["C2", 36],
-  ["Ds2", 39],
-  ["Fs2", 42],
-  ["A2", 45],
-  ["C3", 48],
-  ["Ds3", 51],
-  ["Fs3", 54],
-  ["A3", 57],
-  ["C4", 60],
-  ["Ds4", 63],
-  ["Fs4", 66],
-  ["A4", 69],
-  ["C5", 72],
-  ["Ds5", 75],
-  ["Fs5", 78],
-  ["A5", 81],
-  ["C6", 84],
-  ["Ds6", 87],
-  ["Fs6", 90],
-  ["A6", 93],
-  ["C7", 96],
-  ["Ds7", 99],
-  ["Fs7", 102],
-  ["A7", 105],
-  ["C8", 108],
-];
+export type Timbre = "piano" | "guitar";
+
+const SAMPLE_SETS: Record<Timbre, { folder: string; notes: readonly [string, number][]; gain: number }> = {
+  piano: {
+    folder: "piano",
+    gain: 1,
+    notes: [
+      ["A0", 21],
+      ["C1", 24],
+      ["Ds1", 27],
+      ["Fs1", 30],
+      ["A1", 33],
+      ["C2", 36],
+      ["Ds2", 39],
+      ["Fs2", 42],
+      ["A2", 45],
+      ["C3", 48],
+      ["Ds3", 51],
+      ["Fs3", 54],
+      ["A3", 57],
+      ["C4", 60],
+      ["Ds4", 63],
+      ["Fs4", 66],
+      ["A4", 69],
+      ["C5", 72],
+      ["Ds5", 75],
+      ["Fs5", 78],
+      ["A5", 81],
+      ["C6", 84],
+      ["Ds6", 87],
+      ["Fs6", 90],
+      ["A6", 93],
+      ["C7", 96],
+      ["Ds7", 99],
+      ["Fs7", 102],
+      ["A7", 105],
+      ["C8", 108],
+    ],
+  },
+  guitar: {
+    folder: "guitar",
+    gain: 1.3,
+    notes: [
+      ["E2", 40],
+      ["G2", 43],
+      ["Bb2", 46],
+      ["Db3", 49],
+      ["E3", 52],
+      ["G3", 55],
+      ["Bb3", 58],
+      ["Db4", 61],
+      ["E4", 64],
+      ["G4", 67],
+      ["Bb4", 70],
+      ["Db5", 73],
+      ["E5", 76],
+    ],
+  },
+};
 
 type AudioContextCtor = typeof AudioContext;
 
 let context: AudioContext | null = null;
-const buffers = new Map<number, AudioBuffer>();
-let loading: Promise<void> | null = null;
+const buffers: Record<Timbre, Map<number, AudioBuffer>> = { piano: new Map(), guitar: new Map() };
+const loading: Partial<Record<Timbre, Promise<void>>> = {};
 let master: GainNode | null = null;
 let analyser: AnalyserNode | null = null;
 let lastPath = "none";
 let lastError = "";
 let decodeErrors = 0;
+let mediaUnlocked = false;
+let mediaUrl: string | null = null;
 
 function getContext(): AudioContext | null {
   if (context) return context;
@@ -67,9 +96,6 @@ function getContext(): AudioContext | null {
   analyser.connect(context.destination);
   return context;
 }
-
-let mediaUnlocked = false;
-let mediaUrl: string | null = null;
 
 /** A tenth of a second of silence as a WAV file, built here so no asset is needed. */
 function silentWavUrl(): string {
@@ -126,7 +152,7 @@ export function unlockAudio(): void {
   if (!ctx) return;
   if (ctx.state !== "running") void ctx.resume();
   unlockMedia();
-  void loadSamples();
+  void loadSamples("piano");
 }
 
 if (typeof document !== "undefined") {
@@ -136,17 +162,19 @@ if (typeof document !== "undefined") {
   });
 }
 
-export function loadSamples(): Promise<void> {
-  if (loading) return loading;
+export function loadSamples(timbre: Timbre = "piano"): Promise<void> {
+  const pending = loading[timbre];
+  if (pending) return pending;
   const ctx = getContext();
   if (!ctx) return Promise.resolve();
-  const base = `${import.meta.env.BASE_URL}samples/piano/`;
-  loading = Promise.all(
-    SAMPLE_NOTES.map(async ([name, midi]) => {
+  const set = SAMPLE_SETS[timbre];
+  const base = `${import.meta.env.BASE_URL}samples/${set.folder}/`;
+  const job = Promise.all(
+    set.notes.map(async ([name, midi]) => {
       try {
         const res = await fetch(`${base}${name}.mp3`);
         const data = await res.arrayBuffer();
-        buffers.set(midi, await decode(ctx, data));
+        buffers[timbre].set(midi, await decode(ctx, data));
       } catch (e) {
         // A missing sample is not fatal: its neighbours cover the gap.
         decodeErrors++;
@@ -154,7 +182,8 @@ export function loadSamples(): Promise<void> {
       }
     }),
   ).then(() => undefined);
-  return loading;
+  loading[timbre] = job;
+  return job;
 }
 
 /** Promise form where available, callback form for older WebKit. */
@@ -182,33 +211,41 @@ export interface AudioDiagnostics {
 
 const peakData = new Uint8Array(256);
 
-/** For the `?debug=1` panel: what the sampler is doing and whether anything reaches the output. */
+/** For the `?debug=1` panel and the sound test: what the sampler is doing and whether anything reaches the output. */
 export function audioDiagnostics(): AudioDiagnostics {
   let peak = 0;
   if (analyser) {
     analyser.getByteTimeDomainData(peakData);
     for (const v of peakData) peak = Math.max(peak, Math.abs(v - 128) / 128);
   }
-  return { state: context?.state ?? "none", buffers: buffers.size, decodeErrors, lastPath: `${lastPath}${mediaUnlocked ? " · media" : ""}`, lastError, peak };
+  return {
+    state: context?.state ?? "none",
+    buffers: buffers.piano.size + buffers.guitar.size,
+    decodeErrors,
+    lastPath: `${lastPath}${mediaUnlocked ? " · media" : ""}`,
+    lastError,
+    peak,
+  };
 }
 
-export function samplesReady(): boolean {
-  return buffers.size > 0;
+export function samplesReady(timbre: Timbre = "piano"): boolean {
+  return buffers[timbre].size > 0;
 }
 
-function nearestSample(midi: number): number | null {
+function nearestSample(timbre: Timbre, midi: number): number | null {
   let best: number | null = null;
-  for (const m of buffers.keys()) if (best === null || Math.abs(m - midi) < Math.abs(best - midi)) best = m;
+  for (const m of buffers[timbre].keys()) if (best === null || Math.abs(m - midi) < Math.abs(best - midi)) best = m;
   return best;
 }
 
 /** Play one note; falls back to a soft sine when the samples are not there yet. */
-export function playNote(midi: number, seconds = 1.6, velocity = 1): void {
+export function playNote(midi: number, seconds = 1.6, velocity = 1, timbre: Timbre = "piano"): void {
   const ctx = getContext();
   if (!ctx || !master) return;
   ensureRunning(ctx);
+  if (!loading[timbre]) void loadSamples(timbre);
   const now = ctx.currentTime;
-  const from = nearestSample(midi);
+  const from = nearestSample(timbre, midi);
   if (from === null) {
     lastPath = "tone";
     playTone(ctx, master, 440 * 2 ** ((midi - 69) / 12), seconds, 0.25 * velocity);
@@ -216,17 +253,18 @@ export function playNote(midi: number, seconds = 1.6, velocity = 1): void {
   }
   try {
     const source = ctx.createBufferSource();
-    source.buffer = buffers.get(from)!;
+    source.buffer = buffers[timbre].get(from)!;
     source.playbackRate.value = 2 ** ((midi - from) / 12);
     const gain = ctx.createGain();
-    gain.gain.setValueAtTime(velocity, now);
-    gain.gain.linearRampToValueAtTime(velocity, now + seconds - 0.3);
+    const level = velocity * SAMPLE_SETS[timbre].gain;
+    gain.gain.setValueAtTime(level, now);
+    gain.gain.linearRampToValueAtTime(level, now + seconds - 0.3);
     gain.gain.linearRampToValueAtTime(0, now + seconds);
     source.connect(gain);
     gain.connect(master);
     source.start(now);
     source.stop(now + seconds + 0.05);
-    lastPath = `sample ${from}`;
+    lastPath = `${timbre} ${from}`;
   } catch (e) {
     lastPath = "tone (after error)";
     lastError = e instanceof Error ? e.message : String(e);
@@ -235,10 +273,10 @@ export function playNote(midi: number, seconds = 1.6, velocity = 1): void {
 }
 
 /** Several notes together, each softer so the sum stays clean; a small stagger keeps it natural. */
-export function playChord(midis: number[], seconds = 2, strumMs = 0): void {
+export function playChord(midis: number[], seconds = 2, strumMs = 0, timbre: Timbre = "piano"): void {
   const velocity = Math.min(1, 1.1 / Math.sqrt(midis.length));
   const gap = strumMs > 0 ? strumMs : 12;
-  midis.forEach((m, i) => setTimeout(() => playNote(m, seconds, velocity), i * gap));
+  midis.forEach((m, i) => setTimeout(() => playNote(m, seconds, velocity, timbre), i * gap));
 }
 
 function playTone(ctx: AudioContext, out: AudioNode, hz: number, seconds: number, level: number, type: OscillatorType = "sine"): void {

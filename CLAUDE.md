@@ -38,7 +38,8 @@ Engine (`src/engine/`):
 - `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `preferredPosition` (hoogste snaar, laagste
   fret), `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
 - `instruments/guitarChords.ts` - de greeptabel (`CHORD_SHAPES`, één standaardgreep per akkoord), `shapeFor`, `shapeMidis`.
-- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord), vraag- en antwoordvorm.
+- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord), vraag (notenbalk, naam,
+  geluid) en antwoordvorm, klank (`timbre`); `usesStaff`, `playsShape`.
 - `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`:
   `noteItemsFor` en `chordItemsFor`); een `LearnItem` is een `NoteItem` of een `ChordItem` met zijn ligging.
 - `learning/answers.ts` - `checkAnswer` voor alle antwoordvormen (naam, toets, hals, akkoordnaam, toetsenset, notenset,
@@ -53,7 +54,8 @@ Engine (`src/engine/`):
 Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
 
-Audio (`src/audio/`): `sampler.ts` (Web Audio, piano-samples, ontgrendelen op iOS), `cues.ts` (goed/fout-tonen).
+Audio (`src/audio/`): `sampler.ts` (Web Audio; piano- en gitaarsamples per `Timbre`, `playNote`/`playChord` met strum,
+goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek).
 
 Componenten (`src/components/`):
 

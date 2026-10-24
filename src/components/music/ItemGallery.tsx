@@ -23,8 +23,8 @@ export function ItemGallery({ module, items }: { module: ModuleDef; items: reado
         const notes = item.kind === "note" ? [item.pitch] : item.voicing;
         const play = () => {
           unlockAudio();
-          if (midis.length === 1) playNote(midis[0]);
-          else playChord(midis, 2);
+          if (midis.length === 1) playNote(midis[0], 1.6, 1, module.timbre);
+          else playChord(midis, 2, module.timbre === "guitar" ? 45 : 0, module.timbre);
         };
         const highlights: Record<number, string> = {};
         for (const m of midis) highlights[m] = PICK;

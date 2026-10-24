@@ -21,7 +21,7 @@ import { CHORD_SHAPES, highestFret, shapeFor, shapeMidis, type ChordShape, type 
 import { resolvePianoRange, type PianoRange } from "../engine/instruments/piano.ts";
 import { checkAnswer, describeTarget, soundingMidi, type Answer, type Verdict } from "../engine/learning/answers.ts";
 import { itemsFor, type ChordItem, type LearnItem } from "../engine/learning/items.ts";
-import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
+import { moduleById, playsShape, type ModuleId } from "../engine/learning/modules.ts";
 import type { CardRecord } from "../engine/learning/scheduler.ts";
 import { buildSession } from "../engine/learning/session.ts";
 import type { ModuleSettings } from "../engine/learning/settings.ts";
@@ -53,17 +53,26 @@ const PROMPT: Record<string, string> = {
   "note:name": "Welke noot is dit?",
   "note:piano": "Tik de juiste toets",
   "note:guitar": "Tik de juiste plek op de hals",
+  "note:staff": "Zet de noot die je hoorde op de notenbalk",
   "chord:name": "Welk akkoord is dit?",
   "chord:piano": "Tik de drie toetsen",
   "chord:staff": "Zet de drie noten op de notenbalk",
   "chord:guitar": "Welke greep hoort erbij?",
+};
+const HEARD_PROMPT: Record<string, string> = {
+  "note:piano": "Tik de toets die je hoorde",
+  "note:guitar": "Tik de plek op de hals die je hoorde",
+  "note:staff": "Zet de noot die je hoorde op de notenbalk",
+  "chord:piano": "Tik de drie toetsen die je hoorde",
+  "chord:staff": "Zet de drie noten die je hoorde op de notenbalk",
+  "chord:guitar": "Welke greep hoorde je?",
 };
 
 const ALL_OPEN: Shape = [0, 0, 0, 0, 0, 0];
 
 function soundingOf(module: ReturnType<typeof moduleById>, item: LearnItem): number[] {
   if (item.kind === "note") return [soundingMidi(module, item.pitch)];
-  if (module.answer === "guitar") {
+  if (playsShape(module)) {
     const shape = shapeFor(item.chord);
     return shape ? shapeMidis(shape.frets) : item.voicing.map((p) => soundingMidi(module, p));
   }
@@ -121,6 +130,22 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     if (loaded && !feedback && !intro) shownAt.current = performance.now();
   }, [loaded, index, feedback, intro]);
 
+  const playQuestion = () => {
+    if (!question) return;
+    unlockAudio();
+    const target = soundingOf(module, question);
+    if (target.length === 1) playNote(target[0], 1.6, 1, module.timbre);
+    else playChord(target, 2, module.timbre === "guitar" ? STRUM_MS : 0, module.timbre);
+  };
+
+  // A heard question plays itself when it appears; the listen button repeats it.
+  useEffect(() => {
+    if (module.question !== "sound" || !loaded || intro || feedback) return;
+    const t = setTimeout(playQuestion, 350);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [module.question, loaded, intro, index]);
+
   const question = loaded?.questions[index];
 
   const finish = async (all: SessionAnswer[]) => {
@@ -153,8 +178,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     setCombo(verdict.correct ? combo + 1 : 0);
     setFeedback({ answer: a, verdict });
     const target = soundingOf(module, question);
-    const strum = module.answer === "guitar" ? STRUM_MS : 0;
-    const playTarget = () => (target.length === 1 ? playNote(target[0]) : playChord(target, 2, strum));
+    const strum = module.timbre === "guitar" ? STRUM_MS : 0;
+    const playTarget = () => (target.length === 1 ? playNote(target[0], 1.6, 1, module.timbre) : playChord(target, 2, strum, module.timbre));
     const alreadyHeard = a.kind === "piano" || a.kind === "pianoSet";
     if (verdict.correct) {
       if (!alreadyHeard) playTarget();
@@ -175,7 +200,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const tapPianoKey = (midi: number) => {
     if (feedback) return;
     unlockAudio();
-    playNote(midi);
+    playNote(midi, 1.6, 1, module.timbre);
     if (module.kind === "note") return answer({ kind: "piano", midi });
     const nextSel = selected.includes(midi) ? selected.filter((m) => m !== midi) : [...selected, midi];
     setSelected(nextSel);
@@ -189,8 +214,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     const existing = placed.find((q) => q.letter === p.letter && q.octave === p.octave);
     const nextPlaced = existing ? placed.filter((q) => q !== existing) : [...placed, p];
     setPlaced(nextPlaced);
-    if (!existing) playNote(soundingMidi(module, p));
-    if (nextPlaced.length === 3) answer({ kind: "staffSet", pitches: nextPlaced });
+    if (!existing) playNote(soundingMidi(module, p), 1.6, 1, module.timbre);
+    if (nextPlaced.length === (question.kind === "note" ? 1 : 3)) answer({ kind: "staffSet", pitches: nextPlaced });
   };
 
   // Building a fingering: a fret sets the string; the open position toggles open and muted.
@@ -293,12 +318,16 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   if (module.question === "staff") {
     const notes = question.kind === "note" ? [question.pitch] : question.voicing;
     staffNotes = notes.map((pitch) => ({ pitch, color: feedback && correct ? OK : undefined }));
-  } else if (module.answer === "staff" && chordItem) {
+  } else if (module.answer === "staff") {
+    const wanted: Pitch[] = question.kind === "note" ? [question.pitch] : question.voicing;
+    const matches = (v: Pitch, p: Pitch) =>
+      sameSpelling(v, p) ||
+      (module.question === "sound" ? midiOf(v) === midiOf(p) || (playsShape(module) && midiOf(v) % 12 === midiOf(p) % 12) : midiOf(v) % 12 === midiOf(p) % 12);
     staffNotes = placed.map((pitch) => ({
       pitch,
-      color: feedback ? (correct || chordItem.voicing.some((v) => sameSpelling(v, pitch) || midiOf(v) % 12 === midiOf(pitch) % 12) ? OK : BAD) : PICK,
+      color: feedback ? (correct || wanted.some((v) => matches(v, pitch)) ? OK : BAD) : PICK,
     }));
-    if (feedback && !correct) for (const v of chordItem.voicing) if (!placed.some((p) => sameSpelling(p, v))) staffNotes.push({ pitch: v, color: OK });
+    if (feedback && !correct) for (const v of wanted) if (!placed.some((p) => matches(v, p))) staffNotes.push({ pitch: v, color: OK });
   }
 
   const pianoHighlights: Record<number, string> = {};
@@ -338,7 +367,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         )
       : [];
 
-  const prompt = PROMPT[`${module.kind}:${module.answer}`];
+  const prompt = (module.question === "sound" ? HEARD_PROMPT : PROMPT)[`${module.kind}:${module.answer}`];
   const inversionLabel = chordItem && (settings.inversions || chordItem.chord.inversion !== 0) ? INVERSION_NAME[chordItem.chord.inversion] : null;
 
   return (
@@ -361,6 +390,15 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         </span>
       </div>
 
+      {module.question === "sound" && (
+        <button type="button" className="listen" onClick={playQuestion} aria-label="Nog eens luisteren">
+          <span className="listen-icon">▶</span>
+          <span>
+            <b>Luister</b>
+            <small>tik om nog eens te horen</small>
+          </span>
+        </button>
+      )}
       {module.question === "name" && chordItem && (
         <div className="chord-prompt">
           {chordName(chordItem.chord)}
@@ -388,7 +426,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         <div className="prompt">
           {prompt}
           {module.answer === "piano" && module.kind === "chord" && <div className="muted">{selected.length} van 3 toetsen</div>}
-          {module.answer === "staff" && <div className="muted">{placed.length} van 3 noten</div>}
+          {module.answer === "staff" && module.kind === "chord" && <div className="muted">{placed.length} van 3 noten</div>}
         </div>
       )}
 

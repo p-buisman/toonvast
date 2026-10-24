@@ -1,0 +1,3 @@
+Nylon-string acoustic guitar samples from the FluidR3_GM soundfont (Frank Wen), as rendered to mp3 in the
+midi-js-soundfonts project (https://github.com/gleitz/midi-js-soundfonts), released under the
+Creative Commons Attribution 3.0 licence (https://creativecommons.org/licenses/by/3.0/us/).

@@ -70,11 +70,18 @@ export function noteItemsFor(module: ModuleDef, settings: ModuleSettings): NoteI
   const { min, max } = rangeForLevel(settings.range);
   const sounding = module.answer === "guitar" ? fretRange(4) : null;
   const rows: { item: NoteItem; order: number[] }[] = [];
+  // A played note has no spelling: C♯ and D♭ are one item, kept under the first spelling met.
+  const heard = new Set<string>();
   for (const clef of clefsFor(module, settings.clefs)) {
     for (const acc of accidentalsFor(settings.accidentals)) {
       for (let pos = min; pos <= max; pos++) {
         const pitch = pitchAtPosition(pos, clef, acc);
         if (isOddSpelling(pitch)) continue;
+        if (module.question === "sound") {
+          const id = `${clef}:${midiOf(pitch)}`;
+          if (heard.has(id)) continue;
+          heard.add(id);
+        }
         let order = [acc === 0 ? 0 : 1, clef === "treble" ? 0 : 1, Math.abs(pos - 4), pos];
         if (sounding) {
           const midi = midiOf(pitch) - module.writtenOffset;
@@ -110,7 +117,7 @@ const DEGREE_ORDER = [1, 5, 4, 6, 2, 3];
  */
 export function chordItemsFor(module: ModuleDef, settings: ModuleSettings): ChordItem[] {
   const qualities: Quality[] = settings.qualities === "both" ? ["major", "minor"] : [settings.qualities];
-  const inversions: Inversion[] = settings.inversions && module.answer !== "guitar" ? [0, 1, 2] : [0];
+  const inversions: Inversion[] = settings.inversions && module.answer !== "guitar" && module.timbre !== "guitar" ? [0, 1, 2] : [0];
   const clefs = clefsFor(module, settings.clefs);
   const seen = new Set<string>();
   const rows: { item: ChordItem; order: number[] }[] = [];
@@ -119,7 +126,7 @@ export function chordItemsFor(module: ModuleDef, settings: ModuleSettings): Chor
       if (!qualities.includes(triad.quality)) continue;
       const id = `${pcKey(triad.root)}:${triad.quality}`;
       if (seen.has(id)) continue;
-      if (module.answer === "guitar" && !shapeFor(triad)) continue;
+      if ((module.answer === "guitar" || module.timbre === "guitar") && !shapeFor(triad)) continue;
       seen.add(id);
       for (const inversion of inversions) {
         const chord: Chord = { root: triad.root, quality: triad.quality, inversion };

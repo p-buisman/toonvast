@@ -22,6 +22,7 @@ export interface BadgeContext {
 }
 
 const NOTE_MODULE: Record<Instrument, ModuleId> = { theory: "note-name", piano: "note-piano", guitar: "note-guitar" };
+const EAR_MODULE: Record<Instrument, ModuleId> = { theory: "ear-note-staff", piano: "ear-note-piano", guitar: "ear-note-guitar" };
 const INSTRUMENT_LABEL: Record<Instrument, string> = { theory: "theorie", piano: "piano", guitar: "gitaar" };
 
 function perInstrument(id: string, title: string, description: string, instruments: Instrument[]): BadgeDef[] {
@@ -35,6 +36,7 @@ export const BADGES: readonly BadgeDef[] = [
   ...perInstrument("ledger", "Hulplijnen", "Alle noten tot één hulplijn beheerst", ["theory", "piano", "guitar"]),
   ...perInstrument("fast", "Snelle lezer", "Gemiddeld onder de 2 seconden per noot", ["theory", "piano", "guitar"]),
   ...perInstrument("black-white", "Zwart en wit", "Alle kruizen en mollen binnen de lijnen beheerst", ["theory", "piano"]),
+  ...perInstrument("ear", "Goed gehoor", "Alle gehoorde noten binnen de lijnen beheerst", ["theory", "piano", "guitar"]),
   { id: "streak-5", title: "Vijf dagen", description: "Vijf dagen achter elkaar je dagdoel gehaald" },
   { id: "streak-30", title: "Dertig dagen", description: "Dertig dagen achter elkaar je dagdoel gehaald" },
   { id: "open-chords", title: "Open grepen", description: "Alle open akkoorden op de gitaar beheerst", instrument: "guitar" },
@@ -70,6 +72,9 @@ export function earnedBadges(ctx: BadgeContext): string[] {
     }
     const stats = ctx.statsByModule.get(moduleId);
     if (stats && stats.count >= 20 && stats.emaMs < 2000) out.push(`fast:${instrument}`);
+    const ear = moduleById(EAR_MODULE[instrument]);
+    const earKeys = noteItemsFor(ear, { ...DEFAULT_SETTINGS, clefs: "treble", range: 0 }).map((i) => i.key);
+    if (allMastered(ctx.cardsByModule.get(ear.id), earKeys)) out.push(`ear:${instrument}`);
   }
   const guitarChords = chordItemsFor(moduleById("chord-guitar"), { ...DEFAULT_SETTINGS, keys: ["C", "G", "D", "A", "F"], qualities: "both" })
     .filter((i) => ["C", "D", "E", "G", "A"].includes(i.chord.root.letter) && i.chord.root.acc === 0)
