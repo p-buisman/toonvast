@@ -162,6 +162,11 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
         </Card>
       )}
       {isChord && module.answer === "guitar" && (
+        <Button block variant="ghost" onClick={() => nav.go({ name: "shapes", moduleId })}>
+          📖 Bekijk de grepen in je les
+        </Button>
+      )}
+      {isChord && module.answer === "guitar" && (
         <Card>
           <h2>Greepinvoer</h2>
           <Segmented<ShapeInput>

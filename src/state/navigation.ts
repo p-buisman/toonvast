@@ -12,6 +12,7 @@ export type Route =
   | { name: "result"; moduleId: ModuleId; summary: SessionSummary }
   | { name: "progress" }
   | { name: "shop" }
+  | { name: "shapes"; moduleId: ModuleId }
   | { name: "profile" };
 
 export interface Nav {

@@ -7,6 +7,7 @@ import { NewProfileScreen } from "./screens/NewProfileScreen.tsx";
 import { ProfileScreen } from "./screens/ProfileScreen.tsx";
 import { ProfilesScreen } from "./screens/ProfilesScreen.tsx";
 import { ProgressScreen } from "./screens/ProgressScreen.tsx";
+import { ShapesScreen } from "./screens/ShapesScreen.tsx";
 import { ShopScreen } from "./screens/ShopScreen.tsx";
 import { ResultScreen } from "./screens/ResultScreen.tsx";
 import { SettingsScreen } from "./screens/SettingsScreen.tsx";
@@ -57,6 +58,9 @@ function Router() {
       break;
     case "shop":
       screen = <ShopScreen />;
+      break;
+    case "shapes":
+      screen = <ShapesScreen moduleId={route.moduleId} />;
       break;
     case "profile":
       screen = <ProfileScreen />;

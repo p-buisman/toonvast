@@ -70,4 +70,6 @@ Componenten (`src/components/`):
 
 Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen muziektheorie en geen opslagcode.
 `ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat.
+Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen`: grepenoverzicht en `ShapeGallery` als
+introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
 Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.

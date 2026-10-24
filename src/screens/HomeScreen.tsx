@@ -125,6 +125,17 @@ export function HomeScreen() {
                   </div>
                   {playable ? <Chip>Start</Chip> : <Chip tone="grey">🔒</Chip>}
                 </button>
+                {playable && m.answer === "guitar" && m.kind === "chord" && (
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label="Grepen bekijken"
+                    title="Grepen bekijken"
+                    onClick={() => nav.go({ name: "shapes", moduleId: m.id })}
+                  >
+                    📖
+                  </button>
+                )}
                 {playable && (
                   <button
                     type="button"

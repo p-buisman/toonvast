@@ -29,6 +29,7 @@ import type { SessionAnswer } from "../storage/db.ts";
 import { getCards, getSettings, lastSessionScore } from "../storage/repo.ts";
 import { finishSession } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
+import { ShapeGallery } from "./ShapesScreen.tsx";
 
 const OK = "#2e9e5b";
 const BAD = "#d64545";
@@ -77,6 +78,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const [combo, setCombo] = useState(0);
   const [feedback, setFeedback] = useState<{ answer: Answer; verdict: Verdict } | null>(null);
   const [busy, setBusy] = useState(false);
+  /** Shapes in this session the player has never been asked: shown first, so there is something to remember. */
+  const [intro, setIntro] = useState<ChordShape[] | null>(null);
   // Multi-step answers: chosen piano keys, notes placed on the staff, a fingering being built.
   const [selected, setSelected] = useState<number[]>([]);
   const [placed, setPlaced] = useState<Pitch[]>([]);
@@ -99,7 +102,17 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         items.flatMap((i) => soundingOf(module, i)),
       );
       const shapes = items.flatMap((i) => (i.kind === "chord" ? (shapeFor(i.chord) ?? []) : []));
-      if (alive) setLoaded({ settings, items, cards, questions, pianoRange, maxFret: highestFret(shapes) });
+      if (!alive) return;
+      if (module.answer === "guitar" && module.kind === "chord") {
+        const fresh = new Map<string, ChordShape>();
+        for (const q of questions) {
+          const card = cards.get(q.key);
+          const shape = q.kind === "chord" ? shapeFor(q.chord) : undefined;
+          if (shape && (!card || card.reps === 0)) fresh.set(q.key, shape);
+        }
+        if (fresh.size > 0) setIntro([...fresh.values()]);
+      }
+      setLoaded({ settings, items, cards, questions, pianoRange, maxFret: highestFret(shapes) });
     })();
     return () => {
       alive = false;
@@ -107,8 +120,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   }, [profile, moduleId, module]);
 
   useEffect(() => {
-    if (loaded && !feedback) shownAt.current = performance.now();
-  }, [loaded, index, feedback]);
+    if (loaded && !feedback && !intro) shownAt.current = performance.now();
+  }, [loaded, index, feedback, intro]);
 
   const question = loaded?.questions[index];
 
@@ -204,6 +217,28 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         {null}
       </Screen>
     );
+  if (intro) {
+    return (
+      <Screen
+        left={
+          <IconButton label="Stoppen" onClick={nav.back}>
+            ✕
+          </IconButton>
+        }
+        title={intro.length === 1 ? "Nieuwe greep" : "Nieuwe grepen"}
+      >
+        <p className="muted">
+          {intro.length === 1 ? "Deze greep komt" : "Deze grepen komen"} voor het eerst voorbij in deze ronde. Bekijk {intro.length === 1 ? "hem" : "ze"} even
+          en tik erop om {intro.length === 1 ? "hem" : "ze"} te horen.
+        </p>
+        <ShapeGallery shapes={intro} />
+        <div className="grow" />
+        <Button block onClick={() => setIntro(null)}>
+          Ik heb ze gezien, start
+        </Button>
+      </Screen>
+    );
+  }
   if (!question) {
     return (
       <Screen
