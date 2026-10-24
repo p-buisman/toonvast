@@ -41,6 +41,10 @@ let context: AudioContext | null = null;
 const buffers = new Map<number, AudioBuffer>();
 let loading: Promise<void> | null = null;
 let master: GainNode | null = null;
+let analyser: AnalyserNode | null = null;
+let lastPath = "none";
+let lastError = "";
+let decodeErrors = 0;
 
 function getContext(): AudioContext | null {
   if (context) return context;
@@ -49,7 +53,10 @@ function getContext(): AudioContext | null {
   context = new Ctor();
   master = context.createGain();
   master.gain.value = 0.9;
-  master.connect(context.destination);
+  analyser = context.createAnalyser();
+  analyser.fftSize = 256;
+  master.connect(analyser);
+  analyser.connect(context.destination);
   return context;
 }
 
@@ -71,13 +78,50 @@ export function loadSamples(): Promise<void> {
       try {
         const res = await fetch(`${base}${name}.mp3`);
         const data = await res.arrayBuffer();
-        buffers.set(midi, await ctx.decodeAudioData(data));
-      } catch {
+        buffers.set(midi, await decode(ctx, data));
+      } catch (e) {
         // A missing sample is not fatal: its neighbours cover the gap.
+        decodeErrors++;
+        lastError = e instanceof Error ? e.message : String(e);
       }
     }),
   ).then(() => undefined);
   return loading;
+}
+
+/** Promise form where available, callback form for older WebKit. */
+function decode(ctx: AudioContext, data: ArrayBuffer): Promise<AudioBuffer> {
+  return new Promise((resolve, reject) => {
+    const result = ctx.decodeAudioData(data, resolve, (err) => reject(err ?? new Error("decode failed")));
+    if (result && typeof (result as Promise<AudioBuffer>).then === "function") (result as Promise<AudioBuffer>).then(resolve, reject);
+  });
+}
+
+function ensureRunning(ctx: AudioContext): void {
+  // iOS reports "interrupted" after a phone call or another app; resume brings it back.
+  if (ctx.state !== "running") void ctx.resume();
+}
+
+export interface AudioDiagnostics {
+  state: string;
+  buffers: number;
+  decodeErrors: number;
+  lastPath: string;
+  lastError: string;
+  /** Peak output level since the last call, 0..1. */
+  peak: number;
+}
+
+const peakData = new Uint8Array(256);
+
+/** For the `?debug=1` panel: what the sampler is doing and whether anything reaches the output. */
+export function audioDiagnostics(): AudioDiagnostics {
+  let peak = 0;
+  if (analyser) {
+    analyser.getByteTimeDomainData(peakData);
+    for (const v of peakData) peak = Math.max(peak, Math.abs(v - 128) / 128);
+  }
+  return { state: context?.state ?? "none", buffers: buffers.size, decodeErrors, lastPath, lastError, peak };
 }
 
 export function samplesReady(): boolean {
@@ -94,22 +138,32 @@ function nearestSample(midi: number): number | null {
 export function playNote(midi: number, seconds = 1.6, velocity = 1): void {
   const ctx = getContext();
   if (!ctx || !master) return;
+  ensureRunning(ctx);
   const now = ctx.currentTime;
   const from = nearestSample(midi);
   if (from === null) {
+    lastPath = "tone";
     playTone(ctx, master, 440 * 2 ** ((midi - 69) / 12), seconds, 0.25 * velocity);
     return;
   }
-  const source = ctx.createBufferSource();
-  source.buffer = buffers.get(from)!;
-  source.playbackRate.value = 2 ** ((midi - from) / 12);
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(velocity, now);
-  gain.gain.setValueAtTime(velocity, now + seconds - 0.3);
-  gain.gain.exponentialRampToValueAtTime(0.001, now + seconds);
-  source.connect(gain).connect(master);
-  source.start(now);
-  source.stop(now + seconds + 0.05);
+  try {
+    const source = ctx.createBufferSource();
+    source.buffer = buffers.get(from)!;
+    source.playbackRate.value = 2 ** ((midi - from) / 12);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(velocity, now);
+    gain.gain.linearRampToValueAtTime(velocity, now + seconds - 0.3);
+    gain.gain.linearRampToValueAtTime(0, now + seconds);
+    source.connect(gain);
+    gain.connect(master);
+    source.start(now);
+    source.stop(now + seconds + 0.05);
+    lastPath = `sample ${from}`;
+  } catch (e) {
+    lastPath = "tone (after error)";
+    lastError = e instanceof Error ? e.message : String(e);
+    playTone(ctx, master, 440 * 2 ** ((midi - 69) / 12), seconds, 0.25 * velocity);
+  }
 }
 
 export function playChord(midis: number[], seconds = 2, strumMs = 0): void {
@@ -125,7 +179,8 @@ function playTone(ctx: AudioContext, out: AudioNode, hz: number, seconds: number
   gain.gain.setValueAtTime(0.0001, now);
   gain.gain.exponentialRampToValueAtTime(level, now + 0.01);
   gain.gain.exponentialRampToValueAtTime(0.0001, now + seconds);
-  osc.connect(gain).connect(out);
+  osc.connect(gain);
+  gain.connect(out);
   osc.start(now);
   osc.stop(now + seconds + 0.05);
 }
@@ -134,6 +189,7 @@ function playTone(ctx: AudioContext, out: AudioNode, hz: number, seconds: number
 export function playCue(kind: "right" | "wrong"): void {
   const ctx = getContext();
   if (!ctx || !master) return;
+  ensureRunning(ctx);
   if (kind === "right") {
     playTone(ctx, master, 880, 0.12, 0.12, "triangle");
     setTimeout(() => ctx && master && playTone(ctx, master, 1320, 0.18, 0.12, "triangle"), 90);

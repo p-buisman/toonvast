@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { unlockAudio } from "./audio/sampler.ts";
+import { AudioDebug } from "./components/common/AudioDebug.tsx";
 import { ExerciseScreen } from "./screens/ExerciseScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { NewProfileScreen } from "./screens/NewProfileScreen.tsx";
@@ -17,10 +18,14 @@ function Router() {
   const { route } = nav;
 
   useEffect(() => {
-    // The first tap anywhere unlocks audio on iOS and starts loading the samples.
-    const once = () => unlockAudio();
-    document.addEventListener("pointerdown", once, { once: true });
-    return () => document.removeEventListener("pointerdown", once);
+    // The first taps unlock audio and start loading the samples. iOS only counts touchend/click as a
+    // user gesture, so both the down and the up/click of the first tap try.
+    const unlock = () => unlockAudio();
+    const events = ["pointerdown", "touchend", "click"] as const;
+    for (const e of events) document.addEventListener(e, unlock, { passive: true });
+    return () => {
+      for (const e of events) document.removeEventListener(e, unlock);
+    };
   }, []);
 
   let screen;
@@ -53,7 +58,13 @@ function Router() {
       screen = <ProfileScreen />;
       break;
   }
-  return <div className={profile?.kidMode ? "app kid" : "app"}>{screen}</div>;
+  const debug = typeof location !== "undefined" && location.search.includes("debug");
+  return (
+    <div className={profile?.kidMode ? "app kid" : "app"}>
+      {screen}
+      {debug && <AudioDebug />}
+    </div>
+  );
 }
 
 export default function App() {

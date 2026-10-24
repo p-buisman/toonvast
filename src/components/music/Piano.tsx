@@ -19,7 +19,10 @@ interface Props {
 const HEIGHT = 150;
 const BLACK_H = 92;
 
-/** The screen piano: white and black keys in an SVG that scrolls sideways when the range is wide. */
+/**
+ * The screen piano: white and black keys in an SVG that scrolls sideways when the range is wide.
+ * Keys answer on click, not on pointerdown: a finger that starts a scroll then never picks a key.
+ */
 export function Piano({ range, highlights = {}, labels = true, onTap, keyWidth = 30, focusMidi, disabled }: Props) {
   const scroller = useRef<HTMLDivElement>(null);
   const whites = whiteKeys(range);
@@ -54,7 +57,7 @@ export function Piano({ range, highlights = {}, labels = true, onTap, keyWidth =
           const fill = highlights[m] ?? "#fff";
           const lit = fill !== "#fff";
           return (
-            <g key={m} onPointerDown={() => tap(m)} role="button" aria-label={spellMidi(m).letter + spellMidi(m).octave}>
+            <g key={m} onClick={() => tap(m)} role="button" aria-label={spellMidi(m).letter + spellMidi(m).octave}>
               <rect x={xOfWhite(m)} y="0" width={kw} height={HEIGHT} rx="4" fill={fill} stroke="#9a9a9a" strokeWidth="1" />
               {labels && m % 12 === 0 && (
                 <text
@@ -74,7 +77,7 @@ export function Piano({ range, highlights = {}, labels = true, onTap, keyWidth =
         {blacks.map((m) => (
           <rect
             key={m}
-            onPointerDown={() => tap(m)}
+            onClick={() => tap(m)}
             role="button"
             aria-label={spellMidi(m).letter + "♯" + spellMidi(m).octave}
             x={xOfBlack(m)}

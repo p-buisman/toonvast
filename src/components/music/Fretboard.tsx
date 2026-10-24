@@ -68,7 +68,7 @@ export function Fretboard({ maxFret = 4, dots = [], onTap, disabled }: Props) {
               fill="transparent"
               role="button"
               aria-label={`snaar ${STRING_NAMES[s]} fret ${f}`}
-              onPointerDown={() => tap(s, f)}
+              onClick={() => tap(s, f)}
             />
           )),
         )}

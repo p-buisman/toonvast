@@ -483,6 +483,24 @@ p {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.debug {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  color: #9f9;
+  font:
+    11px/1.4 ui-monospace,
+    monospace;
+  padding: 4px 8px calc(4px + env(safe-area-inset-bottom));
+  z-index: 10;
+  white-space: pre-wrap;
 }
 
 .piano-scroll svg {
