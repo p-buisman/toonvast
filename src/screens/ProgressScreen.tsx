@@ -127,17 +127,16 @@ export function ProgressScreen() {
           <small>sessies</small>
         </div>
       </Card>
-      <NoteMaps module={noteModule} cards={cards.filter((c) => c.moduleId === noteModule.id)} />
-      {modules
-        .filter((m) => m.kind === "chord")
-        .map((m) => (
-          <ChordMap
-            key={m.id}
-            module={m}
-            cards={cards.filter((c) => c.moduleId === m.id)}
-            keys={withDefaults(settings.find((s) => s.moduleId === m.id)?.settings).keys}
-          />
-        ))}
+      {modules.map((m) => {
+        const own = cards.filter((c) => c.moduleId === m.id);
+        if (own.length === 0 && m.id !== noteModule.id) return null;
+        return m.kind === "note" ? (
+          <NoteMaps key={m.id} module={m} cards={own} />
+        ) : (
+          <ChordMap key={m.id} module={m} cards={own} keys={withDefaults(settings.find((s) => s.moduleId === m.id)?.settings).keys} />
+        );
+      })}
+      <p className="muted">Een module komt hier te staan zodra je hem één keer hebt geoefend.</p>
       <Card>
         <h2>Badges · {INSTRUMENT_NAME[instrument].toLowerCase()}</h2>
         <div className="badges">

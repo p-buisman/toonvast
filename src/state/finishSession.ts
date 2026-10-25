@@ -1,6 +1,7 @@
 import { dayKey } from "../engine/common/dates.ts";
 import { bookSession, COINS_CORRECT, levelFor, xpForAnswer } from "../engine/game/rules.ts";
 import type { ModuleDef } from "../engine/learning/modules.ts";
+import { answerScore } from "../engine/learning/session.ts";
 import { newCardRecord, rateAnswer, review, type CardRecord } from "../engine/learning/scheduler.ts";
 import type { Profile, SessionAnswer } from "../storage/db.ts";
 import {
@@ -49,10 +50,12 @@ export async function finishSession(
   answers.forEach((a, i) => {
     const at = new Date(startedAt + i * 1000);
     const rec = changed.get(a.itemKey) ?? cards.get(a.itemKey) ?? newCardRecord(profile.id, module.id, a.itemKey, at);
-    changed.set(a.itemKey, review(rec, rateAnswer(a.correct, a.ms, typical), at, a.ms));
-    const fast = a.correct && typical !== null && a.ms < typical;
+    const attempts = a.attempts ?? 1;
+    changed.set(a.itemKey, review(rec, rateAnswer(a.correct, a.ms, typical, attempts, a.distance ?? null), at, a.ms));
+    const fast = a.correct && attempts === 1 && typical !== null && a.ms < typical;
     const gain = xpForAnswer(a.correct, fast, combo);
-    xp += gain.xp;
+    // A second try earns a share of the XP, as well as it was recognised.
+    xp += attempts > 1 ? Math.round(gain.xp * answerScore(a)) : gain.xp;
     combo = gain.combo;
     if (a.correct) coins += COINS_CORRECT;
   });

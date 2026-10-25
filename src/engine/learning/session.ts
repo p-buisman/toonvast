@@ -12,6 +12,17 @@ export interface SessionOptions {
   rnd?: () => number;
 }
 
+/** The recognition score of a stored answer; older answers have only right or wrong. */
+export function answerScore(a: { correct: boolean; score?: number }): number {
+  return a.score ?? (a.correct ? 1 : 0);
+}
+
+/** The share of a session that went well: the average recognition score of its answers. */
+export function sessionScore(answers: readonly { correct: boolean; score?: number }[]): number | null {
+  if (answers.length === 0) return null;
+  return answers.reduce((sum, a) => sum + answerScore(a), 0) / answers.length;
+}
+
 /** New items only come in after a decent session; below this the learner first settles what is there. */
 export const NEW_ITEMS_MIN_SCORE = 0.8;
 

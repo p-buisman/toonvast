@@ -39,6 +39,8 @@ export interface Profile {
   kidMode: boolean;
   dayGoal: number;
   theme: string;
+  /** The modules this profile wants to learn; missing means every playable module. */
+  goals?: ModuleId[];
   createdAt: number;
   /** Last time this profile was chosen; the list is sorted on it. */
   lastUsedAt: number;
@@ -65,6 +67,12 @@ export interface SessionAnswer {
   itemKey: string;
   correct: boolean;
   ms: number;
+  /** Heard questions get two tries; missing means one. */
+  attempts?: number;
+  /** How far the best try was off, in semitones; null or missing when unknown. */
+  distance?: number | null;
+  /** How well it was recognised, 0..1; missing means 1 for right and 0 for wrong. */
+  score?: number;
 }
 
 export interface SessionRecord {

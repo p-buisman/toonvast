@@ -43,10 +43,17 @@ Engine (`src/engine/`):
 - `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`:
   `noteItemsFor` en `chordItemsFor`); een `LearnItem` is een `NoteItem` of een `ChordItem` met zijn ligging.
 - `learning/answers.ts` - `checkAnswer` voor alle antwoordvormen (naam, toets, hals, akkoordnaam, toetsenset, notenset,
-  greep) met uitleg bij een bijna-goed antwoord; `describeTarget` voor de feedbackkaart.
-- `learning/scheduler.ts` - FSRS-koppeling: `rate` (goed/fout + reactietijd → beoordeling), `review`, `isMastered`.
+  greep) met uitleg bij een bijna-goed antwoord; `describeTarget` voor de feedbackkaart; `answerDistance` (halve tonen
+  naast het gehoorde, bij akkoorden twee per ontbrekende noot) en `answerMidis`.
+- `learning/scheduler.ts` - FSRS-koppeling: `rateAnswer` (goed/fout, reactietijd, poging en afstand → beoordeling: tweede
+  poging of een halve toon ernaast = Hard), `recognitionScore` (0..1, telt in rondescore en XP), `review`, `masteryOf`.
+  Gehoorvragen krijgen `MAX_ATTEMPTS` (2) pogingen.
 - `learning/session.ts` - sessie-opbouw (`buildSession`): eerst wat aan de beurt is, dan nieuw voor zover de werkvoorraad
-  ruimte heeft (`newItemBudget`: vrije plekken, niets na een sessie onder 80%), dan herhaling.
+  ruimte heeft (`newItemBudget`: vrije plekken, niets na een sessie onder 80%), dan herhaling; `sessionScore` (gemiddelde
+  herkenningsscore van een ronde).
+- `learning/goals.ts` - leerdoelen per profiel (`goalModules`, `toggleGoal`; geen keuze = alle speelbare modules).
+- `learning/lesson.ts` - `suggestLesson`: de volgende les uit de leerdoelen (meeste te herhalen, anders nog nooit geoefend,
+  anders het langst geleden).
 - `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
@@ -80,7 +87,10 @@ Componenten (`src/components/`):
 - `layout/Screen.tsx` - de schermopbouw (kop, inhoud, tabbalk).
 
 Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen muziektheorie en geen opslagcode.
-`ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat.
+`ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat;
+bij een gehoorvraag krijgt de speler na een misser een tweede poging met alleen een maat van de misser (net niet /
+dit klopte niet / flink ernaast), nooit de richting. `GoalsScreen` is
+"Wat wil je leren"; `HomeScreen` toont daaruit de volgende les met Start les, en daaronder alle modules om zelf te kiezen.
 Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen`: grepenoverzicht en `ShapeGallery` als
 introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
 Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.

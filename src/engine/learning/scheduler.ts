@@ -56,13 +56,32 @@ function fromCard(card: Card, base: Pick<CardRecord, "profileId" | "moduleId" | 
 export const FAST_FACTOR = 0.7;
 export const SLOW_FACTOR = 1.5;
 
-/** Wrong → Again. Right → Good, or Easy when clearly faster than usual, Hard when clearly slower. */
-export function rateAnswer(correct: boolean, ms: number, typicalMs: number | null): Grade {
-  if (!correct) return Rating.Again;
+/** A miss this close (in semitones) still counts as recognised with difficulty. */
+export const CLOSE_MISS = 1;
+/** How many tries a heard question gets. */
+export const MAX_ATTEMPTS = 2;
+
+/**
+ * Wrong → Again, or Hard when the best try was only a semitone off. Right on a later try → Hard.
+ * Right at once → Good, or Easy when clearly faster than usual, Hard when clearly slower.
+ */
+export function rateAnswer(correct: boolean, ms: number, typicalMs: number | null, attempts = 1, distance: number | null = null): Grade {
+  if (!correct) return distance !== null && distance <= CLOSE_MISS ? Rating.Hard : Rating.Again;
+  if (attempts > 1) return Rating.Hard;
   if (typicalMs === null) return Rating.Good;
   if (ms < typicalMs * FAST_FACTOR) return Rating.Easy;
   if (ms > typicalMs * SLOW_FACTOR) return Rating.Hard;
   return Rating.Good;
+}
+
+/**
+ * How well a heard question was recognised, 0..1: right at once 1; right on the second try 0.6, less the further
+ * the first try was off; wrong 0.35, less the further the best try was off. Weighs in the session score and the XP.
+ */
+export function recognitionScore(correct: boolean, attempts: number, distance: number | null): number {
+  const d = Math.min(5, distance ?? 5);
+  if (correct) return attempts <= 1 ? 1 : Math.max(0.4, 0.6 - 0.05 * d);
+  return Math.max(0, 0.35 - 0.07 * d);
 }
 
 export function newCardRecord(profileId: string, moduleId: ModuleId, itemKey: string, now: Date): CardRecord {
@@ -96,6 +115,6 @@ export function isLearning(rec: CardRecord | undefined): boolean {
   return rec.state !== State.Review || rec.stability < SETTLED_STABILITY_DAYS;
 }
 
-export function isDue(rec: CardRecord, now: Date): boolean {
+export function isDue(rec: Pick<CardRecord, "due">, now: Date): boolean {
   return rec.due <= now.getTime();
 }

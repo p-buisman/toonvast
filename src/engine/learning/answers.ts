@@ -188,3 +188,38 @@ function checkChord(module: ModuleDef, item: ChordItem, answer: Answer): Verdict
 export function checkAnswer(module: ModuleDef, item: LearnItem, answer: Answer): Verdict {
   return item.kind === "note" ? checkNote(module, item, answer) : checkChord(module, item, answer);
 }
+
+/** The MIDI numbers an answer sounds, for the distance to what was heard; null when the answer has no pitch. */
+export function answerMidis(module: ModuleDef, answer: Answer): number[] | null {
+  switch (answer.kind) {
+    case "piano":
+      return [answer.midi];
+    case "guitar":
+      return [midiAt(answer.pos)];
+    case "pianoSet":
+      return answer.midis;
+    case "staffSet":
+      return answer.pitches.map((p) => soundingMidi(module, p));
+    case "shapeChoice":
+      return shapeMidis(answer.shape.frets);
+    case "shape":
+      return shapeMidis(answer.frets);
+    default:
+      return null;
+  }
+}
+
+/**
+ * How far a heard-question answer is from the target, in semitones: for a note the distance between the two
+ * pitches, for a chord two semitones per note of the chord that was not given. 0 when right, null when unknown.
+ */
+export function answerDistance(module: ModuleDef, item: LearnItem, answer: Answer): number | null {
+  const given = answerMidis(module, answer);
+  if (!given || given.length === 0) return null;
+  if (item.kind === "note") return Math.abs(given[0] - soundingMidi(module, item.pitch));
+  const targetPcs = new Set(chordPcs(item.chord).map(pcSemitone));
+  const givenPcs = pcSet(given);
+  let missing = 0;
+  for (const pc of targetPcs) if (!givenPcs.has(pc)) missing++;
+  return 2 * missing;
+}

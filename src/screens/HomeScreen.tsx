@@ -13,7 +13,10 @@ import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrume
 import { isDue } from "../engine/learning/scheduler.ts";
 import { withDefaults } from "../engine/learning/settings.ts";
 import { useApp } from "../state/useApp.ts";
-import { useProfileCards, useProfileSettings } from "../state/queries.ts";
+import { useProfileCards, useProfileSessions, useProfileSettings } from "../state/queries.ts";
+import { Button } from "../components/common/Button.tsx";
+import { suggestLesson } from "../engine/learning/lesson.ts";
+import { goalModules } from "../engine/learning/goals.ts";
 import { MainTabs } from "./MainTabs.tsx";
 import { Icon, type IconName } from "../components/common/Icon.tsx";
 
@@ -35,7 +38,9 @@ export function HomeScreen() {
   const [now] = useState(() => new Date());
   const cards = useProfileCards(profile?.id);
   const settings = useProfileSettings(profile?.id);
+  const sessions = useProfileSessions(profile?.id);
   if (!profile) return null;
+  const lesson = suggestLesson(goalModules(profile.goals), cards, sessions, now);
 
   const today = dayKey();
   const { level, into, span } = levelFor(wallet.xp);
@@ -107,6 +112,49 @@ export function HomeScreen() {
           )}
         </div>
       </Card>
+      <Card className="stack" style={{ gap: 8 }}>
+        <div className="row spread">
+          <h2 style={{ margin: 0 }}>Volgende les</h2>
+          <Button variant="plain" onClick={() => nav.go({ name: "goals" })}>
+            Wat wil je leren
+          </Button>
+        </div>
+        {lesson ? (
+          <>
+            <div className="row">
+              <div
+                className="icon"
+                aria-hidden="true"
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  background: "var(--accent-soft)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 24,
+                  flex: "none",
+                }}
+              >
+                <Icon name={ICON[lesson.module.instrument]} />
+              </div>
+              <div className="grow">
+                <b>{lesson.module.title}</b>
+                <div className="muted">
+                  {INSTRUMENT_NAME[lesson.module.instrument]} · {lesson.reason}
+                </div>
+              </div>
+            </div>
+            <Button block onClick={() => nav.go({ name: "exercise", moduleId: lesson.module.id, nonce: Date.now() })}>
+              Start les
+            </Button>
+          </>
+        ) : (
+          <p className="muted">Kies eerst wat je wilt leren.</p>
+        )}
+      </Card>
+      <h2 style={{ marginBottom: 0 }}>Of kies zelf</h2>
       <Tabs options={INSTRUMENTS.map((i) => ({ value: i, label: INSTRUMENT_NAME[i] }))} value={instrument} onChange={pickInstrument} />
       <div className="stack exercise-list">
         {modulesFor(instrument).map((m) => {

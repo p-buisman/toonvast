@@ -6,6 +6,7 @@ import { withDefaults, type ModuleSettings } from "../engine/learning/settings.t
 import { db, type Avatar, type ModuleStats, type Profile, type SessionRecord, type StoredCard } from "./db.ts";
 import { COINS_BADGE } from "../engine/game/badges.ts";
 import { SHIELD_ITEM_ID, type ShopItem } from "../engine/game/shop.ts";
+import { sessionScore } from "../engine/learning/session.ts";
 
 export function newId(): string {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -101,8 +102,7 @@ export async function lastSessionScore(profileId: string, moduleId: ModuleId): P
   const rows = await db.sessions.where("[profileId+moduleId]").equals([profileId, moduleId]).toArray();
   if (rows.length === 0) return null;
   const last = rows.reduce((a, b) => (b.endedAt > a.endedAt ? b : a));
-  if (last.answers.length === 0) return null;
-  return last.answers.filter((a) => a.correct).length / last.answers.length;
+  return sessionScore(last.answers);
 }
 
 export async function countSessions(profileId: string, moduleId: ModuleId): Promise<number> {

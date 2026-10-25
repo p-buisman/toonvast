@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { unlockAudio } from "./audio/sampler.ts";
 import { AudioDebug } from "./components/common/AudioDebug.tsx";
 import { ExerciseScreen } from "./screens/ExerciseScreen.tsx";
+import { GoalsScreen } from "./screens/GoalsScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { NewProfileScreen } from "./screens/NewProfileScreen.tsx";
 import { ProfileScreen } from "./screens/ProfileScreen.tsx";
@@ -64,6 +65,9 @@ function Router() {
       break;
     case "profile":
       screen = <ProfileScreen />;
+      break;
+    case "goals":
+      screen = <GoalsScreen />;
       break;
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");

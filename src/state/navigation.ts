@@ -13,7 +13,8 @@ export type Route =
   | { name: "progress" }
   | { name: "shop" }
   | { name: "shapes"; moduleId: ModuleId }
-  | { name: "profile" };
+  | { name: "profile" }
+  | { name: "goals" };
 
 export interface Nav {
   route: Route;

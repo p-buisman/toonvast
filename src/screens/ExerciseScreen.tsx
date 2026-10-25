@@ -19,10 +19,10 @@ import { seeded, shuffle } from "../engine/common/random.ts";
 import { positionsFor, type FretPosition } from "../engine/instruments/guitar.ts";
 import { CHORD_SHAPES, highestFret, shapeFor, shapeMidis, type ChordShape, type Shape } from "../engine/instruments/guitarChords.ts";
 import { resolvePianoRange, type PianoRange } from "../engine/instruments/piano.ts";
-import { checkAnswer, describeTarget, soundingMidi, type Answer, type Verdict } from "../engine/learning/answers.ts";
+import { answerDistance, checkAnswer, describeTarget, soundingMidi, type Answer, type Verdict } from "../engine/learning/answers.ts";
 import { itemsFor, type ChordItem, type LearnItem } from "../engine/learning/items.ts";
 import { moduleById, playsShape, type ModuleId } from "../engine/learning/modules.ts";
-import type { CardRecord } from "../engine/learning/scheduler.ts";
+import { MAX_ATTEMPTS, recognitionScore, type CardRecord } from "../engine/learning/scheduler.ts";
 import { buildSession } from "../engine/learning/session.ts";
 import type { ModuleSettings } from "../engine/learning/settings.ts";
 import type { SessionAnswer } from "../storage/db.ts";
@@ -80,6 +80,17 @@ function soundingOf(module: ReturnType<typeof moduleById>, item: LearnItem): num
   return item.voicing.map((p) => soundingMidi(module, p));
 }
 
+/**
+ * How far a try at a heard question was off, in three steps and without giving the answer away: close (up to four
+ * semitones, or one chord note), wrong (five to eight), far off (nine and more).
+ */
+function retryText(distance: number | null): string {
+  if (distance === null) return "Dat was het niet";
+  if (distance <= 4) return "Net niet";
+  if (distance <= 8) return "Dit klopte niet";
+  return "Flink ernaast";
+}
+
 export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const { profile, nav } = useApp();
   const module = moduleById(moduleId);
@@ -96,6 +107,9 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const [placed, setPlaced] = useState<Pitch[]>([]);
   const [acc, setAcc] = useState<Accidental>(0);
   const [shape, setShape] = useState<Shape>(ALL_OPEN);
+  /** Earlier tries at the current heard question: how far off each was. */
+  const [tries, setTries] = useState<number[]>([]);
+  const [retryHint, setRetryHint] = useState<string | null>(null);
   const shownAt = useRef(0);
   const [startedAt] = useState(() => Date.now());
 
@@ -165,6 +179,8 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       setPlaced([]);
       setAcc(0);
       setShape(ALL_OPEN);
+      setTries([]);
+      setRetryHint(null);
       setIndex(index + 1);
     }
   };
@@ -174,7 +190,24 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     unlockAudio();
     const verdict = checkAnswer(module, question, a);
     const ms = Math.max(1, Math.round(performance.now() - shownAt.current));
-    const all = [...answers, { itemKey: question.key, correct: verdict.correct, ms }];
+    const heard = module.question === "sound";
+    const distance = heard ? answerDistance(module, question, a) : null;
+    if (heard && !verdict.correct && tries.length + 1 < MAX_ATTEMPTS) {
+      // Not yet: one more go at the same sound, with a hint on how far off it was.
+      setTries([...tries, distance ?? 99]);
+      setRetryHint(retryText(distance));
+      setSelected([]);
+      setPlaced([]);
+      setShape(ALL_OPEN);
+      playCue("wrong");
+      setTimeout(playQuestion, 600);
+      return;
+    }
+    const attempts = tries.length + 1;
+    const best = heard ? Math.min(distance ?? 99, ...tries) : null;
+    const extra = heard ? { attempts, distance: best === 99 ? null : best, score: recognitionScore(verdict.correct, attempts, best === 99 ? null : best) } : {};
+    const all = [...answers, { itemKey: question.key, correct: verdict.correct, ms, ...extra }];
+    setRetryHint(null);
     setAnswers(all);
     setCombo(verdict.correct ? combo + 1 : 0);
     setFeedback({ answer: a, verdict });
@@ -417,6 +450,14 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         </Card>
       )}
 
+      {retryHint && !feedback && (
+        <Card className="feedback">
+          <b style={{ color: BAD }}>{retryHint}</b>
+          <div className="muted" style={{ marginTop: 4 }}>
+            Luister nog eens en probeer het nog één keer.
+          </div>
+        </Card>
+      )}
       {feedback ? (
         <Card className={correct ? "feedback ok" : "feedback"}>
           <b style={{ color: correct ? OK : BAD }}>{correct ? "Goed!" : "Net niet"}</b>

@@ -112,6 +112,9 @@ export function ProfileScreen() {
         </div>
         {soundTest && <AudioDebug inline />}
       </Card>
+      <Button variant="ghost" block onClick={() => nav.go({ name: "goals" })}>
+        Wat wil je leren
+      </Button>
       <Button variant="ghost" block onClick={switchProfile}>
         Ander profiel kiezen
       </Button>
