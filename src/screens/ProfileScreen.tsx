@@ -11,6 +11,8 @@ import { MainTabs } from "./MainTabs.tsx";
 import { ProfileForm, type ProfileFormValue } from "./ProfileForm.tsx";
 import { lookOf } from "../engine/game/avatar.ts";
 import { useProfilePurchases } from "../state/queries.ts";
+import { Avatar } from "../components/common/Avatar.tsx";
+import { ProfileSheet } from "../components/common/ProfileSheet.tsx";
 
 export function ProfileScreen() {
   const { profile, nav, chooseProfile } = useApp();
@@ -19,6 +21,7 @@ export function ProfileScreen() {
   );
   const [message, setMessage] = useState<string | null>(null);
   const [soundTest, setSoundTest] = useState(false);
+  const [sheet, setSheet] = useState(false);
   const purchases = useProfilePurchases(profile?.id);
 
   if (!profile || !value) return null;
@@ -34,15 +37,11 @@ export function ProfileScreen() {
     });
   };
 
-  const switchProfile = () => {
-    chooseProfile(null);
-    nav.reset({ name: "profiles" });
-  };
-
   const remove = async () => {
     if (!window.confirm(`Profiel "${profile.name}" met alle voortgang verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
     await deleteProfile(profile.id);
-    switchProfile();
+    chooseProfile(null);
+    nav.reset({ name: "profiles" });
   };
 
   const backup = async () => {
@@ -64,7 +63,15 @@ export function ProfileScreen() {
   };
 
   return (
-    <Screen title="Profiel" footer={<MainTabs active="profile" />}>
+    <Screen
+      title="Profiel"
+      right={
+        <button type="button" className="icon-btn" aria-label="Profiel wisselen" onClick={() => setSheet(true)}>
+          <Avatar avatar={profile.avatar} name={profile.name} size={32} />
+        </button>
+      }
+      footer={<MainTabs active="profile" />}
+    >
       <Card className="stack">
         <ProfileForm value={value} onChange={change} owned={purchases} wearing={profile.avatar} />
       </Card>
@@ -115,12 +122,10 @@ export function ProfileScreen() {
       <Button variant="ghost" block onClick={() => nav.go({ name: "goals" })}>
         Wat wil je leren
       </Button>
-      <Button variant="ghost" block onClick={switchProfile}>
-        Ander profiel kiezen
-      </Button>
       <Button variant="danger" block onClick={() => void remove()}>
         Profiel verwijderen
       </Button>
+      {sheet && <ProfileSheet onClose={() => setSheet(false)} />}
     </Screen>
   );
 }

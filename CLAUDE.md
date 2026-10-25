@@ -83,6 +83,8 @@ Componenten (`src/components/`):
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - het poppetje (gezicht, nek, schouders op een schijf) uit `engine/game/avatar.ts`, aangekleed met
   de winkelitems; alle vlakken met lijn en één schaduw onder de kin.
+- `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
+  avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
 - `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.
 - `common/` - `Button`, `Card`, `Segmented`, `Tabs`, `Chip`, `ProgressBar`, `TabBar`, `GoalRing`, `ProgressDots`, `AudioDebug`
   (`?debug=1`).

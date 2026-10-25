@@ -19,6 +19,7 @@ import { suggestLesson } from "../engine/learning/lesson.ts";
 import { goalModules } from "../engine/learning/goals.ts";
 import { MainTabs } from "./MainTabs.tsx";
 import { Icon, type IconName } from "../components/common/Icon.tsx";
+import { ProfileSheet } from "../components/common/ProfileSheet.tsx";
 
 const INSTRUMENT_KEY = "toonvast.instrument";
 const ICON: Record<Instrument, IconName> = { theory: "staff", piano: "piano", guitar: "guitar" };
@@ -36,6 +37,7 @@ export function HomeScreen() {
   const { profile, wallet, nav } = useApp();
   const [instrument, setInstrument] = useState<Instrument>(readInstrument);
   const [now] = useState(() => new Date());
+  const [sheet, setSheet] = useState(false);
   const cards = useProfileCards(profile?.id);
   const settings = useProfileSettings(profile?.id);
   const sessions = useProfileSessions(profile?.id);
@@ -75,13 +77,13 @@ export function HomeScreen() {
   return (
     <Screen footer={<MainTabs active="home" />}>
       <div className="row spread">
-        <div className="row">
+        <button type="button" className="row" aria-label="Profiel wisselen" style={{ textAlign: "left" }} onClick={() => setSheet(true)}>
           <Avatar avatar={profile.avatar} name={profile.name} />
           <div>
             <b>{profile.name}</b>
             <div className="muted">Level {level}</div>
           </div>
-        </div>
+        </button>
         <Chip>
           <Icon name="star" /> {wallet.xp} XP
         </Chip>
@@ -210,6 +212,7 @@ export function HomeScreen() {
           );
         })}
       </div>
+      {sheet && <ProfileSheet onClose={() => setSheet(false)} />}
     </Screen>
   );
 }
