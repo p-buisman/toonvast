@@ -410,7 +410,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       )}
       {(module.question === "staff" || module.answer === "staff") && (
         <Card tight>
-          <Staff clef={question.clef} notes={staffNotes} onTap={module.answer === "staff" && !feedback ? tapStaff : undefined} />
+          <Staff clef={question.clef} notes={staffNotes} onTap={module.answer === "staff" && !feedback ? tapStaff : undefined} previewAcc={acc} />
         </Card>
       )}
 
@@ -486,9 +486,11 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       )}
       <div className="grow" />
       {feedback && !correct && (
-        <Button block onClick={() => next(answers)}>
-          Verder
-        </Button>
+        <div className="sticky-action">
+          <Button block onClick={() => next(answers)}>
+            Verder
+          </Button>
+        </div>
       )}
     </Screen>
   );
