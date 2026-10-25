@@ -14,6 +14,7 @@ export const ICON_NAMES = [
   "user",
   "chevron-left",
   "xmark",
+  "check",
   "gear",
   "book",
   "play",
@@ -108,6 +109,11 @@ export const ICON_PATHS: Record<IconName, React.ReactNode> = {
   xmark: (
     <>
       <path d="M6 6l12 12M18 6L6 18" key="0" />
+    </>
+  ),
+  check: (
+    <>
+      <path d="M5 12.5l4.5 4.5L19 7.5" key="0" />
     </>
   ),
   gear: (

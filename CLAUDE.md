@@ -79,7 +79,7 @@ Componenten (`src/components/`):
 - `music/ChordNameButtons.tsx` - akkoordnaam: ♯/♭, majeur/mineur, ligging, dan de letter.
 - `music/AccidentalToggle.tsx` - ♭ ♮ ♯ voor noten op de notenbalk zetten.
 - `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
-- `common/Icon.tsx` - de icoonset (36 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
+- `common/Icon.tsx` - de icoonset (37 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - het poppetje (gezicht, nek, schouders op een schijf) uit `engine/game/avatar.ts`, aangekleed met
   de winkelitems; alle vlakken met lijn en één schaduw onder de kin.
@@ -98,13 +98,15 @@ dit klopte niet / flink ernaast), nooit de richting. `GoalsScreen` is
 (alle modules per instrument, met tandwiel en grepenknop).
 Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen`: grepenoverzicht en `ShapeGallery` als
 introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
-Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.
+De look heeft twee modi op `.app`: `data-mode="rustig"` (standaard) en `"speels"` (kindmodus, uit `kidMode`); thema's uit de winkel
+(`data-theme`) leggen alleen kleuren daaroverheen. Fonts Inter en Nunito komen uit `@fontsource` (in `main.tsx`).
 `ProfileForm` is het samenstellen van de avatar (vrije keuzes plus wat in de winkel is gekocht); het is de bron voor nieuw
 profiel en profiel bewerken.
 
 ## Design system en canvas
 
 Het ontwerp staat als claude.ai-artifacts: design system "Toonvast" (tokens, brand book, componentkaarten, iconen) en
-canvas "Toonvast schermen". Tokens in `src/index.css` horen gelijk te blijven aan `tokens.json` van het design system;
+canvas "Toonvast schermen". Tokens in `src/index.css` horen gelijk te blijven aan `tokens.json` van het design system (compileer met `build_tokens.py`
+uit de scratchpad van de ontwerpsessie en plak de variabele-blokken bovenaan);
 de iconen (`icons.tsx`) en de avatar komen uit de kaarten Icon en Avatar. Verander je iets aan het uiterlijk, werk dan
 beide kanten bij.

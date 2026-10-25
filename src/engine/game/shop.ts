@@ -47,7 +47,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
 
 export const DEFAULT_THEME = "klassiek";
 export const THEMES: readonly { id: string; title: string }[] = [
-  { id: DEFAULT_THEME, title: "Klassiek" },
+  { id: DEFAULT_THEME, title: "Standaard" },
   { id: "theme-zee", title: "Zee" },
   { id: "theme-bos", title: "Bos" },
   { id: "theme-zon", title: "Zonsondergang" },

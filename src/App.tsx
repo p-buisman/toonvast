@@ -76,7 +76,7 @@ function Router() {
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");
   return (
-    <div className={profile?.kidMode ? "app kid" : "app"} data-theme={profile?.theme ?? "klassiek"}>
+    <div className={profile?.kidMode ? "app kid" : "app"} data-mode={profile?.kidMode ? "speels" : "rustig"} data-theme={profile?.theme ?? "klassiek"}>
       {screen}
       {debug && <AudioDebug />}
     </div>

@@ -1,23 +1,97 @@
-:root {
-  --bg: #f6f4ef;
+/* Tokens: keep equal to tokens.json of the design system (compiled with build_tokens.py). Modes: Rustig (default) and Speels (kid mode); themes override colours on top. */
+:root,
+[data-mode="rustig"] {
+  --bg: #faf7f1;
   --card: #ffffff;
-  --ink: #1e1b16;
-  --muted: #6f685d;
-  --accent: #2f6fed;
-  --accent-soft: #e4ecfd;
-  --gold: #f4a300;
-  --gold-soft: #fff1d6;
-  --ok: #2e9e5b;
-  --ok-soft: #e1f4e8;
+  --ink: #1f1a2e;
+  --muted: #6f6a7d;
+  --accent: #d63b22;
+  --accent-soft: #ffe6e1;
+  --gold: #f5b400;
+  --gold-soft: #fff1cc;
+  --gold-ink: #7c5300;
+  --ok: #22a06b;
+  --ok-soft: #dff5ea;
   --bad: #d64545;
   --bad-soft: #fbe4e4;
-  --line: #dcd7cc;
-  --soft: #ebe7df;
-  --r: 16px;
+  --line: #e8e2d8;
+  --soft: #eee9e0;
+  --accent-deep: #a52d18;
+  --edge: #e8e2d8;
+  --tile: #ffe7cc;
+  --tile-ink: #c2410c;
+  --on-accent: #ffffff;
+  --dot-todo: #e3ddd2;
+  --notemap-none: #ddd7cb;
+  --pick: #2f6fed;
+  --avatar-ink: #1c1c1e;
+  --key-black: #222222;
+  --key-border: #9a9a9a;
+  --neck: #f3e3c8;
+  --neck-marker: #d9c7a3;
+  --nut: #333333;
+  --string: #555555;
+  --fret: #999999;
+  --r: 20px;
+  --radius-sheet: 20px;
+  --radius-button: 16px;
+  --radius-control: 14px;
+  --radius-seg: 12px;
+  --radius-tab: 9px;
+  --radius-tile: 7px;
+  --radius-dot: 3px;
+  --radius-pill: 999px;
+  --shadow-card: 0 2px 0 var(--line);
+  --shadow-lift: 0 4px 0 var(--accent-deep);
+  --shadow-tab: none;
+  --shadow-float: 0 6px 18px rgba(0, 0, 0, 0.18);
   --tap: 44px;
-  --gold-ink: #9a6400;
+  --edge-w: 1px;
+  --size-control: 40px;
+  --size-button: 48px;
+  --size-button-kid: 56px;
+  --size-key: 52px;
+  --size-key-kid: 64px;
+  --size-ring: 72px;
+  --size-avatar: 48px;
+  --size-bar: 10px;
+  --screen-max: 480px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-18: 18px;
+  --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-head: Nunito, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, monospace;
 }
-
+[data-mode="speels"] {
+  --bg: #fff6e3;
+  --ink: #2b1d14;
+  --muted: #7a6a5c;
+  --accent: #ff6a3d;
+  --accent-soft: #ffe3d6;
+  --gold: #ffb703;
+  --gold-soft: #fff0bf;
+  --gold-ink: #7a4d00;
+  --ok: #1fa75a;
+  --ok-soft: #dcf5e5;
+  --soft: #f5e6c8;
+  --edge: #2b1d14;
+  --tile: #ffd166;
+  --tile-ink: #2b1d14;
+  --on-accent: #2b1d14;
+  --r: 22px;
+  --radius-sheet: 24px;
+  --radius-button: 18px;
+  --shadow-card: 4px 4px 0 var(--edge);
+  --shadow-lift: 0 5px 0 var(--edge);
+  --edge-w: 2.5px;
+  --font-sans: Nunito, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
 * {
   box-sizing: border-box;
 }
@@ -27,7 +101,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: none;
@@ -55,18 +129,19 @@ input[type="text"] {
 }
 
 h1 {
-  font-size: 22px;
+  font-family: var(--font-head);
+  font-size: 24px;
   margin: 4px 0;
-  font-weight: 700;
+  font-weight: 900;
 }
 
 h2 {
   font-size: 13px;
   margin: 0 0 8px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
 }
 
 p {
@@ -130,7 +205,7 @@ p {
 
 .screen-head h1 {
   flex: 1;
-  font-size: 20px;
+  font-size: 22px;
   margin: 0;
 }
 
@@ -140,7 +215,7 @@ p {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   font-size: 22px;
   color: var(--muted);
 }
@@ -152,27 +227,55 @@ p {
 /* Cards and chips */
 .card {
   background: var(--card);
+  border: var(--edge-w) solid var(--edge);
   border-radius: var(--r);
   padding: 14px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-card);
 }
 
 .card.tight {
   padding: 8px;
 }
 
+/* Checking an answer: a tinted card with a round mark (check, xmark or ear) and the verdict word in its colour; no edge of its own. */
 .card.feedback {
-  border-left: 5px solid var(--bad);
   background: var(--bad-soft);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .card.feedback.ok {
-  border-left-color: var(--ok);
   background: var(--ok-soft);
 }
 
+.card.feedback b {
+  color: var(--bad);
+}
+
+.card.feedback.ok b {
+  color: var(--ok);
+}
+
+.feedback-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bad);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex: none;
+}
+
+.card.feedback.ok .feedback-mark {
+  background: var(--ok);
+}
+
 .card.dashed {
-  border: 1.5px dashed var(--line);
+  border: var(--edge-w) dashed var(--edge);
   background: transparent;
   box-shadow: none;
   justify-content: center;
@@ -187,7 +290,7 @@ p {
   padding: 3px 9px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--accent-soft);
   color: var(--accent);
   white-space: nowrap;
@@ -226,25 +329,38 @@ p {
   gap: 6px;
   min-height: 48px;
   padding: 10px 18px;
-  border-radius: 14px;
-  font-weight: 600;
-  font-size: 16px;
+  border-radius: var(--radius-button);
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: 17px;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
+  box-shadow: var(--shadow-lift);
+  margin-bottom: 4px;
 }
 
 .btn:active {
-  filter: brightness(0.92);
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--accent-deep);
 }
 
 .btn.ghost {
   background: var(--accent-soft);
   color: var(--accent);
+  box-shadow: none;
+  margin-bottom: 0;
+}
+
+.btn.ghost:active {
+  transform: none;
+  filter: brightness(0.95);
 }
 
 .btn.plain {
   background: transparent;
   color: var(--accent);
+  box-shadow: none;
+  margin-bottom: 0;
   white-space: nowrap;
   padding-left: 8px;
   padding-right: 8px;
@@ -295,7 +411,7 @@ p {
 .tabs {
   display: flex;
   background: var(--soft);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   padding: 4px;
   gap: 4px;
 }
@@ -313,13 +429,13 @@ p {
 .tabs button.on {
   background: var(--card);
   color: var(--ink);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-tab);
 }
 
 /* Bottom tab bar */
 .tabbar {
   display: flex;
-  border-top: 1px solid var(--line);
+  border-top: var(--edge-w) solid var(--edge);
   background: var(--card);
   padding: 8px 0 calc(10px + env(safe-area-inset-bottom));
   position: sticky;
@@ -340,12 +456,18 @@ p {
 
 .tabbar button.on {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .tabbar button span {
   font-size: 22px;
   line-height: 1;
+  padding: 3px 14px;
+  border-radius: 999px;
+}
+
+.tabbar button.on span {
+  background: var(--accent-soft);
 }
 
 /* Progress */
@@ -378,7 +500,7 @@ p {
   flex: 1;
   height: 6px;
   border-radius: 3px;
-  background: #ddd8cd;
+  background: var(--dot-todo);
 }
 
 .dots i.ok {
@@ -448,7 +570,7 @@ svg.ico {
 .look-picks button {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--card);
   border: 1.5px solid var(--line);
   display: flex;
@@ -472,8 +594,9 @@ svg.ico {
 .exercise-list .icon {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: var(--accent-soft);
+  border-radius: var(--radius-control);
+  background: var(--tile);
+  color: var(--tile-ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -498,7 +621,7 @@ svg.ico {
 }
 
 .sticky-action .btn {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shadow-float);
 }
 
 .prompt {
@@ -576,7 +699,7 @@ svg.ico {
 
 .name-keys button {
   min-height: 52px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--card);
   border: 1.5px solid var(--line);
   font-weight: 700;
@@ -596,7 +719,7 @@ svg.ico {
 .acc-keys button {
   min-width: 64px;
   min-height: 44px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   background: var(--card);
   border: 1.5px solid var(--line);
   font-size: 20px;
@@ -623,11 +746,11 @@ svg.ico {
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  color: #fff;
+  color: var(--on-accent);
 }
 
 .notemap .n-none {
-  background: #d9d4c9;
+  background: var(--notemap-none);
   color: var(--muted);
 }
 
@@ -694,7 +817,7 @@ svg.ico {
 .text-input {
   width: 100%;
   min-height: 48px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   border: 1.5px solid var(--line);
   padding: 0 14px;
   font-size: 17px;
@@ -743,50 +866,6 @@ svg.ico {
   font-size: 24px;
 }
 
-/* Themes (bought in the shop) */
-[data-theme="theme-zee"] {
-  --bg: #eef5f7;
-  --card: #ffffff;
-  --accent: #0e7c86;
-  --accent-soft: #d8eef0;
-  --gold: #f2a93b;
-  --soft: #dfe9eb;
-  --line: #cfdde0;
-}
-
-[data-theme="theme-bos"] {
-  --bg: #f1f4ec;
-  --accent: #3a7d3b;
-  --accent-soft: #dfeedd;
-  --gold: #d99a1c;
-  --soft: #e3e8dc;
-  --line: #d2dac9;
-}
-
-[data-theme="theme-zon"] {
-  --bg: #fdf1ea;
-  --accent: #d8542c;
-  --accent-soft: #fbe0d5;
-  --gold: #f0a500;
-  --soft: #f3e2d8;
-  --line: #ead3c6;
-}
-
-[data-theme="theme-nacht"] {
-  --bg: #1d1f2b;
-  --card: #2a2d3d;
-  --ink: #f1f0ea;
-  --muted: #a9adc1;
-  --accent: #7aa2ff;
-  --accent-soft: #38415f;
-  --gold: #f4c04f;
-  --gold-soft: #4b4120;
-  --ok-soft: #244434;
-  --bad-soft: #4a2a2a;
-  --line: #3b3f55;
-  --soft: #353949;
-}
-
 .app {
   background: var(--bg);
   color: var(--ink);
@@ -795,7 +874,7 @@ svg.ico {
 /* Chord diagrams and the shop */
 .chord-diagram {
   background: var(--card);
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   padding: 6px;
 }
 
@@ -822,7 +901,7 @@ svg.ico {
   background: var(--card);
   border-radius: var(--r);
   padding: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-card);
   text-align: left;
 }
 
@@ -831,7 +910,7 @@ svg.ico {
   height: 56px;
   border-radius: 50%;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -895,7 +974,7 @@ svg.ico {
 .shop-item .pic {
   width: 56px;
   height: 56px;
-  border-radius: 12px;
+  border-radius: var(--radius-control);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -951,7 +1030,7 @@ svg.ico {
   height: 26px;
   border-radius: 50%;
   background: var(--gold-ink);
-  color: #fff;
+  color: var(--on-accent);
   border: 2px solid var(--card);
   display: flex;
   align-items: center;
@@ -1018,7 +1097,7 @@ svg.ico {
   max-width: 480px;
   background: var(--card);
   color: var(--ink);
-  border-radius: 20px 20px 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
   padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
   display: flex;
   flex-direction: column;
@@ -1059,9 +1138,69 @@ svg.ico {
 
 .theme-preview .mini-btn {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-radius: 10px;
   padding: 8px;
   text-align: center;
   font-weight: 600;
+}
+
+/* Modes: Rustig is the base; Speels (kid mode) adds the sticker look on top of its tokens. */
+[data-mode="speels"] .btn {
+  border: var(--edge-w) solid var(--edge);
+}
+
+[data-mode="speels"] .btn:active {
+  box-shadow: 0 2px 0 var(--edge);
+}
+
+[data-mode="speels"] .btn.ghost,
+[data-mode="speels"] .btn.plain {
+  border: 0;
+}
+
+[data-mode="speels"] .chip {
+  border: 2px solid var(--edge);
+  background: var(--tile);
+  color: var(--ink);
+  font-weight: 800;
+  box-shadow: 2px 2px 0 var(--edge);
+}
+
+[data-mode="speels"] .bar {
+  height: 14px;
+  border: 2px solid var(--edge);
+  background: var(--card);
+}
+
+[data-mode="speels"] .ring,
+[data-mode="speels"] .ring b {
+  border: var(--edge-w) solid var(--edge);
+}
+
+[data-mode="speels"] .exercise-list .icon,
+[data-mode="speels"] .pic {
+  border: 2px solid var(--edge);
+}
+
+[data-mode="speels"] .tabbar button {
+  font-weight: 800;
+}
+
+[data-mode="speels"] .tabbar button.on {
+  color: var(--ink);
+}
+
+[data-mode="speels"] .tabbar button.on span {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+
+[data-mode="speels"] .tabs button.on {
+  border: 2px solid var(--edge);
+}
+
+[data-mode="speels"] .feedback-mark {
+  border: 2px solid var(--edge);
+  box-shadow: 2px 2px 0 var(--edge);
 }

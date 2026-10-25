@@ -63,7 +63,7 @@ export function ShopScreen() {
 
   const previewAvatar = preview?.slot ? applyItem(profile.avatar, preview) : profile.avatar;
   const items = SHOP_ITEMS.filter((i) => i.category === category);
-  const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Klassiek";
+  const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Standaard";
 
   /** What a card shows: the avatar wearing the item, or the icon of a theme. */
   const picture = (item: ShopItem) => {

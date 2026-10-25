@@ -33,7 +33,7 @@ import { ShapeGallery } from "./ShapesScreen.tsx";
 import { ItemGallery } from "../components/music/ItemGallery.tsx";
 import { Icon } from "../components/common/Icon.tsx";
 
-const OK = "#2e9e5b";
+const OK = "#22a06b";
 const BAD = "#d64545";
 const PICK = "#2f6fed";
 // The tapped note sounds first; the "right" cue follows once it has been heard.
@@ -452,18 +452,26 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
 
       {retryHint && !feedback && (
         <Card className="feedback">
-          <b style={{ color: BAD }}>{retryHint}</b>
-          <div className="muted" style={{ marginTop: 4 }}>
-            Luister nog eens en probeer het nog één keer.
+          <span className="feedback-mark" aria-hidden="true">
+            <Icon name="ear" />
+          </span>
+          <div>
+            <b>{retryHint}</b>
+            <div className="muted">Luister nog eens en probeer het nog één keer.</div>
           </div>
         </Card>
       )}
       {feedback ? (
         <Card className={correct ? "feedback ok" : "feedback"}>
-          <b style={{ color: correct ? OK : BAD }}>{correct ? "Goed!" : "Net niet"}</b>
-          <div className="muted" style={{ marginTop: 4 }}>
-            {feedback.verdict.note ? `${feedback.verdict.note} ` : ""}
-            {correct ? `Dit is ${describeTarget(module, question)}.` : `Het is ${describeTarget(module, question)}.`}
+          <span className="feedback-mark" aria-hidden="true">
+            <Icon name={correct ? "check" : "xmark"} />
+          </span>
+          <div>
+            <b>{correct ? "Goed!" : "Net niet"}</b>
+            <div className="muted">
+              {feedback.verdict.note ? `${feedback.verdict.note} ` : ""}
+              {correct ? `Dit is ${describeTarget(module, question)}.` : `Het is ${describeTarget(module, question)}.`}
+            </div>
           </div>
         </Card>
       ) : (
