@@ -15,9 +15,10 @@ import { withDefaults } from "../engine/learning/settings.ts";
 import { useApp } from "../state/useApp.ts";
 import { useProfileCards, useProfileSettings } from "../state/queries.ts";
 import { MainTabs } from "./MainTabs.tsx";
+import { Icon, type IconName } from "../components/common/Icon.tsx";
 
 const INSTRUMENT_KEY = "toonvast.instrument";
-const ICON: Record<Instrument, string> = { theory: "🎼", piano: "🎹", guitar: "🎸" };
+const ICON: Record<Instrument, IconName> = { theory: "staff", piano: "piano", guitar: "guitar" };
 
 function readInstrument(): Instrument {
   try {
@@ -76,7 +77,9 @@ export function HomeScreen() {
             <div className="muted">Level {level}</div>
           </div>
         </div>
-        <Chip>⭐ {wallet.xp} XP</Chip>
+        <Chip>
+          <Icon name="star" /> {wallet.xp} XP
+        </Chip>
       </div>
       <ProgressBar value={into} max={span} />
       <div className="muted" style={{ marginTop: -6 }}>
@@ -91,7 +94,9 @@ export function HomeScreen() {
           {status === "open" && <div className="muted">Oefen vandaag om je reeks te houden.</div>}
         </div>
         <div className="center">
-          <div style={{ fontSize: 28, lineHeight: 1 }}>🔥</div>
+          <div style={{ fontSize: 28, lineHeight: 1 }}>
+            <Icon name="flame" />
+          </div>
           <b>
             {streak} {streak === 1 ? "dag" : "dagen"}
           </b>
@@ -117,13 +122,19 @@ export function HomeScreen() {
                   onClick={() => nav.go({ name: "exercise", moduleId: m.id, nonce: Date.now() })}
                 >
                   <div className="icon" aria-hidden="true">
-                    {ICON[m.instrument]}
+                    <Icon name={ICON[m.instrument]} />
                   </div>
                   <div className="grow">
                     <b>{m.title}</b>
                     <div className="muted">{subtitle(m)}</div>
                   </div>
-                  {playable ? <Chip>Start</Chip> : <Chip tone="grey">🔒</Chip>}
+                  {playable ? (
+                    <Chip>Start</Chip>
+                  ) : (
+                    <Chip tone="grey">
+                      <Icon name="lock" />
+                    </Chip>
+                  )}
                 </button>
                 {playable && m.answer === "guitar" && m.kind === "chord" && (
                   <button
@@ -133,7 +144,7 @@ export function HomeScreen() {
                     title="Grepen bekijken"
                     onClick={() => nav.go({ name: "shapes", moduleId: m.id })}
                   >
-                    📖
+                    <Icon name="book" />
                   </button>
                 )}
                 {playable && (
@@ -143,7 +154,7 @@ export function HomeScreen() {
                     aria-label={`Instellingen ${m.title}`}
                     onClick={() => nav.go({ name: "settings", moduleId: m.id })}
                   >
-                    ⚙︎
+                    <Icon name="gear" />
                   </button>
                 )}
               </div>

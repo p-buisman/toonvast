@@ -12,6 +12,10 @@ export interface BadgeDef {
   description: string;
   /** Badges about reading notes exist once per instrument. */
   instrument?: Instrument;
+  /** The big icon: what the badge is about (an instrument, the streak). */
+  icon: string;
+  /** The small mark in the corner: an icon name, a number or ♯. */
+  mark: string;
 }
 
 export interface BadgeContext {
@@ -24,23 +28,44 @@ export interface BadgeContext {
 const NOTE_MODULE: Record<Instrument, ModuleId> = { theory: "note-name", piano: "note-piano", guitar: "note-guitar" };
 const EAR_MODULE: Record<Instrument, ModuleId> = { theory: "ear-note-staff", piano: "ear-note-piano", guitar: "ear-note-guitar" };
 const INSTRUMENT_LABEL: Record<Instrument, string> = { theory: "theorie", piano: "piano", guitar: "gitaar" };
+const INSTRUMENT_ICON: Record<Instrument, string> = { theory: "staff", piano: "piano", guitar: "guitar" };
 
-function perInstrument(id: string, title: string, description: string, instruments: Instrument[]): BadgeDef[] {
-  return instruments.map((i) => ({ id: `${id}:${i}`, title, description: `${description} (${INSTRUMENT_LABEL[i]})`, instrument: i }));
+function perInstrument(id: string, title: string, description: string, instruments: Instrument[], mark: string): BadgeDef[] {
+  return instruments.map((i) => ({
+    id: `${id}:${i}`,
+    title,
+    description: `${description} (${INSTRUMENT_LABEL[i]})`,
+    instrument: i,
+    icon: INSTRUMENT_ICON[i],
+    mark,
+  }));
 }
 
 export const BADGES: readonly BadgeDef[] = [
-  { id: "first-ten", title: "Eerste tien", description: "Tien goede antwoorden" },
-  ...perInstrument("treble-done", "Vioolsleutel klaar", "Alle noten binnen de lijnen van de vioolsleutel beheerst", ["theory", "piano", "guitar"]),
-  ...perInstrument("bass-done", "Bassleutel klaar", "Alle noten binnen de lijnen van de bassleutel beheerst", ["theory", "piano"]),
-  ...perInstrument("ledger", "Hulplijnen", "Alle noten tot één hulplijn beheerst", ["theory", "piano", "guitar"]),
-  ...perInstrument("fast", "Snelle lezer", "Gemiddeld onder de 2 seconden per noot", ["theory", "piano", "guitar"]),
-  ...perInstrument("black-white", "Zwart en wit", "Alle kruizen en mollen binnen de lijnen beheerst", ["theory", "piano"]),
-  ...perInstrument("ear", "Goed gehoor", "Alle gehoorde noten binnen de lijnen beheerst", ["theory", "piano", "guitar"]),
-  { id: "streak-5", title: "Vijf dagen", description: "Vijf dagen achter elkaar je dagdoel gehaald" },
-  { id: "streak-30", title: "Dertig dagen", description: "Dertig dagen achter elkaar je dagdoel gehaald" },
-  { id: "open-chords", title: "Open grepen", description: "Alle open akkoorden op de gitaar beheerst", instrument: "guitar" },
-  { id: "chords-piano", title: "Drieklanken", description: "De drieklanken van C, G en F op de piano beheerst", instrument: "piano" },
+  { id: "first-ten", title: "Eerste tien", description: "Tien goede antwoorden", icon: "star", mark: "10" },
+  ...perInstrument(
+    "treble-done",
+    "Vioolsleutel klaar",
+    "Alle noten binnen de lijnen van de vioolsleutel beheerst",
+    ["theory", "piano", "guitar"],
+    "treble-clef",
+  ),
+  ...perInstrument("bass-done", "Bassleutel klaar", "Alle noten binnen de lijnen van de bassleutel beheerst", ["theory", "piano"], "bass-clef"),
+  ...perInstrument("ledger", "Hulplijnen", "Alle noten tot één hulplijn beheerst", ["theory", "piano", "guitar"], "ledger"),
+  ...perInstrument("fast", "Snelle lezer", "Gemiddeld onder de 2 seconden per noot", ["theory", "piano", "guitar"], "bolt"),
+  ...perInstrument("black-white", "Zwart en wit", "Alle kruizen en mollen binnen de lijnen beheerst", ["theory", "piano"], "♯"),
+  ...perInstrument("ear", "Goed gehoor", "Alle gehoorde noten binnen de lijnen beheerst", ["theory", "piano", "guitar"], "ear"),
+  { id: "streak-5", title: "Vijf dagen", description: "Vijf dagen achter elkaar je dagdoel gehaald", icon: "flame", mark: "5" },
+  { id: "streak-30", title: "Dertig dagen", description: "Dertig dagen achter elkaar je dagdoel gehaald", icon: "flame", mark: "30" },
+  { id: "open-chords", title: "Open grepen", description: "Alle open akkoorden op de gitaar beheerst", instrument: "guitar", icon: "guitar", mark: "book" },
+  {
+    id: "chords-piano",
+    title: "Drieklanken",
+    description: "De drieklanken van C, G en F op de piano beheerst",
+    instrument: "piano",
+    icon: "piano",
+    mark: "notes",
+  },
 ];
 
 export function badgeById(id: string): BadgeDef | undefined {

@@ -11,7 +11,7 @@ export function newId(): string {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export const AVATAR_COLORS = ["#e07a5f", "#3d8bd9", "#6c9a4c", "#b8a1e3", "#f4a300", "#2a9d8f"];
+export { AVATAR_COLORS } from "../engine/game/avatar.ts";
 
 // Profiles
 

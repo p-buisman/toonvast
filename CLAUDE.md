@@ -48,8 +48,12 @@ Engine (`src/engine/`):
 - `learning/session.ts` - sessie-opbouw (`buildSession`): eerst wat aan de beurt is, dan nieuw voor zover de werkvoorraad
   ruimte heeft (`newItemBudget`: vrije plekken, niets na een sessie onder 80%), dan herhaling.
 - `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten.
-- `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is) en `earnedBadges` (welke nu gelden).
-- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen per slot, thema's, streakbeschermer), `buyRefusal`.
+- `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
+  `earnedBadges` (welke nu gelden).
+- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, thema's, streakbeschermer), `buyRefusal`,
+  `applyItem`/`itemActive` (item aan of uit op een avatar), `unlockedValues` (wat een profiel per onderdeel mag kiezen).
+- `game/avatar.ts` - het poppetje: huidtinten, hoofdvormen, kapsels, haarkleuren, ogen, monden, kleding (`AvatarLook`,
+  `DEFAULT_LOOK`, `lookOf`), de kledingkleuren met hun contrasterende achtergrond (`contrastBg`), `outline` (lijnkleur).
 
 Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
@@ -66,8 +70,13 @@ Componenten (`src/components/`):
 - `music/ChordNameButtons.tsx` - akkoordnaam: ♯/♭, majeur/mineur, ligging, dan de letter.
 - `music/AccidentalToggle.tsx` - ♭ ♮ ♯ voor noten op de notenbalk zetten.
 - `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
-- `common/` - `Button`, `Card`, `Segmented`, `Tabs`, `Chip`, `ProgressBar`, `Avatar` (SVG met gekochte onderdelen), `TabBar`,
-  `GoalRing`, `ProgressDots`, `AudioDebug` (`?debug=1`).
+- `common/Icon.tsx` - de icoonset (36 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
+  1em groot in de tekstkleur. Geen emoji in de interface.
+- `common/Avatar.tsx` - het poppetje (gezicht, nek, schouders op een schijf) uit `engine/game/avatar.ts`, aangekleed met
+  de winkelitems; alle vlakken met lijn en één schaduw onder de kin.
+- `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.
+- `common/` - `Button`, `Card`, `Segmented`, `Tabs`, `Chip`, `ProgressBar`, `TabBar`, `GoalRing`, `ProgressDots`, `AudioDebug`
+  (`?debug=1`).
 - `layout/Screen.tsx` - de schermopbouw (kop, inhoud, tabbalk).
 
 Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen muziektheorie en geen opslagcode.
@@ -75,3 +84,12 @@ Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen m
 Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen`: grepenoverzicht en `ShapeGallery` als
 introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
 Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.
+`ProfileForm` is het samenstellen van de avatar (vrije keuzes plus wat in de winkel is gekocht); het is de bron voor nieuw
+profiel en profiel bewerken.
+
+## Design system en canvas
+
+Het ontwerp staat als claude.ai-artifacts: design system "Toonvast" (tokens, brand book, componentkaarten, iconen) en
+canvas "Toonvast schermen". Tokens in `src/index.css` horen gelijk te blijven aan `tokens.json` van het design system;
+de iconen (`icons.tsx`) en de avatar komen uit de kaarten Icon en Avatar. Verander je iets aan het uiterlijk, werk dan
+beide kanten bij.

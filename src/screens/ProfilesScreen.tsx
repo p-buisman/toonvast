@@ -11,6 +11,7 @@ import { restoreBackupFile, saveBackupFile } from "../storage/backupFile.ts";
 import { db } from "../storage/db.ts";
 import { touchProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
+import { Icon } from "../components/common/Icon.tsx";
 
 export function ProfilesScreen() {
   const { chooseProfile, nav } = useApp();
@@ -62,7 +63,9 @@ export function ProfilesScreen() {
                   {p.kidMode ? " · kindmodus" : ""}
                 </div>
               </div>
-              <Chip tone={streak > 0 ? "gold" : "grey"}>🔥 {streak}</Chip>
+              <Chip tone={streak > 0 ? "gold" : "grey"}>
+                <Icon name="flame" /> {streak}
+              </Chip>
             </button>
           </Card>
         );

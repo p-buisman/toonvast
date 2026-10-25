@@ -15,6 +15,7 @@
   --soft: #ebe7df;
   --r: 16px;
   --tap: 44px;
+  --gold-ink: #9a6400;
 }
 
 * {
@@ -194,7 +195,7 @@ p {
 
 .chip.gold {
   background: var(--gold-soft);
-  color: #9a6400;
+  color: var(--gold-ink);
 }
 
 .chip.ok {
@@ -414,6 +415,50 @@ p {
 }
 
 /* Avatar */
+
+/* Icons: inline SVG in the outline style, sized by the text around it; colour from the text. */
+svg.ico {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.125em;
+  flex: none;
+}
+
+.tabbar button svg.ico,
+.exercise-list .icon svg.ico,
+.icon-btn svg.ico {
+  width: 24px;
+  height: 24px;
+}
+
+.listen-icon svg.ico,
+.shop-item .pic svg.ico {
+  width: 28px;
+  height: 28px;
+}
+
+/* Composing the avatar: one row of small avatars per part. */
+.look-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.look-picks button {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.look-picks button.on {
+  border: 2px solid var(--accent);
+}
 
 /* Exercise */
 .exercise-list .item {
@@ -863,7 +908,25 @@ p {
   flex-wrap: wrap;
 }
 
+.badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 72px;
+  text-align: center;
+}
+
+.badge-label {
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--gold-ink);
+}
+
+/* A badge is a disc with a big icon and a small mark (an icon, a number or ♯) in the corner. */
 .badge {
+  position: relative;
   width: 64px;
   height: 64px;
   border-radius: 50%;
@@ -872,17 +935,48 @@ p {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  text-align: center;
-  font-weight: 600;
-  color: #9a6400;
-  padding: 4px;
-  line-height: 1.1;
+  color: var(--gold-ink);
+}
+
+.badge > svg.ico {
+  width: 32px;
+  height: 32px;
+}
+
+.badge-mark {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--gold-ink);
+  color: #fff;
+  border: 2px solid var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-mark svg.ico {
+  width: 15px;
+  height: 15px;
 }
 
 .badge.off {
   background: var(--soft);
   border-color: var(--line);
+  color: var(--muted);
+}
+
+.badge.off .badge-mark {
+  background: var(--line);
+  color: var(--muted);
+}
+
+.badge.off + .badge-label {
   color: var(--muted);
 }
 

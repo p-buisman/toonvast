@@ -20,6 +20,7 @@ import {
 } from "../engine/learning/settings.ts";
 import { getSettings, saveSettings } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
+import { Icon } from "../components/common/Icon.tsx";
 
 const ON_OFF = [
   { value: false, label: "Uit" },
@@ -41,7 +42,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
         title={module.title}
         left={
           <IconButton label="Terug" onClick={nav.back}>
-            ‹
+            <Icon name="chevron-left" />
           </IconButton>
         }
       >
@@ -66,7 +67,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
       title={module.title}
       left={
         <IconButton label="Terug" onClick={nav.back}>
-          ‹
+          <Icon name="chevron-left" />
         </IconButton>
       }
     >
@@ -163,7 +164,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
       )}
       {isChord && module.answer === "guitar" && (
         <Button block variant="ghost" onClick={() => nav.go({ name: "shapes", moduleId })}>
-          📖 Bekijk de grepen in je les
+          <Icon name="book" /> Bekijk de grepen in je les
         </Button>
       )}
       {isChord && module.answer === "guitar" && (

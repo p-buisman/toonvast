@@ -6,6 +6,7 @@ import { dayKey } from "../engine/common/dates.ts";
 import { levelFor, streakStatus } from "../engine/game/rules.ts";
 import { unlockAudio } from "../audio/sampler.ts";
 import { useApp } from "../state/useApp.ts";
+import { Icon } from "../components/common/Icon.tsx";
 
 const AUTO_MS = 2200;
 
@@ -29,7 +30,7 @@ export function WelcomeScreen() {
         <Avatar avatar={profile.avatar} name={profile.name} size={160} className="pop" />
         <h1>Hoi {profile.name}!</h1>
         <p className="muted">
-          Level {level} · 🔥 {streak} {streak === 1 ? "dag" : "dagen"} · {left === 0 ? "dagdoel gehaald" : `nog ${left} XP voor je dagdoel`}
+          Level {level} · <Icon name="flame" /> {streak} {streak === 1 ? "dag" : "dagen"} · {left === 0 ? "dagdoel gehaald" : `nog ${left} XP voor je dagdoel`}
         </p>
         <Button
           block

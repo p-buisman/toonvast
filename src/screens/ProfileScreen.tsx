@@ -9,21 +9,29 @@ import { deleteProfile, updateProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
 import { MainTabs } from "./MainTabs.tsx";
 import { ProfileForm, type ProfileFormValue } from "./ProfileForm.tsx";
+import { lookOf } from "../engine/game/avatar.ts";
+import { useProfilePurchases } from "../state/queries.ts";
 
 export function ProfileScreen() {
   const { profile, nav, chooseProfile } = useApp();
   const [value, setValue] = useState<ProfileFormValue | null>(() =>
-    profile ? { name: profile.name, color: profile.avatar.color, kidMode: profile.kidMode, dayGoal: profile.dayGoal } : null,
+    profile ? { name: profile.name, color: profile.avatar.color, look: lookOf(profile.avatar), kidMode: profile.kidMode, dayGoal: profile.dayGoal } : null,
   );
   const [message, setMessage] = useState<string | null>(null);
   const [soundTest, setSoundTest] = useState(false);
+  const purchases = useProfilePurchases(profile?.id);
 
   if (!profile || !value) return null;
 
   const change = (v: ProfileFormValue) => {
     setValue(v);
     if (v.name.trim() === "") return;
-    void updateProfile(profile.id, { name: v.name.trim(), avatar: { ...profile.avatar, color: v.color }, kidMode: v.kidMode, dayGoal: v.dayGoal });
+    void updateProfile(profile.id, {
+      name: v.name.trim(),
+      avatar: { ...profile.avatar, color: v.color, look: v.look },
+      kidMode: v.kidMode,
+      dayGoal: v.dayGoal,
+    });
   };
 
   const switchProfile = () => {
@@ -58,7 +66,7 @@ export function ProfileScreen() {
   return (
     <Screen title="Profiel" footer={<MainTabs active="profile" />}>
       <Card className="stack">
-        <ProfileForm value={value} onChange={change} />
+        <ProfileForm value={value} onChange={change} owned={purchases} wearing={profile.avatar} />
       </Card>
       <Card className="stack">
         <h2>Back-up</h2>

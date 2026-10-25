@@ -31,6 +31,7 @@ import { finishSession } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
 import { ShapeGallery } from "./ShapesScreen.tsx";
 import { ItemGallery } from "../components/music/ItemGallery.tsx";
+import { Icon } from "../components/common/Icon.tsx";
 
 const OK = "#2e9e5b";
 const BAD = "#d64545";
@@ -233,7 +234,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       <Screen
         left={
           <IconButton label="Stoppen" onClick={nav.back}>
-            ✕
+            <Icon name="xmark" />
           </IconButton>
         }
       >
@@ -260,7 +261,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       <Screen
         left={
           <IconButton label="Stoppen" onClick={nav.back}>
-            ✕
+            <Icon name="xmark" />
           </IconButton>
         }
         title={what}
@@ -281,7 +282,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       <Screen
         left={
           <IconButton label="Terug" onClick={nav.back}>
-            ✕
+            <Icon name="xmark" />
           </IconButton>
         }
         title={module.title}
@@ -374,7 +375,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     <Screen
       left={
         <IconButton label="Stoppen" onClick={stop}>
-          ✕
+          <Icon name="xmark" />
         </IconButton>
       }
       right={<Chip tone={combo >= 3 ? "gold" : "grey"}>×{combo}</Chip>}
@@ -392,7 +393,9 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
 
       {module.question === "sound" && (
         <button type="button" className="listen" onClick={playQuestion} aria-label="Nog eens luisteren">
-          <span className="listen-icon">▶</span>
+          <span className="listen-icon">
+            <Icon name="play" />
+          </span>
           <span>
             <b>Luister</b>
             <small>tik om nog eens te horen</small>

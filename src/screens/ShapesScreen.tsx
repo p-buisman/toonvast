@@ -10,6 +10,7 @@ import { chordItemsFor } from "../engine/learning/items.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
 import { getSettings } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
+import { Icon } from "../components/common/Icon.tsx";
 
 const STRUM_MS = 45;
 
@@ -34,7 +35,7 @@ export function ShapesScreen({ moduleId }: { moduleId: ModuleId }) {
         title="Grepen"
         left={
           <IconButton label="Terug" onClick={nav.back}>
-            ‹
+            <Icon name="chevron-left" />
           </IconButton>
         }
       >
@@ -48,7 +49,7 @@ export function ShapesScreen({ moduleId }: { moduleId: ModuleId }) {
       title="Grepen"
       left={
         <IconButton label="Terug" onClick={nav.back}>
-          ‹
+          <Icon name="chevron-left" />
         </IconButton>
       }
     >

@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
+
 export interface TabBarItem<T extends string> {
   id: T;
   label: string;
-  icon: string;
+  icon: ReactNode;
 }
 
 export function TabBar<T extends string>({ items, active, onSelect }: { items: readonly TabBarItem<T>[]; active: T; onSelect: (id: T) => void }) {

@@ -10,6 +10,7 @@ import { Card } from "../common/Card.tsx";
 import { Fretboard } from "./Fretboard.tsx";
 import { Piano } from "./Piano.tsx";
 import { Staff } from "./Staff.tsx";
+import { Icon } from "../common/Icon.tsx";
 
 const PICK = "#2f6fed";
 
@@ -34,7 +35,9 @@ export function ItemGallery({ module, items }: { module: ModuleDef; items: reado
             <button type="button" className="gallery-item" onClick={play} aria-label={`${title} afspelen`}>
               <div className="row spread" style={{ padding: "4px 6px" }}>
                 <b>{title}</b>
-                <span className="muted">▶ luister</span>
+                <span className="muted">
+                  <Icon name="play" /> luister
+                </span>
               </div>
               <div className="row" style={{ alignItems: "stretch" }}>
                 <div className="grow">

@@ -1,16 +1,76 @@
+import { Avatar } from "../components/common/Avatar.tsx";
 import { Segmented } from "../components/common/Segmented.tsx";
+import {
+  AVATAR_COLORS,
+  CLOTHES_STYLES,
+  EYE_STYLES,
+  FREE_LOOK,
+  HAIR_COLORS,
+  HAIR_STYLES,
+  HEAD_SHAPES,
+  LOOK_LABEL,
+  MOUTH_STYLES,
+  SKIN_TONES,
+  type AvatarLook,
+} from "../engine/game/avatar.ts";
 import { DAY_GOALS } from "../engine/game/rules.ts";
-import { AVATAR_COLORS } from "../storage/repo.ts";
+import { unlockedValues } from "../engine/game/shop.ts";
+import type { Avatar as AvatarData } from "../storage/db.ts";
 
 export interface ProfileFormValue {
   name: string;
   color: string;
+  look: AvatarLook;
   kidMode: boolean;
   dayGoal: number;
 }
 
-/** The fields of a profile; used for a new profile and for editing one. */
-export function ProfileForm({ value, onChange }: { value: ProfileFormValue; onChange: (v: ProfileFormValue) => void }) {
+interface Props {
+  value: ProfileFormValue;
+  onChange: (v: ProfileFormValue) => void;
+  /** Shop items this profile owns: they unlock extra hair, faces, clothes and colours. */
+  owned: ReadonlySet<string>;
+  /** What the profile wears now (hat, glasses, headphones, background), so the preview shows the whole avatar. */
+  wearing?: Pick<AvatarData, "hat" | "eyes" | "ears" | "background">;
+}
+
+/** The fields of a profile, with the avatar composed part by part; used for a new profile and for editing one. */
+export function ProfileForm({ value, onChange, owned, wearing }: Props) {
+  const avatar: AvatarData = { hat: null, ...wearing, color: value.color, look: value.look };
+  const setLook = (part: Partial<AvatarLook>) => onChange({ ...value, look: { ...value.look, ...part } });
+  const picks = <K extends keyof AvatarLook>(part: K, all: readonly AvatarLook[K][], label: string) => {
+    const free = (FREE_LOOK as Partial<Record<keyof AvatarLook, readonly string[]>>)[part];
+    const extra = free ? unlockedValues(part === "eyes" ? "face" : (part as "hair" | "mouth" | "clothes"), owned) : [];
+    const options = all.filter((v) => !free || free.includes(v) || extra.includes(v));
+    const hidden = all.length - options.length;
+    return (
+      <div>
+        <h2>{label}</h2>
+        <div className="look-picks" role="radiogroup" aria-label={label}>
+          {options.map((v) => (
+            <button
+              key={String(v)}
+              type="button"
+              role="radio"
+              aria-checked={value.look[part] === v}
+              aria-label={LOOK_LABEL[String(v)] ?? String(v)}
+              className={value.look[part] === v ? "on" : ""}
+              onClick={() => setLook({ [part]: v } as Partial<AvatarLook>)}
+            >
+              <Avatar avatar={{ ...avatar, look: { ...value.look, [part]: v } }} name={value.name} size={44} />
+            </button>
+          ))}
+        </div>
+        {hidden > 0 && (
+          <p className="muted" style={{ marginTop: 6 }}>
+            Nog {hidden} in de winkel.
+          </p>
+        )}
+      </div>
+    );
+  };
+  const colors = [...AVATAR_COLORS, ...unlockedValues("color", owned)];
+
   return (
     <>
       <label className="stack" style={{ gap: 6 }}>
@@ -24,13 +84,57 @@ export function ProfileForm({ value, onChange }: { value: ProfileFormValue; onCh
           onChange={(e) => onChange({ ...value, name: e.target.value })}
         />
       </label>
+      <div className="center">
+        <Avatar avatar={avatar} name={value.name} size={140} />
+      </div>
       <div>
-        <h2>Kleur</h2>
-        <div className="swatches">
-          {AVATAR_COLORS.map((c) => (
+        <h2>Huid</h2>
+        <div className="swatches" role="radiogroup" aria-label="Huid">
+          {(Object.keys(SKIN_TONES) as (keyof typeof SKIN_TONES)[]).map((s) => (
+            <button
+              key={s}
+              type="button"
+              role="radio"
+              aria-checked={value.look.skin === s}
+              className={value.look.skin === s ? "on" : ""}
+              style={{ background: SKIN_TONES[s] }}
+              aria-label={LOOK_LABEL[s]}
+              onClick={() => setLook({ skin: s })}
+            />
+          ))}
+        </div>
+      </div>
+      {picks("head", Object.keys(HEAD_SHAPES) as AvatarLook["head"][], "Hoofd")}
+      {picks("hair", HAIR_STYLES, "Haar")}
+      <div>
+        <h2>Haarkleur</h2>
+        <div className="swatches" role="radiogroup" aria-label="Haarkleur">
+          {(Object.keys(HAIR_COLORS) as (keyof typeof HAIR_COLORS)[]).map((c) => (
             <button
               key={c}
               type="button"
+              role="radio"
+              aria-checked={value.look.hairColor === c}
+              className={value.look.hairColor === c ? "on" : ""}
+              style={{ background: HAIR_COLORS[c] }}
+              aria-label={LOOK_LABEL[c]}
+              onClick={() => setLook({ hairColor: c })}
+            />
+          ))}
+        </div>
+      </div>
+      {picks("eyes", EYE_STYLES, "Ogen")}
+      {picks("mouth", MOUTH_STYLES, "Mond")}
+      {picks("clothes", CLOTHES_STYLES, "Kleding")}
+      <div>
+        <h2>Kleur</h2>
+        <div className="swatches" role="radiogroup" aria-label="Kleur">
+          {colors.map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="radio"
+              aria-checked={c === value.color}
               className={c === value.color ? "on" : ""}
               style={{ background: c }}
               aria-label={`kleur ${c}`}
@@ -38,6 +142,9 @@ export function ProfileForm({ value, onChange }: { value: ProfileFormValue; onCh
             />
           ))}
         </div>
+        <p className="muted" style={{ marginTop: 6 }}>
+          De kleur van de kleding; de achtergrond kleurt vanzelf mee.
+        </p>
       </div>
       <div>
         <h2>Kindmodus</h2>

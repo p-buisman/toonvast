@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
+import type { AvatarLook } from "../engine/game/avatar.ts";
 import type { Wallet } from "../engine/game/rules.ts";
 import type { ModuleId } from "../engine/learning/modules.ts";
 import type { CardRecord } from "../engine/learning/scheduler.ts";
@@ -11,6 +12,8 @@ export interface Avatar {
   eyes?: string | null;
   ears?: string | null;
   background?: string | null;
+  /** The face: skin, head, hair, eyes, mouth, clothes. Missing parts take the default look. */
+  look?: Partial<AvatarLook>;
 }
 
 export interface PurchaseRecord {

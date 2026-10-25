@@ -1,33 +1,26 @@
-import { useLiveQuery } from "dexie-react-hooks";
 import { useState } from "react";
 import { Avatar } from "../components/common/Avatar.tsx";
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Chip } from "../components/common/Chip.tsx";
+import { Icon, type IconName } from "../components/common/Icon.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { MAX_SHIELDS } from "../engine/game/rules.ts";
-import { buyRefusal, DEFAULT_THEME, SHIELD_ITEM_ID, SHOP_ITEMS, THEMES, type ShopCategory, type ShopItem } from "../engine/game/shop.ts";
-import { db } from "../storage/db.ts";
+import { applyItem, buyRefusal, DEFAULT_THEME, itemActive, SHIELD_ITEM_ID, SHOP_ITEMS, THEMES, type ShopCategory, type ShopItem } from "../engine/game/shop.ts";
 import { buyItem, updateProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
+import { useProfilePurchases } from "../state/queries.ts";
 import { MainTabs } from "./MainTabs.tsx";
 
-const PIC: Record<string, string> = {
-  "hat-top": "🎩",
-  "hat-cap": "🧢",
-  "hat-crown": "👑",
-  glasses: "👓",
-  headphones: "🎧",
-  "bg-stars": "✨",
-  "bg-notes": "🎵",
-  "theme-zee": "🌊",
-  "theme-bos": "🌲",
-  "theme-zon": "🌅",
-  "theme-nacht": "🌙",
-  shield: "🛡️",
-};
+const THEME_ICON: Record<string, IconName> = { "theme-zee": "wave", "theme-bos": "tree", "theme-zon": "sun", "theme-nacht": "moon" };
 const REFUSAL = { owned: "Al gekocht", coins: "Niet genoeg munten", shields: "Je hebt er al twee" };
+const CATEGORY_HINT: Record<ShopCategory, string> = {
+  avatar: "Hoeden, bril, koptelefoon en achtergronden. Tik op iets dat je hebt om het aan of uit te zetten.",
+  look: "Extra kapsels, gezichten, kleding en kleuren. Gekocht is voor altijd van jou; kiezen doe je hier of bij je profiel.",
+  theme: "Een thema kleurt de hele app. Tik op een thema dat je hebt om het aan te zetten.",
+  extra: "",
+};
 
 export function ShopScreen() {
   const { profile, wallet } = useApp();
@@ -35,19 +28,16 @@ export function ShopScreen() {
   const [message, setMessage] = useState<string | null>(null);
   /** The item shown in the confirmation sheet before it is paid for. */
   const [preview, setPreview] = useState<ShopItem | null>(null);
-  const purchases =
-    useLiveQuery(() => (profile ? db.purchases.where("profileId").equals(profile.id).toArray() : Promise.resolve([] as { itemId: string }[])), [profile?.id]) ??
-    [];
+  const owned = useProfilePurchases(profile?.id);
   if (!profile) return null;
-  const owned = new Set(purchases.map((p) => p.itemId));
 
-  const isActive = (item: ShopItem) => (item.category === "theme" ? profile.theme === item.id : item.slot ? profile.avatar[item.slot] === item.id : false);
+  const isActive = (item: ShopItem) => (item.category === "theme" ? profile.theme === item.id : itemActive(profile.avatar, item));
 
   const tap = async (item: ShopItem) => {
     if (item.id !== SHIELD_ITEM_ID && owned.has(item.id)) {
       // Owned: put it on or take it off.
       if (item.category === "theme") await updateProfile(profile.id, { theme: isActive(item) ? DEFAULT_THEME : item.id });
-      else if (item.slot) await updateProfile(profile.id, { avatar: { ...profile.avatar, [item.slot]: isActive(item) ? null : item.id } });
+      else if (item.slot) await updateProfile(profile.id, { avatar: applyItem(profile.avatar, item, !isActive(item)) });
       return;
     }
     const refusal = buyRefusal(item, wallet.coins, owned, wallet.shields, MAX_SHIELDS);
@@ -68,20 +58,26 @@ export function ShopScreen() {
     await buyItem(profile.id, item);
     setMessage(`${item.title} gekocht!`);
     if (item.category === "theme") await updateProfile(profile.id, { theme: item.id });
-    else if (item.slot) await updateProfile(profile.id, { avatar: { ...profile.avatar, [item.slot]: item.id } });
+    else if (item.slot) await updateProfile(profile.id, { avatar: applyItem(profile.avatar, item) });
   };
 
-  const previewAvatar = preview?.slot ? { ...profile.avatar, [preview.slot]: preview.id } : profile.avatar;
-
+  const previewAvatar = preview?.slot ? applyItem(profile.avatar, preview) : profile.avatar;
   const items = SHOP_ITEMS.filter((i) => i.category === category);
   const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Klassiek";
+
+  /** What a card shows: the avatar wearing the item, or the icon of a theme. */
+  const picture = (item: ShopItem) => {
+    if (item.slot) return <Avatar avatar={applyItem(profile.avatar, item)} name={profile.name} size={56} />;
+    if (item.category === "theme") return <Icon name={THEME_ICON[item.id] ?? "gift"} />;
+    return <Icon name="gift" />;
+  };
 
   return (
     <Screen footer={<MainTabs active="shop" />}>
       <div className="row spread">
         <h1>Winkel</h1>
         <Chip tone="gold" big>
-          ● {wallet.coins} munten
+          <Icon name="coin" /> {wallet.coins} munten
         </Chip>
       </div>
       <Card className="row">
@@ -97,6 +93,7 @@ export function ShopScreen() {
       <Tabs<ShopCategory>
         options={[
           { value: "avatar", label: "Avatar" },
+          { value: "look", label: "Uiterlijk" },
           { value: "theme", label: "Thema's" },
           { value: "extra", label: "Extra" },
         ]}
@@ -107,7 +104,7 @@ export function ShopScreen() {
       {category === "extra" ? (
         <Card className="row">
           <div className="pic" style={{ fontSize: 32 }}>
-            🛡️
+            <Icon name="shield" />
           </div>
           <div className="grow">
             <b>Streakbeschermer</b>
@@ -116,7 +113,7 @@ export function ShopScreen() {
             </div>
           </div>
           <button type="button" className="chip gold big" onClick={() => void tap(SHOP_ITEMS.find((i) => i.id === SHIELD_ITEM_ID)!)}>
-            ● 40
+            <Icon name="coin" /> 40
           </button>
         </Card>
       ) : (
@@ -131,22 +128,30 @@ export function ShopScreen() {
                 className={["shop-item", has ? "owned" : "", active ? "active" : ""].join(" ")}
                 onClick={() => void tap(item)}
               >
-                <div className="pic">{PIC[item.id] ?? "🎁"}</div>
+                <div className="pic">{picture(item)}</div>
                 <b>{item.title}</b>
-                {active ? <Chip>Aan</Chip> : has ? <Chip tone="ok">Gekocht</Chip> : <Chip tone="gold">● {item.price}</Chip>}
+                {active ? (
+                  <Chip>Aan</Chip>
+                ) : has ? (
+                  <Chip tone="ok">Gekocht</Chip>
+                ) : (
+                  <Chip tone="gold">
+                    <Icon name="coin" /> {item.price}
+                  </Chip>
+                )}
               </button>
             );
           })}
         </div>
       )}
-      {category !== "extra" && <p className="muted center">Tik op iets dat je hebt om het aan of uit te zetten.</p>}
+      {CATEGORY_HINT[category] && <p className="muted center">{CATEGORY_HINT[category]}</p>}
       {preview && (
         <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={`${preview.title} kopen`} onClick={() => setPreview(null)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="row spread">
               <b style={{ fontSize: 18 }}>{preview.title}</b>
               <Chip tone="gold" big>
-                ● {preview.price}
+                <Icon name="coin" /> {preview.price}
               </Chip>
             </div>
             {preview.slot && (
@@ -155,7 +160,9 @@ export function ShopScreen() {
                   <Avatar avatar={profile.avatar} name={profile.name} size={72} />
                   <div className="muted">nu</div>
                 </div>
-                <span style={{ fontSize: 24, color: "var(--muted)" }}>→</span>
+                <span style={{ fontSize: 24, color: "var(--muted)" }}>
+                  <Icon name="arrow-right" />
+                </span>
                 <div className="center">
                   <Avatar avatar={previewAvatar} name={profile.name} size={110} />
                   <div className="muted">met {preview.title.toLowerCase()}</div>
@@ -166,7 +173,9 @@ export function ShopScreen() {
               <div className="theme-preview" data-theme={preview.id}>
                 <div className="row spread">
                   <b>Thema {preview.title}</b>
-                  <span className="chip">⭐ {wallet.xp} XP</span>
+                  <span className="chip">
+                    <Icon name="star" /> {wallet.xp} XP
+                  </span>
                 </div>
                 <div className="mini-card">
                   <Avatar avatar={profile.avatar} name={profile.name} size={32} />
@@ -180,7 +189,9 @@ export function ShopScreen() {
             )}
             {preview.id === SHIELD_ITEM_ID && (
               <div className="row">
-                <div style={{ fontSize: 40 }}>🛡️</div>
+                <div style={{ fontSize: 40 }}>
+                  <Icon name="shield" />
+                </div>
                 <div className="muted grow">Vangt één gemiste dag op, zodat je reeks doorloopt. Je hebt er na aankoop {wallet.shields + 1}.</div>
               </div>
             )}
@@ -188,7 +199,7 @@ export function ShopScreen() {
               Je hebt {wallet.coins} munten; na deze aankoop {wallet.coins - preview.price}.
             </p>
             <Button block onClick={() => void confirm()}>
-              Kopen voor ● {preview.price}
+              Kopen voor <Icon name="coin" /> {preview.price}
             </Button>
             <Button block variant="ghost" onClick={() => setPreview(null)}>
               Annuleren

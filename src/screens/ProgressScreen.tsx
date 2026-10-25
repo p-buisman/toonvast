@@ -15,6 +15,7 @@ import { db, type StoredCard } from "../storage/db.ts";
 import { useApp } from "../state/useApp.ts";
 import { useProfileCards, useProfileSessions, useProfileSettings, useProfileStats } from "../state/queries.ts";
 import { MainTabs } from "./MainTabs.tsx";
+import { Badge } from "../components/common/Badge.tsx";
 
 const MASTERY_CLASS: Record<Mastery, string> = { none: "n-none", learning: "n-learning", mastered: "n-mastered" };
 
@@ -141,9 +142,7 @@ export function ProgressScreen() {
         <h2>Badges · {INSTRUMENT_NAME[instrument].toLowerCase()}</h2>
         <div className="badges">
           {shown.map((b) => (
-            <div key={b.id} className={earned.has(b.id) ? "badge" : "badge off"} title={b.description}>
-              {b.title}
-            </div>
+            <Badge key={b.id} badge={b} earned={earned.has(b.id)} />
           ))}
         </div>
         <p className="muted" style={{ marginTop: 8 }}>

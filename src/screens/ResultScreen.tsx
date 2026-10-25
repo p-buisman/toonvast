@@ -5,6 +5,8 @@ import { badgeById } from "../engine/game/badges.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
 import type { SessionSummary } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
+import { Icon } from "../components/common/Icon.tsx";
+import { Badge } from "../components/common/Badge.tsx";
 
 export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summary: SessionSummary }) {
   const { nav } = useApp();
@@ -14,8 +16,8 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
   return (
     <Screen>
       <div className="welcome">
-        <div style={{ fontSize: 64, lineHeight: 1 }} className="pop">
-          {pct === 100 ? "🏆" : pct >= 80 ? "🌟" : "🎵"}
+        <div style={{ fontSize: 64, lineHeight: 1, color: "var(--gold)" }} className="pop">
+          <Icon name={pct === 100 ? "trophy" : pct >= 80 ? "star" : "note"} />
         </div>
         <h1>{praise}</h1>
         <p className="muted">
@@ -32,7 +34,9 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
               <small>munten</small>
             </div>
             <div className="stat">
-              <b>🔥 {summary.streak}</b>
+              <b>
+                <Icon name="flame" /> {summary.streak}
+              </b>
               <small>streak</small>
             </div>
           </div>
@@ -56,7 +60,7 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
           return (
             <Card key={id} className="feedback ok" style={{ width: "100%" }}>
               <div className="row">
-                <div className="badge">{badge?.title ?? id}</div>
+                {badge && <Badge badge={badge} pop />}
                 <div className="grow">
                   <b>Nieuwe badge: {badge?.title ?? id}</b>
                   <div className="muted">{badge?.description} · 15 munten erbij.</div>
