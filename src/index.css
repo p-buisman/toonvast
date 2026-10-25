@@ -512,6 +512,17 @@ p {
   touch-action: manipulation;
 }
 
+/* Instruments are touched and held; never let iOS select or show a callout on them. */
+.staff,
+.fretboard,
+.piano-scroll,
+.chord-diagram,
+.listen {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
 .name-keys {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
