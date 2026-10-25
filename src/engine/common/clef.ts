@@ -27,9 +27,10 @@ export function ledgerLines(position: number): number[] {
   return lines;
 }
 
-/** 0 = within the lines (no ledger lines), 1 = up to one ledger line, 2 = up to two. */
-export type RangeLevel = 0 | 1 | 2;
-export const RANGE_LEVEL_NAME: Record<RangeLevel, string> = { 0: "Binnen de lijnen", 1: "1 hulplijn", 2: "2 hulplijnen" };
+/** 0 = within the lines (no ledger lines), 1..3 = up to that many ledger lines; three reach the guitar's low E. */
+export type RangeLevel = 0 | 1 | 2 | 3;
+export const RANGE_LEVELS: readonly RangeLevel[] = [0, 1, 2, 3];
+export const RANGE_LEVEL_NAME: Record<RangeLevel, string> = { 0: "Binnen de lijnen", 1: "1 hulplijn", 2: "2 hulplijnen", 3: "3 hulplijnen" };
 
 export function rangeForLevel(level: RangeLevel): { min: number; max: number } {
   return { min: -1 - 2 * level, max: 9 + 2 * level };

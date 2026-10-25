@@ -6,7 +6,7 @@ import { Screen } from "../components/layout/Screen.tsx";
 import { chordName, INVERSION_NAME } from "../engine/common/chord.ts";
 import { CLEF_NAME, CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../engine/common/clef.ts";
 import { pitchName } from "../engine/common/pitch.ts";
-import { BADGES } from "../engine/game/badges.ts";
+import { BADGES, COINS_BADGE } from "../engine/game/badges.ts";
 import { chordItemsFor, itemKey } from "../engine/learning/items.ts";
 import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrument, type ModuleDef } from "../engine/learning/modules.ts";
 import { masteryOf, type Mastery } from "../engine/learning/scheduler.ts";
@@ -41,7 +41,7 @@ function Legend() {
 function NoteMaps({ module, cards }: { module: ModuleDef; cards: StoredCard[] }) {
   const byKey = new Map(cards.map((c) => [c.itemKey, c]));
   const clefs: Clef[] = module.clefs === "treble" ? ["treble"] : [...CLEFS];
-  const { min, max } = rangeForLevel(2);
+  const { min, max } = rangeForLevel(3);
   return (
     <>
       {clefs.map((clef) => (
@@ -145,7 +145,7 @@ export function ProgressScreen() {
           ))}
         </div>
         <p className="muted" style={{ marginTop: 8 }}>
-          Elke badge is 15 munten waard. Houd je vinger op een badge voor de uitleg.
+          Elke badge is {COINS_BADGE} munten waard. Houd je vinger op een badge voor de uitleg.
         </p>
       </Card>
     </Screen>

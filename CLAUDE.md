@@ -30,7 +30,8 @@ Engine (`src/engine/`):
 
 - `common/pitch.ts` - toonhoogte met spelling: `Pitch` (letter, voorteken, octaaf), `midiOf`, `pitchKey`, `pitchName`,
   `sameSound` (enharmonisch gelijk), `spellMidi` (een MIDI-nummer spellen met ♯ of ♭).
-- `common/clef.ts` - notenbalkpositie per sleutel: `staffPosition`, `pitchAtPosition`, `ledgerLines`, `rangeForLevel`.
+- `common/clef.ts` - notenbalkpositie per sleutel: `staffPosition`, `pitchAtPosition`, `ledgerLines`, `rangeForLevel`
+  (bereik 0-3 hulplijnen; 3 is nodig voor de lage E-snaar van de gitaar).
 - `common/random.ts` - `pick`, `shuffle`, `seeded` (vaste reeks voor tests en vaste keuzes per vraag).
 - `common/chord.ts` - drieklanken met spelling: `PitchClass`, `triadPcs`, `chordPcs` (per ligging), `voicing` (ligging op de
   notenbalk per sleutel), `chordName`/`chordKey`, de majeurtoonsoorten (`MAJOR_KEYS`) en `diatonicTriads`.
@@ -54,7 +55,8 @@ Engine (`src/engine/`):
 - `learning/goals.ts` - leerdoelen per profiel (`goalModules`, `toggleGoal`; geen keuze = alle speelbare modules).
 - `learning/lesson.ts` - `suggestLesson`: de volgende les uit de leerdoelen (meeste te herhalen, anders nog nooit geoefend,
   anders het langst geleden).
-- `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten.
+- `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten (`coinsForAnswers`: één munt per twee
+  goed herkende antwoorden; dagdoel 5, level 10, badge 10). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
 - `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, thema's, streakbeschermer), `buyRefusal`,

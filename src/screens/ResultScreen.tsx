@@ -1,7 +1,8 @@
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
-import { badgeById } from "../engine/game/badges.ts";
+import { badgeById, COINS_BADGE } from "../engine/game/badges.ts";
+import { COINS_GOAL, COINS_LEVEL_UP } from "../engine/game/rules.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
 import type { SessionSummary } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
@@ -44,14 +45,14 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
         {summary.leveledUp && (
           <Card className="feedback ok" style={{ width: "100%" }}>
             <b>Level {summary.level}!</b>
-            <div className="muted">Je krijgt 20 munten extra.</div>
+            <div className="muted">Je krijgt {COINS_LEVEL_UP} munten extra.</div>
           </Card>
         )}
         {summary.goalReached && (
           <Card className="feedback ok" style={{ width: "100%" }}>
             <b>Dagdoel gehaald</b>
             <div className="muted">
-              Je reeks staat op {summary.streak} {summary.streak === 1 ? "dag" : "dagen"}. 10 munten erbij.
+              Je reeks staat op {summary.streak} {summary.streak === 1 ? "dag" : "dagen"}. {COINS_GOAL} munten erbij.
             </div>
           </Card>
         )}
@@ -63,7 +64,9 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
                 {badge && <Badge badge={badge} pop />}
                 <div className="grow">
                   <b>Nieuwe badge: {badge?.title ?? id}</b>
-                  <div className="muted">{badge?.description} · 15 munten erbij.</div>
+                  <div className="muted">
+                    {badge?.description} · {COINS_BADGE} munten erbij.
+                  </div>
                 </div>
               </div>
             </Card>

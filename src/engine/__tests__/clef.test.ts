@@ -36,5 +36,6 @@ describe("clef", () => {
   it("widens the range per level", () => {
     expect(rangeForLevel(0)).toEqual({ min: -1, max: 9 });
     expect(rangeForLevel(2)).toEqual({ min: -5, max: 13 });
+    expect(rangeForLevel(3)).toEqual({ min: -7, max: 15 }); // written E3: the guitar's low E
   });
 });

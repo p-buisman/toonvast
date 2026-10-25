@@ -5,10 +5,10 @@ export const XP_FAST = 5;
 export const COMBO_FROM = 3;
 export const COMBO_STEP = 2;
 export const COMBO_MAX = 10;
-export const COINS_CORRECT = 1;
-export const COINS_GOAL = 10;
-export const COINS_LEVEL_UP = 20;
-export const SHIELD_PRICE = 40;
+/** Correct answers (weighed by how well they were recognised) per coin. */
+export const ANSWERS_PER_COIN = 2;
+export const COINS_GOAL = 5;
+export const COINS_LEVEL_UP = 10;
 export const MAX_SHIELDS = 2;
 export const DAY_GOALS = [30, 60, 120] as const;
 export type DayGoal = (typeof DAY_GOALS)[number];
@@ -19,6 +19,11 @@ export function xpForAnswer(correct: boolean, fast: boolean, combo: number): { x
   const next = combo + 1;
   const bonus = next >= COMBO_FROM ? Math.min(COMBO_MAX, (next - COMBO_FROM + 1) * COMBO_STEP) : 0;
   return { xp: XP_CORRECT + (fast ? XP_FAST : 0) + bonus, combo: next };
+}
+
+/** Coins for a session: `score` is the sum of the recognition scores (1 per answer right the first time). */
+export function coinsForAnswers(score: number): number {
+  return Math.floor(score / ANSWERS_PER_COIN);
 }
 
 /** Total XP needed to reach a level: 0, 100, 250, 450, 700, 1000, ... */

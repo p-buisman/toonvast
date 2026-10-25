@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { daysBetween } from "../common/dates.ts";
-import { bookSession, emptyWallet, extendStreak, levelFor, streakStatus, xpForAnswer, xpForLevel } from "../game/rules.ts";
+import { bookSession, coinsForAnswers, emptyWallet, extendStreak, levelFor, streakStatus, xpForAnswer, xpForLevel } from "../game/rules.ts";
 
 describe("rules", () => {
   it("awards XP with speed and combo bonuses", () => {
@@ -41,12 +41,18 @@ describe("rules", () => {
     expect(streakStatus({ ...w, shields: 1 }, "2026-10-27")).toBe("at-risk");
   });
 
+  it("gives a coin for every two answers recognised", () => {
+    expect(coinsForAnswers(10)).toBe(5);
+    expect(coinsForAnswers(7.3)).toBe(3);
+    expect(coinsForAnswers(0.6)).toBe(0);
+  });
+
   it("books a session with goal and level-up coins", () => {
     const w = { ...emptyWallet("2026-10-24"), xp: 90 };
     const out = bookSession(w, { xp: 70, coins: 6 }, 60, "2026-10-24");
     expect(out.leveledUp).toBe(true);
     expect(out.goalReached).toBe(true);
-    expect(out.coinsEarned).toBe(6 + 20 + 10);
+    expect(out.coinsEarned).toBe(6 + 10 + 5);
     expect(out.wallet.streak).toBe(1);
     expect(out.wallet.todayXp).toBe(70);
     const again = bookSession(out.wallet, { xp: 10, coins: 1 }, 60, "2026-10-24");

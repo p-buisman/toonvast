@@ -42,5 +42,14 @@ describe("itemsFor", () => {
     expect(keys).toContain("treble:G5"); // high e string fret 3
     expect(keys).not.toContain("treble:A5"); // fret 5
     expect(keys).not.toContain("treble:D3");
+    expect(keys).not.toContain("treble:E3"); // the open low E needs a third ledger line
+  });
+
+  it("reaches the open low E string with three ledger lines", () => {
+    const items = itemsFor(moduleById("note-guitar"), { ...DEFAULT_SETTINGS, range: 3 });
+    const keys = items.map((i) => i.key);
+    expect(keys).toContain("treble:E3");
+    expect(keys).toContain("treble:F3");
+    expect(keys[keys.length - 1]).toBe("treble:G3"); // low E string, fret 3, is still the last natural
   });
 });

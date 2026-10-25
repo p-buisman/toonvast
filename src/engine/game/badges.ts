@@ -4,7 +4,7 @@ import { chordItemsFor, noteItemsFor } from "../learning/items.ts";
 import { moduleById, type Instrument, type ModuleId } from "../learning/modules.ts";
 import { DEFAULT_SETTINGS } from "../learning/settings.ts";
 
-export const COINS_BADGE = 15;
+export const COINS_BADGE = 10;
 
 export interface BadgeDef {
   id: string;

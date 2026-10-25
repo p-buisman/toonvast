@@ -1,5 +1,5 @@
 import { dayKey } from "../engine/common/dates.ts";
-import { bookSession, COINS_CORRECT, levelFor, xpForAnswer } from "../engine/game/rules.ts";
+import { bookSession, coinsForAnswers, levelFor, xpForAnswer } from "../engine/game/rules.ts";
 import type { ModuleDef } from "../engine/learning/modules.ts";
 import { answerScore } from "../engine/learning/session.ts";
 import { newCardRecord, rateAnswer, review, type CardRecord } from "../engine/learning/scheduler.ts";
@@ -44,7 +44,7 @@ export async function finishSession(
   const now = new Date();
   const typical = typicalMs(await getModuleStats(profile.id, module.id));
   let xp = 0;
-  let coins = 0;
+  let score = 0;
   let combo = 0;
   const changed = new Map<string, CardRecord>();
   answers.forEach((a, i) => {
@@ -57,8 +57,9 @@ export async function finishSession(
     // A second try earns a share of the XP, as well as it was recognised.
     xp += attempts > 1 ? Math.round(gain.xp * answerScore(a)) : gain.xp;
     combo = gain.combo;
-    if (a.correct) coins += COINS_CORRECT;
+    score += answerScore(a);
   });
+  const coins = coinsForAnswers(score);
   await saveCards([...changed.values()]);
   for (const [k, v] of changed) cards.set(k, v);
   await updateModuleStats(

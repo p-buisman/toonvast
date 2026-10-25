@@ -4,7 +4,7 @@ import { Card } from "../components/common/Card.tsx";
 import { Segmented } from "../components/common/Segmented.tsx";
 import { IconButton, Screen } from "../components/layout/Screen.tsx";
 import { MAJOR_KEYS, pcKey, pcName } from "../engine/common/chord.ts";
-import { RANGE_LEVEL_NAME, type RangeLevel } from "../engine/common/clef.ts";
+import { RANGE_LEVEL_NAME, RANGE_LEVELS, type RangeLevel } from "../engine/common/clef.ts";
 import { PIANO_RANGE_NAME, type PianoRangeId } from "../engine/instruments/piano.ts";
 import { itemsFor } from "../engine/learning/items.ts";
 import { moduleById, usesStaff, type ModuleId } from "../engine/learning/modules.ts";
@@ -93,12 +93,12 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
         <Card>
           <h2>Bereik notenbalk</h2>
           <Segmented<RangeLevel>
-            options={([0, 1, 2] as RangeLevel[]).map((r) => ({ value: r, label: RANGE_LEVEL_NAME[r] }))}
+            options={RANGE_LEVELS.map((r) => ({ value: r, label: RANGE_LEVEL_NAME[r] }))}
             value={settings.range}
             onChange={(range) => update({ range })}
           />
           <p className="muted" style={{ marginTop: 6 }}>
-            Nieuwe noten komen er stap voor stap bij.
+            Nieuwe noten komen er stap voor stap bij. De lage E-snaar van de gitaar vraagt drie hulplijnen.
           </p>
         </Card>
       )}

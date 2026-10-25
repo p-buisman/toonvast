@@ -65,18 +65,18 @@ Toelichting per module:
 
 Instellingen horen bij een profiel en bij een module. Standaardwaarden zijn bewust klein, zodat een beginner niet verdwaalt.
 
-| Instelling                                 | Opties                                                             | Standaard        |
-| ------------------------------------------ | ------------------------------------------------------------------ | ---------------- |
-| Sleutels                                   | Vioolsleutel, bassleutel, beide                                    | Vioolsleutel     |
-| Bereik notenbalk                           | Binnen de lijnen; met 1 hulplijn; met 2 hulplijnen                 | Binnen de lijnen |
-| Voortekens                                 | Geen; alleen ♯; alleen ♭; beide                                    | Geen             |
-| Toonsoorten (akkoord- en toonsoortmodules) | Vinkjes per toonsoort, gegroepeerd op aantal voortekens            | C, G, F          |
-| Akkoorden                                  | Alleen noten; majeur; mineur; omkeringen aan/uit                   | Alleen noten     |
-| Pianobereik                                | 2 octaven (C3–C5); 4 octaven (C2–C6); volledig (A0–C8, scrollbaar) | 2 octaven        |
-| Gitaarhals                                 | Fret 0–4 (later: 0–12)                                             | 0–4              |
-| Greepinvoer (M5)                           | Kiezen uit diagrammen; vingers zelf plaatsen                       | Kiezen           |
-| Sessielengte                               | 5, 10, 20 vragen                                                   | 10               |
-| Noten tegelijk leren (werkvoorraad)        | 2, 4, 6                                                            | 4                |
+| Instelling                                 | Opties                                                              | Standaard        |
+| ------------------------------------------ | ------------------------------------------------------------------- | ---------------- |
+| Sleutels                                   | Vioolsleutel, bassleutel, beide                                     | Vioolsleutel     |
+| Bereik notenbalk                           | Binnen de lijnen; met 1, 2 of 3 hulplijnen (3 voor de lage E-snaar) | Binnen de lijnen |
+| Voortekens                                 | Geen; alleen ♯; alleen ♭; beide                                     | Geen             |
+| Toonsoorten (akkoord- en toonsoortmodules) | Vinkjes per toonsoort, gegroepeerd op aantal voortekens             | C, G, F          |
+| Akkoorden                                  | Alleen noten; majeur; mineur; omkeringen aan/uit                    | Alleen noten     |
+| Pianobereik                                | 2 octaven (C3–C5); 4 octaven (C2–C6); volledig (A0–C8, scrollbaar)  | 2 octaven        |
+| Gitaarhals                                 | Fret 0–4 (later: 0–12)                                              | 0–4              |
+| Greepinvoer (M5)                           | Kiezen uit diagrammen; vingers zelf plaatsen                        | Kiezen           |
+| Sessielengte                               | 5, 10, 20 vragen                                                    | 10               |
+| Noten tegelijk leren (werkvoorraad)        | 2, 4, 6                                                             | 4                |
 
 De adaptieve vraagkeuze (§6) werkt _binnen_ deze instellingen: wat uitgeschakeld is komt niet voor, en nieuwe items komen er geleidelijk bij.
 
@@ -123,17 +123,17 @@ Het leerplan is dus niet handgemaakt per level, maar de didactische volgorde is 
 
 Twee gescheiden valuta's: **XP** meet voortgang en gaat nooit omlaag; **munten** zijn om uit te geven.
 
-| Element          | Werking                                                                                                                                                      |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| XP per vraag     | 10 basis; +5 snelheidsbonus (sneller dan persoonlijke mediaan); +combo: vanaf 3 goed op rij +2 per vraag, max +10. Fout: 0, combo reset.                     |
-| Level            | Vaste XP-drempels, oplopend (100, 250, 450, 700, …). Level is per profiel, over alle instrumenten heen. Een levelstap geeft een korte animatie en 20 munten. |
-| Dagdoel          | Instelbaar per profiel: 30, 60 of 120 XP per dag. Halen = 10 munten en een dag streak.                                                                       |
-| Streak           | Opeenvolgende dagen waarop het dagdoel is gehaald. Zichtbaar op het startscherm.                                                                             |
-| Streakbeschermer | In de winkel (40 munten); vangt één gemiste dag op. Maximaal twee in voorraad.                                                                               |
-| Munten           | 1 per goed antwoord, 10 bij dagdoel, 20 bij level, bonus bij badge.                                                                                          |
-| Badges           | Zie lijst hieronder; elke badge geeft 15 munten.                                                                                                             |
-| Winkel           | Avatar-onderdelen (hoofd, haar, bril, hoedje, instrument, achtergrond), app-thema's (kleurensets), streakbeschermer.                                         |
-| Kindmodus        | Per profiel: grotere knoppen, meer confetti en geluid, minder tekst. Volwassenen krijgen dezelfde mechanismen in een rustige vormgeving.                     |
+| Element          | Werking                                                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| XP per vraag     | 10 basis; +5 snelheidsbonus (sneller dan persoonlijke mediaan); +combo: vanaf 3 goed op rij +2 per vraag, max +10. Fout: 0, combo reset.                                        |
+| Level            | Vaste XP-drempels, oplopend (100, 250, 450, 700, …). Level is per profiel, over alle instrumenten heen. Een levelstap geeft een korte animatie en 10 munten.                    |
+| Dagdoel          | Instelbaar per profiel: 30, 60 of 120 XP per dag. Halen = 5 munten en een dag streak.                                                                                           |
+| Streak           | Opeenvolgende dagen waarop het dagdoel is gehaald. Zichtbaar op het startscherm.                                                                                                |
+| Streakbeschermer | In de winkel (30 munten); vangt één gemiste dag op. Maximaal twee in voorraad.                                                                                                  |
+| Munten           | 1 per twee goed herkende antwoorden (een tweede poging telt naar rato), 5 bij dagdoel, 10 bij level, 10 bij badge. Een item kost 25–150; de hele winkel vraagt maanden oefenen. |
+| Badges           | Zie lijst hieronder; elke badge geeft 10 munten.                                                                                                                                |
+| Winkel           | Avatar-onderdelen (hoofd, haar, bril, hoedje, instrument, achtergrond), app-thema's (kleurensets), streakbeschermer.                                                            |
+| Kindmodus        | Per profiel: grotere knoppen, meer confetti en geluid, minder tekst. Volwassenen krijgen dezelfde mechanismen in een rustige vormgeving.                                        |
 
 Badges (eerste set): _Eerste tien_ (10 goed), _Vioolsleutel klaar_ (alle noten binnen de lijnen geleerd), _Bassleutel klaar_, _Hulplijnen_, _Snelle lezer_ (gemiddeld onder 2 s), _Zwart en wit_ (alle kruizen en mollen), _Vijf dagen_, _Dertig dagen_, _Open grepen_ (alle open akkoorden), _Alle toonsoorten_. Badges zijn per instrument waar dat van toepassing is.
 
