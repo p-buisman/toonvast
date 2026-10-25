@@ -3,6 +3,7 @@ import { unlockAudio } from "./audio/sampler.ts";
 import { AudioDebug } from "./components/common/AudioDebug.tsx";
 import { ExerciseScreen } from "./screens/ExerciseScreen.tsx";
 import { GoalsScreen } from "./screens/GoalsScreen.tsx";
+import { LessonsScreen } from "./screens/LessonsScreen.tsx";
 import { HomeScreen } from "./screens/HomeScreen.tsx";
 import { NewProfileScreen } from "./screens/NewProfileScreen.tsx";
 import { ProfileScreen } from "./screens/ProfileScreen.tsx";
@@ -68,6 +69,9 @@ function Router() {
       break;
     case "goals":
       screen = <GoalsScreen />;
+      break;
+    case "lessons":
+      screen = <LessonsScreen />;
       break;
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");

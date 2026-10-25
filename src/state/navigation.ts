@@ -14,7 +14,8 @@ export type Route =
   | { name: "shop" }
   | { name: "shapes"; moduleId: ModuleId }
   | { name: "profile" }
-  | { name: "goals" };
+  | { name: "goals" }
+  | { name: "lessons" };
 
 export interface Nav {
   route: Route;

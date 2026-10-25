@@ -94,7 +94,8 @@ Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen m
 `ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat;
 bij een gehoorvraag krijgt de speler na een misser een tweede poging met alleen een maat van de misser (net niet /
 dit klopte niet / flink ernaast), nooit de richting. `GoalsScreen` is
-"Wat wil je leren"; `HomeScreen` toont daaruit de volgende les met Start les, en daaronder alle modules om zelf te kiezen.
+"Wat wil je leren"; `HomeScreen` toont alleen het dagdoel, de volgende les met Start les en één rij "Zelf een les kiezen" naar `LessonsScreen`
+(alle modules per instrument, met tandwiel en grepenknop).
 Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen`: grepenoverzicht en `ShapeGallery` als
 introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
 Thema's zijn CSS-variabelen onder `.app[data-theme=...]` in `src/index.css`.
