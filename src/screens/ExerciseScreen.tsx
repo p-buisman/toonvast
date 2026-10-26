@@ -230,7 +230,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const tapFret = (pos: FretPosition) => {
     if (feedback) return;
     unlockAudio();
-    playNote(midiAt(pos.string, pos.fret), 1.6, 1, "guitar");
+    playNote(midiAt(pos), 1.6, 1, "guitar");
     answer({ kind: "guitar", pos });
   };
 
