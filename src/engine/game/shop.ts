@@ -3,7 +3,7 @@ import { AVATAR_COLORS, DEFAULT_LOOK, type AvatarLook } from "./avatar.ts";
 /** What coins can buy: avatar parts, the look (hair, face, clothes, colours), colour themes and the streak shield. */
 export type ShopCategory = "avatar" | "look" | "theme" | "extra";
 /** `eyes` is the glasses slot (its old name); `face` is the eye style of the look. */
-export type AvatarSlot = "hat" | "eyes" | "ears" | "background" | "hair" | "face" | "mouth" | "clothes" | "color";
+export type AvatarSlot = "hat" | "eyes" | "ears" | "neck" | "background" | "hair" | "face" | "mouth" | "clothes" | "color" | "fuzz";
 
 export interface ShopItem {
   id: string;
@@ -26,6 +26,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "headphones", title: "Koptelefoon", price: 60, category: "avatar", slot: "ears" },
   { id: "bg-stars", title: "Sterren", price: 50, category: "avatar", slot: "background" },
   { id: "bg-notes", title: "Noten", price: 50, category: "avatar", slot: "background" },
+  { id: "bow", title: "Strik", price: 30, category: "avatar", slot: "neck" },
   { id: "hair-krullen", title: "Krullen", price: 40, category: "look", slot: "hair", value: "krullen" },
   { id: "hair-knot", title: "Knot", price: 40, category: "look", slot: "hair", value: "knot" },
   { id: "hair-stekeltjes", title: "Stekeltjes", price: 40, category: "look", slot: "hair", value: "stekeltjes" },
@@ -34,6 +35,9 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "face-knipoog", title: "Knipoog", price: 30, category: "look", slot: "face", value: "knipoog" },
   { id: "mouth-grijns", title: "Grijns", price: 30, category: "look", slot: "mouth", value: "grijns" },
   { id: "mouth-verrast", title: "Verrast", price: 30, category: "look", slot: "mouth", value: "verrast" },
+  { id: "mouth-tong", title: "Tong", price: 30, category: "look", slot: "mouth", value: "tong" },
+  { id: "fuzz-stekelig", title: "Stekelig pluis", price: 40, category: "look", slot: "fuzz", value: "stekelig" },
+  { id: "fuzz-krullig", title: "Krullig pluis", price: 40, category: "look", slot: "fuzz", value: "krullig" },
   { id: "clothes-hoodie", title: "Hoodie", price: 50, category: "look", slot: "clothes", value: "hoodie" },
   { id: "clothes-kraag", title: "Kraag", price: 50, category: "look", slot: "clothes", value: "kraag" },
   { id: "color-paars", title: "Paars", price: 25, category: "look", slot: "color", value: "#8e44ad" },
@@ -75,11 +79,12 @@ export interface ShopAvatar {
   hat: string | null;
   eyes?: string | null;
   ears?: string | null;
+  neck?: string | null;
   background?: string | null;
   look?: Partial<AvatarLook>;
 }
 
-const LOOK_KEY: Partial<Record<AvatarSlot, keyof AvatarLook>> = { hair: "hair", face: "eyes", mouth: "mouth", clothes: "clothes" };
+const LOOK_KEY: Partial<Record<AvatarSlot, keyof AvatarLook>> = { hair: "hair", face: "eyes", mouth: "mouth", clothes: "clothes", fuzz: "fuzz" };
 
 /** Whether the item is what the avatar wears in its slot right now. */
 export function itemActive(avatar: ShopAvatar, item: ShopItem): boolean {
@@ -87,7 +92,7 @@ export function itemActive(avatar: ShopAvatar, item: ShopItem): boolean {
   const key = LOOK_KEY[item.slot];
   if (key) return (avatar.look?.[key] ?? DEFAULT_LOOK[key]) === item.value;
   if (item.slot === "color") return avatar.color === item.value;
-  return avatar[item.slot as "hat" | "eyes" | "ears" | "background"] === item.id;
+  return avatar[item.slot as "hat" | "eyes" | "ears" | "neck" | "background"] === item.id;
 }
 
 /** The avatar with the item put on, or taken off again (back to the default of that part). */

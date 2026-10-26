@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { playChord, playCue, playNote, unlockAudio } from "../audio/sampler.ts";
+import { loadSamples, playChord, playCue, playNote, unlockAudio } from "../audio/sampler.ts";
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Chip } from "../components/common/Chip.tsx";
@@ -16,7 +16,7 @@ import { chordName, INVERSION_NAME, type Quality } from "../engine/common/chord.
 import { CLEF_NAME, pitchAtPosition } from "../engine/common/clef.ts";
 import { midiOf, sameSpelling, type Accidental, type Pitch } from "../engine/common/pitch.ts";
 import { seeded, shuffle } from "../engine/common/random.ts";
-import { positionsFor, type FretPosition } from "../engine/instruments/guitar.ts";
+import { type FretPosition, midiAt, positionsFor } from "../engine/instruments/guitar.ts";
 import { CHORD_SHAPES, highestFret, shapeFor, shapeMidis, type ChordShape, type Shape } from "../engine/instruments/guitarChords.ts";
 import { resolvePianoRange, type PianoRange } from "../engine/instruments/piano.ts";
 import { answerDistance, checkAnswer, describeTarget, soundingMidi, type Answer, type Verdict } from "../engine/learning/answers.ts";
@@ -135,6 +135,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       }
       if (fresh.size > 0) setIntro([...fresh.values()]);
       setLoaded({ settings, items, cards, questions, pianoRange, maxFret: highestFret(shapes) });
+      void loadSamples(module.timbre);
     })();
     return () => {
       alive = false;
@@ -214,7 +215,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     const target = soundingOf(module, question);
     const strum = module.timbre === "guitar" ? STRUM_MS : 0;
     const playTarget = () => (target.length === 1 ? playNote(target[0], 1.6, 1, module.timbre) : playChord(target, 2, strum, module.timbre));
-    const alreadyHeard = a.kind === "piano" || a.kind === "pianoSet";
+    const alreadyHeard = a.kind === "piano" || a.kind === "pianoSet" || a.kind === "guitar";
     if (verdict.correct) {
       if (!alreadyHeard) playTarget();
       setTimeout(() => playCue("right"), CUE_DELAY_MS);
@@ -223,6 +224,14 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       playCue("wrong");
       setTimeout(playTarget, 400);
     }
+  };
+
+  /** A fret sounds as it is tapped, like a piano key, and is the answer. */
+  const tapFret = (pos: FretPosition) => {
+    if (feedback) return;
+    unlockAudio();
+    playNote(midiAt(pos.string, pos.fret), 1.6, 1, "guitar");
+    answer({ kind: "guitar", pos });
   };
 
   const stop = () => {
@@ -509,7 +518,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
       )}
       {module.answer === "guitar" && question.kind === "note" && (
         <Card tight style={{ maxWidth: 300, alignSelf: "center", width: "100%" }}>
-          <Fretboard dots={fretDots} onTap={(pos: FretPosition) => answer({ kind: "guitar", pos })} disabled={!!feedback} />
+          <Fretboard dots={fretDots} onTap={tapFret} disabled={!!feedback} />
         </Card>
       )}
       {module.answer === "guitar" && chordItem && settings.shapeInput === "choose" && !feedback && (

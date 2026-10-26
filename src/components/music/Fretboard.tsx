@@ -12,9 +12,11 @@ interface Props {
   disabled?: boolean;
 }
 
-const W = 250;
-const LEFT = 40;
-const RIGHT = W - 40;
+const W = 280;
+const LEFT = 30;
+const RIGHT = W - 30;
+/** Strings are 44 units apart, so a fingertip lands on one string at a time. */
+const GAP = (RIGHT - LEFT) / 5;
 const NUT_Y = 46;
 const FH = 58;
 
@@ -36,7 +38,7 @@ export function Fretboard({ maxFret = 4, dots = [], onTap, disabled }: Props) {
         {Array.from({ length: maxFret }, (_, i) => i + 1).map((f) => (
           <g key={f}>
             <line x1={LEFT - 14} x2={RIGHT + 14} y1={NUT_Y + f * FH} y2={NUT_Y + f * FH} stroke="#999" strokeWidth="2" />
-            <text x={LEFT - 28} y={cy(f) + 5} fontSize="13" fill="#888" textAnchor="middle">
+            <text x={LEFT - 20} y={cy(f) + 5} fontSize="13" fill="#888" textAnchor="middle">
               {f}
             </text>
           </g>
@@ -61,9 +63,9 @@ export function Fretboard({ maxFret = 4, dots = [], onTap, disabled }: Props) {
           Array.from({ length: maxFret + 1 }, (_, f) => (
             <rect
               key={`${s}-${f}`}
-              x={sx(s) - 20}
+              x={sx(s) - GAP / 2}
               y={f === 0 ? NUT_Y - 44 : NUT_Y + (f - 1) * FH}
-              width="40"
+              width={GAP}
               height={f === 0 ? 40 : FH}
               fill="transparent"
               role="button"

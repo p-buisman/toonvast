@@ -45,6 +45,18 @@ describe("shop items on the avatar", () => {
     expect(itemActive(applyItem(base, purple), purple)).toBe(true);
   });
 
+  it("dresses the fuzzball with its own items", () => {
+    const ball: ShopAvatar = { ...base, look: { kind: "pluizenbol" } };
+    const spiky = shopItem("fuzz-stekelig")!;
+    expect(applyItem(ball, spiky).look?.fuzz).toBe("stekelig");
+    expect(itemActive(applyItem(ball, spiky), spiky)).toBe(true);
+    expect(applyItem(applyItem(ball, spiky), spiky, false).look?.fuzz).toBe(DEFAULT_LOOK.fuzz);
+    const bow = shopItem("bow")!;
+    expect(applyItem(ball, bow).neck).toBe("bow");
+    expect(applyItem(applyItem(ball, bow), bow, false).neck).toBeNull();
+    expect(unlockedValues("fuzz", new Set(["fuzz-krullig"]))).toEqual(["krullig"]);
+  });
+
   it("lists what a profile unlocked per part", () => {
     expect(unlockedValues("hair", new Set(["hair-knot", "mouth-grijns"]))).toEqual(["knot"]);
     expect(unlockedValues("color", new Set())).toEqual([]);

@@ -43,9 +43,15 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
           </div>
         </Card>
         {summary.leveledUp && (
-          <Card className="feedback ok" style={{ width: "100%" }}>
-            <b>Level {summary.level}!</b>
-            <div className="muted">Je krijgt {COINS_LEVEL_UP} munten extra.</div>
+          <Card className="levelup" style={{ width: "100%" }}>
+            <div className="levelup-disc" aria-hidden="true">
+              <small>Level</small>
+              <b>{summary.level}</b>
+            </div>
+            <div className="grow">
+              <b>Level omhoog!</b>
+              <div className="muted">Je krijgt {COINS_LEVEL_UP} munten extra.</div>
+            </div>
           </Card>
         )}
         {summary.goalReached && (

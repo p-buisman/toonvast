@@ -1,5 +1,4 @@
 import { useLiveQuery } from "dexie-react-hooks";
-import { useState } from "react";
 import { Card } from "../components/common/Card.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
@@ -8,13 +7,14 @@ import { CLEF_NAME, CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../
 import { pitchName } from "../engine/common/pitch.ts";
 import { BADGES, COINS_BADGE } from "../engine/game/badges.ts";
 import { chordItemsFor, itemKey } from "../engine/learning/items.ts";
-import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrument, type ModuleDef } from "../engine/learning/modules.ts";
+import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type ModuleDef } from "../engine/learning/modules.ts";
 import { masteryOf, type Mastery } from "../engine/learning/scheduler.ts";
 import { withDefaults } from "../engine/learning/settings.ts";
 import { db, type StoredCard } from "../storage/db.ts";
 import { useApp } from "../state/useApp.ts";
 import { useProfileCards, useProfileSessions, useProfileSettings, useProfileStats } from "../state/queries.ts";
 import { MainTabs } from "./MainTabs.tsx";
+import { useInstrument } from "../state/useInstrument.ts";
 import { Badge } from "../components/common/Badge.tsx";
 
 const MASTERY_CLASS: Record<Mastery, string> = { none: "n-none", learning: "n-learning", mastered: "n-mastered" };
@@ -90,7 +90,7 @@ function ChordMap({ module, cards, keys }: { module: ModuleDef; cards: StoredCar
 
 export function ProgressScreen() {
   const { profile } = useApp();
-  const [instrument, setInstrument] = useState<Instrument>("piano");
+  const [instrument, setInstrument] = useInstrument();
   const cards = useProfileCards(profile?.id);
   const stats = useProfileStats(profile?.id);
   const sessions = useProfileSessions(profile?.id);

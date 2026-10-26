@@ -59,10 +59,15 @@ Engine (`src/engine/`):
   goed herkende antwoorden; dagdoel 5, level 10, badge 10). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
-- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, thema's, streakbeschermer), `buyRefusal`,
+- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, ook pluis en de strik, thema's,
+  streakbeschermer), `buyRefusal`,
   `applyItem`/`itemActive` (item aan of uit op een avatar), `unlockedValues` (wat een profiel per onderdeel mag kiezen).
-- `game/avatar.ts` - het poppetje: huidtinten, hoofdvormen, kapsels, haarkleuren, ogen, monden, kleding (`AvatarLook`,
-  `DEFAULT_LOOK`, `lookOf`), de kledingkleuren met hun contrasterende achtergrond (`contrastBg`), `outline` (lijnkleur).
+- `game/avatar.ts` - de avatar: soort (`kind`: poppetje of pluizenbol), huidtinten, hoofdvormen, kapsels, haarkleuren, ogen, monden,
+  kleding, en voor de pluizenbol pluis, oogmaat en iris (`AvatarLook`, `DEFAULT_LOOK`, `lookOf`, `FREE_LOOK` per soort), de
+  kleding- en vachtkleuren met hun contrasterende achtergrond (`contrastBg`), `outline` (lijnkleur), en de maten uit de
+  avatar-werkbank (`FIGURE_GEOM`, `FUZZBALL_GEOM`): verander maten daar, niet in de componenten.
+
+`src/state/useInstrument.ts` onthoudt het gekozen instrumenttabblad (les kiezen en voortgang delen het, op het apparaat).
 
 Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
@@ -81,8 +86,9 @@ Componenten (`src/components/`):
 - `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
 - `common/Icon.tsx` - de icoonset (37 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
-- `common/Avatar.tsx` - het poppetje (gezicht, nek, schouders op een schijf) uit `engine/game/avatar.ts`, aangekleed met
-  de winkelitems; alle vlakken met lijn en één schaduw onder de kin.
+- `common/Avatar.tsx` - de avatar: kiest op `look.kind` tussen het poppetje (gezicht, nek, schouders op een schijf, in dit
+  bestand) en `common/Fuzzball.tsx` (de pluizenbol: bol met pluis, armen, benen, grote ogen met iris); beide aangekleed met
+  dezelfde winkelitems, alle vlakken met lijn en één schaduw.
 - `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
   avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
 - `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.

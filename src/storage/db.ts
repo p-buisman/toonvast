@@ -11,8 +11,9 @@ export interface Avatar {
   hat: string | null;
   eyes?: string | null;
   ears?: string | null;
+  neck?: string | null;
   background?: string | null;
-  /** The face: skin, head, hair, eyes, mouth, clothes. Missing parts take the default look. */
+  /** The look: the kind of avatar and its parts. Missing parts take the default look. */
   look?: Partial<AvatarLook>;
 }
 

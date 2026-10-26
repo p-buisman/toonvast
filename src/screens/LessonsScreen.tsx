@@ -9,37 +9,19 @@ import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type Instrume
 import { isDue } from "../engine/learning/scheduler.ts";
 import { withDefaults } from "../engine/learning/settings.ts";
 import { useApp } from "../state/useApp.ts";
+import { useInstrument } from "../state/useInstrument.ts";
 import { useProfileCards, useProfileSettings } from "../state/queries.ts";
 
-const INSTRUMENT_KEY = "toonvast.instrument";
 const ICON: Record<Instrument, IconName> = { theory: "staff", piano: "piano", guitar: "guitar" };
-
-function readInstrument(): Instrument {
-  try {
-    const v = localStorage.getItem(INSTRUMENT_KEY);
-    return INSTRUMENTS.includes(v as Instrument) ? (v as Instrument) : "piano";
-  } catch {
-    return "piano";
-  }
-}
 
 /** Every module per instrument, to start one by hand; the home screen only suggests the next lesson. */
 export function LessonsScreen() {
   const { profile, nav } = useApp();
-  const [instrument, setInstrument] = useState<Instrument>(readInstrument);
+  const [instrument, pickInstrument] = useInstrument();
   const [now] = useState(() => new Date());
   const cards = useProfileCards(profile?.id);
   const settings = useProfileSettings(profile?.id);
   if (!profile) return null;
-
-  const pickInstrument = (i: Instrument) => {
-    setInstrument(i);
-    try {
-      localStorage.setItem(INSTRUMENT_KEY, i);
-    } catch {
-      // Not remembered, that is all.
-    }
-  };
 
   const subtitle = (m: ModuleDef): string => {
     if (m.phase > PLAYABLE_PHASE) return `Komt in versie ${m.phase}`;
