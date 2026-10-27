@@ -58,6 +58,27 @@ describe("detectPitch", () => {
     expect(centsOff(found!, 45)).toBeCloseTo(-12, 0);
   });
 
+  it("keeps the low strings in their octave when the fundamental is weak", () => {
+    // A phone microphone leaves little of the guitar's lowest octave: a loud second harmonic, little else.
+    for (const midi of [40, 45, 50]) {
+      const hz = frequencyOf(midi);
+      for (const overtones of [
+        [0.1, 1, 0.1, 0.4],
+        [0, 1, 0.2, 0.1],
+      ]) {
+        const found = detectPitch(tone(hz, 48000, 4096, overtones), 48000);
+        expect(Math.abs(centsOff(found!, midi))).toBeLessThan(3);
+      }
+    }
+  });
+
+  it("does not drop a higher string an octave", () => {
+    for (const midi of [52, 57, 62, 64]) {
+      const found = detectPitch(tone(frequencyOf(midi), 48000), 48000);
+      expect(Math.abs(centsOff(found!, midi))).toBeLessThan(3);
+    }
+  });
+
   it("hears nothing in silence or noise", () => {
     expect(detectPitch(new Float32Array(4096), 48000)).toBeNull();
     const noise = new Float32Array(4096);

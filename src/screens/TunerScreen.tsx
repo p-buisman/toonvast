@@ -12,7 +12,7 @@ import { STANDARD_TUNING, STRING_NAMES } from "../engine/instruments/guitar.ts";
 import { median, nearestString, tuneAdvice, type StringReading } from "../engine/instruments/tuner.ts";
 import { useApp } from "../state/useApp.ts";
 
-/** Readings younger than this are averaged; after it without sound the screen goes back to listening. */
+/** Readings younger than this are averaged; after this long without sound the reading freezes until the next string. */
 const WINDOW_MS = 600;
 const SILENCE_MS = 1200;
 /** In tune this long, and the string counts as done. */
@@ -63,8 +63,8 @@ export function TunerScreen() {
     if (hz !== null) recent.current.push({ hz, at: now });
     const last = recent.current[recent.current.length - 1];
     if (!last || now - last.at > SILENCE_MS) {
+      // Silence: the last advice stays on the screen, so there is time to turn the peg and pluck again.
       okSince.current = null;
-      setHeard(null);
       return;
     }
     const smooth = median(recent.current.map((r) => r.hz));

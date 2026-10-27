@@ -9,6 +9,9 @@ export interface PitchOptions {
   minLevel?: number;
 }
 
+/** How much higher the peak at double the period must be before it wins from the first peak. */
+const OCTAVE_MARGIN = 0.02;
+
 export function detectPitch(samples: Float32Array, sampleRate: number, { minHz = 70, maxHz = 400, minLevel = 0.004 }: PitchOptions = {}): number | null {
   const n = samples.length;
   let energy = 0;
@@ -45,7 +48,12 @@ export function detectPitch(samples: Float32Array, sampleRate: number, { minHz =
   if (peaks.length === 0) return null;
   const highest = Math.max(...peaks.map((p) => nsdf[p]));
   if (highest < 0.6) return null;
-  const chosen = peaks.find((p) => nsdf[p] >= 0.9 * highest)!;
+  let chosen = peaks.find((p) => nsdf[p] >= 0.9 * highest)!;
+  // A weak fundamental (a phone microphone loses much of the guitar's lowest octave) leaves the peak at half the
+  // period nearly as high as the one at the period itself; when the peak at double the lag is clearly higher,
+  // that longer lag is the period. A tone that really is an octave higher peaks equally at both, and keeps the short one.
+  const twice = peaks.find((p) => Math.abs(p - 2 * chosen) <= 2 + 0.02 * chosen);
+  if (twice !== undefined && nsdf[twice] > nsdf[chosen] + OCTAVE_MARGIN) chosen = twice;
 
   // Parabolic interpolation around the peak for a lag finer than one sample.
   let period = chosen;
