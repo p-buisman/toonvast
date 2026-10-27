@@ -39,6 +39,8 @@ Engine (`src/engine/`):
 - `instruments/piano.ts` - toetsindeling voor een bereik: `whiteKeys`, `blackKeys`, `PIANO_RANGES`, `rangeCovering`.
 - `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `preferredPosition` (hoogste snaar, laagste
   fret), `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
+- `instruments/tuner.ts` - de stemmer: `frequencyOf`, `centsOff`, `nearestString` (dichtstbijzijnde open snaar met afwijking),
+  `tuneAdvice` (strakker/losser/ok binnen `TUNE_TOLERANCE_CENTS`), `median`.
 - `instruments/guitarChords.ts` - de greeptabel (`CHORD_SHAPES`, één standaardgreep per akkoord), `shapeFor`, `shapeMidis`.
 - `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord/toonsoort), vraag (notenbalk, naam,
   geluid, geluid+notenbalk) en antwoordvorm, klank (`timbre`); `usesStaff`, `showsStaff`, `hears`, `playsShape`.
@@ -81,12 +83,16 @@ Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `bad
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
 
 Audio (`src/audio/`): `sampler.ts` (Web Audio; piano- en gitaarsamples per `Timbre`, `playNote`/`playChord` met strum,
-goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek).
+goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek, `getContext`), `pitch.ts`
+(`detectPitch`: toonhoogte uit een stuk signaal, genormaliseerde autocorrelatie) en `mic.ts` (`openMic`: microfoon zonder
+ruisonderdrukking, geeft om de 80 ms 4096 samples; `micFailure` vertaalt een fout naar geweigerd/geen/bezet).
 
 Componenten (`src/components/`):
 
 - `music/Staff.tsx` - notenbalk (SVG) met sleutel, noten, voortekens, hulplijnen; `layout="melody"` zet noten naast elkaar,
   `signature` tekent de voortekens vooraan (noten in de toonsoort krijgen dan geen los voorteken); ook als invoer (tik op positie).
+- `music/StringKeys.tsx` - zes snaarknoppen (naam en nummer; actief, in stemming, tik = toon); `music/TuneMeter.tsx` - de
+  stemmeter van -50 tot +50 cent met groene zone.
 - `music/KeyButtons.tsx` - toonsoortknoppen in kwintenvolgorde (zelfde raster als de letterknoppen); `music/KeyIntro.tsx` - de
   introductie van een nieuwe toonsoort (uitleg, toonladder op de balk, afspelen); `music/useMelodyPlayer.ts` - speelt een melodie
   noot voor noot en zegt welke noot klinkt (oplichten op de balk), met een eventuele C vooraf.
@@ -96,7 +102,7 @@ Componenten (`src/components/`):
 - `music/ChordNameButtons.tsx` - akkoordnaam: ♯/♭, majeur/mineur, ligging, dan de letter.
 - `music/AccidentalToggle.tsx` - ♭ ♮ ♯ voor noten op de notenbalk zetten.
 - `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
-- `common/Icon.tsx` - de icoonset (37 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
+- `common/Icon.tsx` - de icoonset (41 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - de avatar: kiest op `look.kind` tussen het poppetje (gezicht, nek, schouders op een schijf, in dit
   bestand) en `common/Fuzzball.tsx` (de pluizenbol: bol met pluis, armen, benen, grote ogen met iris); beide aangekleed met
@@ -120,6 +126,8 @@ Nieuwe leerstof wordt eerst getoond voordat ernaar gevraagd wordt (`ShapesScreen
 introductie van nog nooit gevraagde grepen aan het begin van een ronde); doe dat ook bij nieuwe modules.
 De look heeft twee modi op `.app`: `data-mode="rustig"` (standaard) en `"speels"` (kindmodus, uit `kidMode`); thema's uit de winkel
 (`data-theme`) leggen alleen kleuren daaroverheen. Fonts Inter en Nunito komen uit `@fontsource` (in `main.tsx`).
+`TunerScreen` (route `tuner`, kaart bovenaan het tabblad Gitaar van `LessonsScreen`) is de gitaarstemmer: geen les, geen XP;
+luistert via `mic.ts`, middelt de laatste metingen, kleurt de snaar groen na een halve seconde binnen 5 cent.
 `ProfileForm` is het samenstellen van de avatar (vrije keuzes plus wat in de winkel is gekocht); het is de bron voor nieuw
 profiel en profiel bewerken.
 

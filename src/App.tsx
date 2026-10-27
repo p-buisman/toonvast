@@ -13,6 +13,7 @@ import { ShapesScreen } from "./screens/ShapesScreen.tsx";
 import { ShopScreen } from "./screens/ShopScreen.tsx";
 import { ResultScreen } from "./screens/ResultScreen.tsx";
 import { SettingsScreen } from "./screens/SettingsScreen.tsx";
+import { TunerScreen } from "./screens/TunerScreen.tsx";
 import { WelcomeScreen } from "./screens/WelcomeScreen.tsx";
 import { AppProvider } from "./state/AppContext.tsx";
 import { useApp } from "./state/useApp.ts";
@@ -90,6 +91,9 @@ function Router() {
       break;
     case "lessons":
       screen = <LessonsScreen />;
+      break;
+    case "tuner":
+      screen = <TunerScreen />;
       break;
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");

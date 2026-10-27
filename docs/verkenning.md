@@ -1,6 +1,6 @@
 # Verkenning muziek-app Toonvast
 
-Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 4 gebouwd (noten lezen, akkoorden, badges, winkel, gehoortraining, toonsoorten); zie §11.
+Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 5 gebouwd (noten lezen, akkoorden, badges, winkel, gehoortraining, toonsoorten, gitaarstemmer); zie §11.
 
 Een educatieve web-app (PWA) voor een gezin dat piano en gitaar leert. De speler leert noten op de notenbalk, pianotoetsen, gitaargrepen, akkoorden, toonsoorten en gehoor. Per persoon en per instrument wordt de voortgang bijgehouden, met een spelelement om te blijven oefenen.
 
@@ -200,20 +200,20 @@ Versienummers van bibliotheken worden bij het opzetten gecontroleerd; deze verke
 
 ## 11. Fasering
 
-| Fase | Inhoud                                                                                                                                  | Resultaat                                                  |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| 0    | Repo, Vite/PWA-opzet, theorie-engine met tests, SVG-notenbalk, schermpiano, gitaarhals, sampler met piano-geluid, GitHub Pages          | Lege app die noten toont en toetsen laat klinken           |
-| 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                                  | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
-| 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                                       | Versie 2: akkoorden en winkel                              |
-| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)            | Versie 3: gehoortraining                                   |
-| 4    | M7 toonsoort (drie lessen; gebouwd), daarna mineur; eventueel fret 5–12 en barré-vormen                                                 | Versie 4: toonsoorten                                      |
-| 5    | Gitaarstemmer: toonhoogte uit de microfoon, herkent vanzelf welke snaar klinkt, toont hoe ver ernaast en welke kant de stemknop op moet | Versie 5: stemmen                                          |
+| Fase | Inhoud                                                                                                                                                 | Resultaat                                                  |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| 0    | Repo, Vite/PWA-opzet, theorie-engine met tests, SVG-notenbalk, schermpiano, gitaarhals, sampler met piano-geluid, GitHub Pages                         | Lege app die noten toont en toetsen laat klinken           |
+| 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                                                 | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
+| 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                                                      | Versie 2: akkoorden en winkel                              |
+| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)                           | Versie 3: gehoortraining                                   |
+| 4    | M7 toonsoort (drie lessen; gebouwd), daarna mineur; eventueel fret 5–12 en barré-vormen                                                                | Versie 4: toonsoorten                                      |
+| 5    | Gitaarstemmer (gebouwd): toonhoogte uit de microfoon, herkent vanzelf welke snaar klinkt, toont hoe ver ernaast en of de snaar strakker of losser moet | Versie 5: stemmen                                          |
 
 ---
 
 ## 12. Open punten en risico's
 
-- **Gitaarstemmer (fase 5)**: toonhoogtedetectie in de browser (Web Audio, autocorrelatie of YIN) op de microfoon; de snaar volgt uit de dichtstbijzijnde van E2 A2 D3 G3 B3 E4, de afwijking in cents bepaalt de pijl (omhoog = aandraaien). Microfoontoegang vraagt een gebruikersgebaar en werkt in de PWA op iOS alleen in de voorgrond.
+- **Gitaarstemmer (fase 5)**: gebouwd als `audio/pitch.ts` (genormaliseerde autocorrelatie, eerste duidelijke piek, parabolische verfijning) op `audio/mic.ts` (microfoon zonder ruisonderdrukking, 4096 samples per 80 ms) en `engine/instruments/tuner.ts` (dichtstbijzijnde open snaar, cents, advies strakker/losser; nooit links/rechts, want dat hangt van de kant van de stemknop af). Binnen 5 cent een halve seconde = in stemming. Microfoontoegang vraagt een gebruikersgebaar en werkt in de PWA op iOS alleen in de voorgrond; hoe goed de detectie in de praktijk op de telefoon werkt (galm, lage E), moet in gebruik blijken.
 - **Melodiegenerator (M7)**: gebouwd als `engine/learning/melody.ts` (stapjes met af en toe een sprong, kwint en leidtoon verplicht, slot op de grondtoon). Of de melodieën op den duur te eentonig worden, blijkt in het gebruik; ritme is een mogelijke uitbreiding.
 - **Samplegrootte**: 3–5 MB piano plus gitaar is op wifi prima, maar de eerste start moet een laadindicatie krijgen; daarna cachet de service worker alles.
 - **Kindmodus vs. volwassen modus**: één codebase met variabelen voor grootte en speelsheid; geen twee aparte interfaces.

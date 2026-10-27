@@ -39,6 +39,10 @@ export const ICON_NAMES = [
   "bass-clef",
   "ledger",
   "bolt",
+  "tuning-fork",
+  "mic",
+  "arrow-up",
+  "arrow-down",
   "ear",
   "moon",
 ] as const;
@@ -265,6 +269,31 @@ export const ICON_PATHS: Record<IconName, React.ReactNode> = {
   bolt: (
     <>
       <path d="M13 2.5L5.5 13.5h6l-1 8L18.5 10.5h-6z" key="0" />
+    </>
+  ),
+  "tuning-fork": (
+    <>
+      <path d="M8 3v7a4 4 0 0 0 8 0V3" key="0" />
+      <path d="M12 14v7" key="1" />
+      <path d="M9.5 21h5" key="2" />
+      <path d="M6 3h4M14 3h4" key="3" />
+    </>
+  ),
+  mic: (
+    <>
+      <rect x="9" y="3" width="6" height="11" rx="3" key="0" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0" key="1" />
+      <path d="M12 17.5V21M9 21h6" key="2" />
+    </>
+  ),
+  "arrow-up": (
+    <>
+      <path d="M12 20V4M5 11l7-7 7 7" key="0" />
+    </>
+  ),
+  "arrow-down": (
+    <>
+      <path d="M12 4v16M5 13l7 7 7-7" key="0" />
     </>
   ),
   ear: (

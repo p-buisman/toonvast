@@ -1170,6 +1170,95 @@ svg.ico {
   font-weight: 600;
 }
 
+/* Tuner: one button per string (name and number), the note that sounds, the meter and the advice. */
+.string-keys {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.string-keys button {
+  min-height: 56px;
+  border-radius: var(--radius-control);
+  background: var(--card);
+  border: 1.5px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--ink);
+}
+
+.string-keys button small {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.string-keys button.on {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.string-keys button.ok {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.tune-note {
+  text-align: center;
+  line-height: 1;
+}
+
+.tune-note b {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 72px;
+  font-weight: 900;
+}
+
+.tune-note small {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.tune-meter {
+  width: 100%;
+  display: block;
+}
+
+.tune-advice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: 22px;
+}
+
+.tune-advice svg.ico {
+  width: 36px;
+  height: 36px;
+  color: var(--accent);
+}
+
+.tune-advice.ok svg.ico {
+  color: var(--ok);
+}
+
+.feedback .feedback-mark.listen-mark {
+  background: var(--accent);
+}
+
 /* Purchase confirmation */
 .modal-backdrop {
   position: fixed;
@@ -1361,6 +1450,11 @@ svg.ico {
 
 [data-mode="speels"] .tabs button.on {
   border: 2px solid var(--edge);
+}
+
+[data-mode="speels"] .string-keys button {
+  border: 2.5px solid var(--edge);
+  box-shadow: 3px 3px 0 var(--edge);
 }
 
 [data-mode="speels"] .feedback-mark {

@@ -75,7 +75,8 @@ let decodeErrors = 0;
 let mediaUnlocked = false;
 let mediaUrl: string | null = null;
 
-function getContext(): AudioContext | null {
+/** The one audio context of the app; null where Web Audio is missing. */
+export function getContext(): AudioContext | null {
   if (context) return context;
   const Ctor = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext) as AudioContextCtor | undefined;
   if (!Ctor) return null;

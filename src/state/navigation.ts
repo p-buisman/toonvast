@@ -15,7 +15,8 @@ export type Route =
   | { name: "shapes"; moduleId: ModuleId }
   | { name: "profile" }
   | { name: "goals" }
-  | { name: "lessons" };
+  | { name: "lessons" }
+  | { name: "tuner" };
 
 export interface Nav {
   route: Route;

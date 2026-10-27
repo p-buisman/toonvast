@@ -49,6 +49,20 @@ export function LessonsScreen() {
     >
       <Tabs options={INSTRUMENTS.map((i) => ({ value: i, label: INSTRUMENT_NAME[i] }))} value={instrument} onChange={pickInstrument} />
       <div className="stack exercise-list">
+        {instrument === "guitar" && (
+          <Card tight>
+            <button type="button" className="item grow" style={{ padding: 6 }} onClick={() => nav.go({ name: "tuner" })}>
+              <div className="icon" aria-hidden="true">
+                <Icon name="tuning-fork" />
+              </div>
+              <div className="grow">
+                <b>Gitaar stemmen</b>
+                <div className="muted">Hoort welke snaar je aanslaat</div>
+              </div>
+              <Chip>Open</Chip>
+            </button>
+          </Card>
+        )}
         {modulesFor(instrument).map((m) => {
           const playable = m.phase <= PLAYABLE_PHASE;
           return (
