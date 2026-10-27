@@ -26,17 +26,35 @@ export async function saveBackupFile(): Promise<"shared" | "downloaded"> {
   return "downloaded";
 }
 
-/** Let the user pick a backup file and merge it in; resolves with the number of profiles in the file. */
+let picker: HTMLInputElement | null = null;
+
+/**
+ * The file input lives in the document and is reused: iOS Safari never fires `change` on an input that was created
+ * on the fly and left out of the DOM, so a restore there silently did nothing.
+ */
+function filePicker(): HTMLInputElement {
+  if (picker && picker.isConnected) return picker;
+  picker = document.createElement("input");
+  picker.type = "file";
+  picker.accept = "application/json,.json";
+  picker.setAttribute("aria-hidden", "true");
+  picker.tabIndex = -1;
+  Object.assign(picker.style, { position: "fixed", left: "-9999px", width: "1px", height: "1px", opacity: "0" });
+  document.body.appendChild(picker);
+  return picker;
+}
+
+/** Let the user pick a backup file and merge it in; resolves with the number of profiles in the file, null when cancelled. */
 export function restoreBackupFile(): Promise<number | null> {
   return new Promise((resolve, reject) => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "application/json,.json";
+    const input = filePicker();
+    input.value = "";
     input.onchange = async () => {
       const file = input.files?.[0];
       if (!file) return resolve(null);
       try {
         const backup = parseBackup(await file.text());
+        if (backup.profiles.length === 0) throw new Error("Deze back-up bevat geen profielen.");
         const result = await importBackup(backup);
         resolve(result.profiles);
       } catch (e) {
