@@ -13,7 +13,7 @@ export interface Avatar {
   ears?: string | null;
   neck?: string | null;
   background?: string | null;
-  /** The look: the kind of avatar and its parts. Missing parts take the default look. */
+  /** The look: eyes, mouth and iris. Missing or unknown parts take the default look. */
   look?: Partial<AvatarLook>;
 }
 

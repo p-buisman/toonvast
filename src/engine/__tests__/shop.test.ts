@@ -1,14 +1,16 @@
 import { describe, expect, it } from "vitest";
-import { contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint } from "../game/avatar.ts";
+import { contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint, type AvatarLook } from "../game/avatar.ts";
 import { applyItem, itemActive, itemReady, itemShown, shopItem, unlockedValues, type ShopAvatar } from "../game/shop.ts";
 
 const base: ShopAvatar = { color: "#3d8bd9", hat: null };
 
 describe("avatar look", () => {
-  it("fills in the default face for a profile without one", () => {
+  it("fills in the default look for a profile without one, or with the figure of the first version", () => {
     expect(lookOf(base)).toEqual(DEFAULT_LOOK);
-    expect(lookOf({ look: { hair: "lang" } }).hair).toBe("lang");
-    expect(lookOf({ look: { hair: "lang" } }).mouth).toBe("lach");
+    expect(lookOf({ look: { eyes: "knipoog" } }).eyes).toBe("knipoog");
+    expect(lookOf({ look: { eyes: "knipoog" } }).mouth).toBe("lach");
+    const figure = { look: { kind: "poppetje", eyes: "stip", mouth: "neutraal", hair: "lang" } as unknown as Partial<AvatarLook> };
+    expect(lookOf(figure)).toEqual(DEFAULT_LOOK);
   });
 
   it("gives every clothing colour a background and darkens an outline", () => {
@@ -33,23 +35,20 @@ describe("fur colours of the drawn fuzzball", () => {
   });
 });
 
-describe("what the shop sells per kind of avatar", () => {
+describe("what the shop sells", () => {
   it("marks what is not drawn yet and hides what is free", () => {
-    expect(itemReady(shopItem("sunglasses")!, "pluizenbol")).toBe(true);
-    expect(itemReady(shopItem("sunglasses")!, "poppetje")).toBe(false);
-    expect(itemReady(shopItem("hat-crown")!, "pluizenbol")).toBe(false);
-    expect(itemReady(shopItem("hat-cap")!, "pluizenbol")).toBe(true);
-    expect(itemReady(shopItem("hat-top")!, "pluizenbol")).toBe(true);
-    expect(itemReady(shopItem("bg-stars")!, "pluizenbol")).toBe(true);
-    expect(itemReady(shopItem("bg-notes")!, "pluizenbol")).toBe(false);
-    expect(itemShown(shopItem("face-open")!, "pluizenbol")).toBe(false);
-    expect(itemShown(shopItem("face-open")!, "poppetje")).toBe(true);
-    expect(itemShown(shopItem("hat-cap")!, "pluizenbol")).toBe(true);
-    expect(itemShown(shopItem("hair-knot")!, "pluizenbol")).toBe(false);
-    expect(itemShown(shopItem("color-paars")!, "pluizenbol")).toBe(false);
-    expect(itemShown(shopItem("theme-zee")!, "pluizenbol")).toBe(true);
+    expect(itemReady(shopItem("headphones")!)).toBe(false);
+    for (const id of ["sunglasses", "hat-crown", "hat-cap", "hat-top", "hat-tall", "bow", "mouth-grijns", "bg-stars", "bg-notes"]) {
+      expect(itemReady(shopItem(id)!)).toBe(true);
+    }
+    expect(itemShown(shopItem("face-open")!)).toBe(false);
+    expect(itemShown(shopItem("face-knipoog")!)).toBe(true);
+    expect(itemShown(shopItem("hat-cap")!)).toBe(true);
+    expect(itemShown(shopItem("theme-zee")!)).toBe(true);
     expect(shopItem("face-dicht")!.value).toBe("dicht");
     expect(shopItem("mouth-zang")!.slot).toBe("mouth");
+    expect(shopItem("fuzz-stekelig")).toBeUndefined();
+    expect(shopItem("hair-krullen")).toBeUndefined();
   });
 });
 
@@ -63,36 +62,24 @@ describe("shop items on the avatar", () => {
   });
 
   it("sets a look part and falls back to the default when taken off", () => {
-    const curls = shopItem("hair-krullen")!;
-    const on = applyItem(base, curls);
-    expect(on.look?.hair).toBe("krullen");
-    expect(itemActive(on, curls)).toBe(true);
-    expect(itemActive(base, curls)).toBe(false);
-    expect(applyItem(on, curls, false).look?.hair).toBe(DEFAULT_LOOK.hair);
     const wink = shopItem("face-knipoog")!;
-    expect(applyItem(base, wink).look?.eyes).toBe("knipoog");
+    const on = applyItem(base, wink);
+    expect(on.look?.eyes).toBe("knipoog");
+    expect(itemActive(on, wink)).toBe(true);
+    expect(itemActive(base, wink)).toBe(false);
+    expect(applyItem(on, wink, false).look?.eyes).toBe(DEFAULT_LOOK.eyes);
+    const song = shopItem("mouth-zang")!;
+    expect(applyItem(base, song).look?.mouth).toBe("zang");
   });
 
-  it("sets a clothing colour", () => {
-    const purple = shopItem("color-paars")!;
-    expect(applyItem(base, purple).color).toBe("#8e44ad");
-    expect(itemActive(applyItem(base, purple), purple)).toBe(true);
-  });
-
-  it("dresses the fuzzball with its own items", () => {
-    const ball: ShopAvatar = { ...base, look: { kind: "pluizenbol" } };
-    const spiky = shopItem("fuzz-stekelig")!;
-    expect(applyItem(ball, spiky).look?.fuzz).toBe("stekelig");
-    expect(itemActive(applyItem(ball, spiky), spiky)).toBe(true);
-    expect(applyItem(applyItem(ball, spiky), spiky, false).look?.fuzz).toBe(DEFAULT_LOOK.fuzz);
+  it("puts the bow on and takes it off", () => {
     const bow = shopItem("bow")!;
-    expect(applyItem(ball, bow).neck).toBe("bow");
-    expect(applyItem(applyItem(ball, bow), bow, false).neck).toBeNull();
-    expect(unlockedValues("fuzz", new Set(["fuzz-krullig"]))).toEqual(["krullig"]);
+    expect(applyItem(base, bow).neck).toBe("bow");
+    expect(applyItem(applyItem(base, bow), bow, false).neck).toBeNull();
   });
 
   it("lists what a profile unlocked per part", () => {
-    expect(unlockedValues("hair", new Set(["hair-knot", "mouth-grijns"]))).toEqual(["knot"]);
-    expect(unlockedValues("color", new Set())).toEqual([]);
+    expect(unlockedValues("mouth", new Set(["mouth-grijns", "face-knipoog"]))).toEqual(["grijns"]);
+    expect(unlockedValues("face", new Set())).toEqual([]);
   });
 });

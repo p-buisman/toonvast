@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Button } from "../components/common/Button.tsx";
 import { IconButton, Screen } from "../components/layout/Screen.tsx";
-import { AVATAR_COLORS, createProfile } from "../storage/repo.ts";
+import { createProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
 import { ProfileForm, type ProfileFormValue } from "./ProfileForm.tsx";
 import { Icon } from "../components/common/Icon.tsx";
-import { DEFAULT_LOOK } from "../engine/game/avatar.ts";
+import { DEFAULT_LOOK, FUR_COLORS } from "../engine/game/avatar.ts";
 
 const NOTHING: ReadonlySet<string> = new Set();
 
 export function NewProfileScreen() {
   const { nav, chooseProfile } = useApp();
-  const [value, setValue] = useState<ProfileFormValue>({ name: "", color: AVATAR_COLORS[0], look: DEFAULT_LOOK, kidMode: false, dayGoal: 60 });
+  const [value, setValue] = useState<ProfileFormValue>({ name: "", color: FUR_COLORS[0], look: DEFAULT_LOOK, kidMode: false, dayGoal: 60 });
   const [busy, setBusy] = useState(false);
 
   const create = async () => {

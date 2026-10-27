@@ -1,106 +1,62 @@
 /**
- * The avatar: a face with neck and shoulders, composed from a few shapes. The chosen colour is the clothing;
- * the background is the contrasting tint that belongs to it. Mirrors the Avatar card of the design system.
+ * The avatar: the fuzzball drawn in art/pluizenbolletje.svg, on a disc in the fur colour of the profile with the
+ * contrasting background tint. Mirrors the Avatar card of the design system.
  */
-export const SKIN_TONES = { licht: "#f7d9c4", "medium-licht": "#e3b48f", "medium-donker": "#b57a4e", donker: "#6f4a33" } as const;
-export type Skin = keyof typeof SKIN_TONES;
-
-export const HEAD_SHAPES = {
-  rond: { rx: 27, ry: 27, corner: 27 },
-  ovaal: { rx: 25, ry: 30, corner: 25 },
-  hoekig: { rx: 26, ry: 27, corner: 15 },
-} as const;
-export type Head = keyof typeof HEAD_SHAPES;
-
-export const HAIR_STYLES = ["kort", "lang", "krullen", "knot", "stekeltjes", "staart", "geen"] as const;
-export type Hair = (typeof HAIR_STYLES)[number];
-
-export const HAIR_COLORS = { zwart: "#1c1c1e", bruin: "#4a3222", blond: "#e8c46a", rood: "#b5532c", grijs: "#9a9a9a" } as const;
-export type HairColor = keyof typeof HAIR_COLORS;
-
-/** The eye styles of the figure; `dicht` exists on the fuzzball only. */
-export const EYE_STYLES = ["blij", "open", "stip", "knipoog"] as const;
-export type Eyes = (typeof EYE_STYLES)[number] | "dicht";
-
-/** The mouths of the figure; the fuzzball has its own set (`FUZZBALL_MOUTHS`), the figure shows an unknown one as a smile. */
-export const MOUTH_STYLES = ["lach", "grijns", "neutraal", "verrast"] as const;
-export type Mouth = (typeof MOUTH_STYLES)[number] | "tong" | "open-lach" | "zang";
-
-/** Two kinds of avatar: the figure (face, neck, shoulders) and the fuzzball (the drawing in art/pluizenbolletje.svg). */
-export const AVATAR_KINDS = ["poppetje", "pluizenbol"] as const;
-export type AvatarKind = (typeof AVATAR_KINDS)[number];
-
-/** Fuzz styles are in the shop as "coming", the drawing has one fuzz so far. */
-export const FUZZ_STYLES = ["zacht", "stekelig", "krullig"] as const;
-export type Fuzz = (typeof FUZZ_STYLES)[number];
-
 export const IRIS_COLORS = { bruin: "#6b4423", blauw: "#3d8bd9", groen: "#4f9a3c", grijs: "#8a8f9a", amber: "#d99a1c", paars: "#8e44ad" } as const;
 export type Iris = keyof typeof IRIS_COLORS;
 
-/** The eye and mouth layers of the drawing; another value falls back to the first. */
-export const FUZZBALL_EYES = ["open", "blij", "knipoog", "dicht"] as const satisfies readonly Eyes[];
-export const FUZZBALL_MOUTHS = ["lach", "open-lach", "tong", "verrast", "zang"] as const satisfies readonly Mouth[];
-export type FuzzballEyes = (typeof FUZZBALL_EYES)[number];
-export type FuzzballMouth = (typeof FUZZBALL_MOUTHS)[number];
-
-export const CLOTHES_STYLES = ["shirt", "hoodie", "kraag"] as const;
-export type Clothes = (typeof CLOTHES_STYLES)[number];
+/** The eye and mouth layers of the drawing. */
+export const FUZZBALL_EYES = ["open", "blij", "knipoog", "dicht"] as const;
+export const FUZZBALL_MOUTHS = ["lach", "open-lach", "grijns", "tong", "verrast", "zang"] as const;
+export type Eyes = (typeof FUZZBALL_EYES)[number];
+export type Mouth = (typeof FUZZBALL_MOUTHS)[number];
 
 export interface AvatarLook {
-  kind: AvatarKind;
-  skin: Skin;
-  head: Head;
-  hair: Hair;
-  hairColor: HairColor;
   eyes: Eyes;
   mouth: Mouth;
-  clothes: Clothes;
-  /** Fuzzball only: the fuzz and the colour of the iris. */
-  fuzz: Fuzz;
   iris: Iris;
 }
 
-export const DEFAULT_LOOK: AvatarLook = {
-  kind: "poppetje",
-  skin: "licht",
-  head: "rond",
-  hair: "kort",
-  hairColor: "bruin",
-  eyes: "blij",
-  mouth: "lach",
-  clothes: "shirt",
-  fuzz: "zacht",
-  iris: "bruin",
-};
+export const DEFAULT_LOOK: AvatarLook = { eyes: "blij", mouth: "lach", iris: "bruin" };
 
-/** A profile made before the face existed gets the default face in its own colour. */
+const has = <T extends string>(all: readonly T[], v: unknown): v is T => typeof v === "string" && (all as readonly string[]).includes(v);
+
+/**
+ * The look of a profile, every part a value the drawing has. A profile made before the fuzzball (the figure of the
+ * first version, or a profile without a look) gets the default look; its colour becomes the fur.
+ */
 export function lookOf(avatar: { look?: Partial<AvatarLook> }): AvatarLook {
-  return { ...DEFAULT_LOOK, ...avatar.look };
+  const l = avatar.look ?? {};
+  return {
+    eyes: has(FUZZBALL_EYES, l.eyes) ? l.eyes : DEFAULT_LOOK.eyes,
+    mouth: has(FUZZBALL_MOUTHS, l.mouth) ? l.mouth : DEFAULT_LOOK.mouth,
+    iris: has(Object.keys(IRIS_COLORS) as Iris[], l.iris) ? l.iris : DEFAULT_LOOK.iris,
+  };
 }
-
-/** Clothing colours every profile may pick; the shop adds more. */
-export const AVATAR_COLORS = ["#e07a5f", "#3d8bd9", "#6c9a4c", "#b8a1e3", "#f4a300", "#2a9d8f"] as const;
 
 /** The orange of the drawing: this fur keeps the drawing's own colours. */
 export const FUR_ORANGE = "#ff8110";
-/** Fur colours of the fuzzball, all free. */
+/** Fur colours, all free; the first is the default of a new profile. */
 export const FUR_COLORS = [FUR_ORANGE, "#2f6fed", "#2e9e5b", "#d64545", "#f4a300", "#8e44ad", "#0e7c86", "#e879b6"] as const;
 
-/** The background tint per clothing colour: opposite hue, light, so it never clashes. */
+/**
+ * The background tint per fur colour: opposite hue, light, so it never clashes. The first six are the clothing colours
+ * of the figure of the first version; a profile from then keeps that colour as its fur.
+ */
 const CONTRAST_BG: Record<string, string> = {
   "#e07a5f": "#dcf2e6",
   "#3d8bd9": "#ffe9b8",
   "#6c9a4c": "#fbe0e4",
   "#b8a1e3": "#f1f3cf",
-  "#f4a300": "#dbe6fb",
   "#2a9d8f": "#fde5d2",
-  "#8e44ad": "#fff0c8",
-  "#d64545": "#d9ecf7",
-  "#2f6fed": "#ffe9b8",
-  "#2e9e5b": "#fbe0e4",
-  "#0e7c86": "#fde5d2",
   "#ff6a3d": "#dcf2e6",
   "#ff8110": "#d6ebf8",
+  "#2f6fed": "#ffe9b8",
+  "#2e9e5b": "#fbe0e4",
+  "#d64545": "#d9ecf7",
+  "#f4a300": "#dbe6fb",
+  "#8e44ad": "#fff0c8",
+  "#0e7c86": "#fde5d2",
   "#e879b6": "#e4f0d8",
 };
 
@@ -108,75 +64,24 @@ export function contrastBg(color: string): string {
   return CONTRAST_BG[color] ?? "#f1ede4";
 }
 
-type FreeLook = Partial<{ [K in keyof AvatarLook]: readonly AvatarLook[K][] }>;
-/** The choices that need no purchase, per kind; the other values of a part come from the shop. */
-export const FREE_LOOK: Record<AvatarKind, FreeLook> = {
-  poppetje: { hair: ["kort", "lang", "geen"], eyes: ["blij", "stip"], mouth: ["lach", "neutraal"], clothes: ["shirt"] },
-  pluizenbol: { eyes: ["open", "blij"], mouth: ["lach", "open-lach"], fuzz: ["zacht"] },
-};
-
-/**
- * Sizes and positions, in units of the 120×120 grid, as set on the avatar workbench (26 October 2026).
- * The figure: head centre and scale, eyes, mouth, ears, neck, where the collar starts under the chin, hair spikes and fringe.
- */
-export const FIGURE_GEOM = {
-  headScale: 1.1,
-  headY: 56,
-  eyeGap: 10,
-  eyeY: -3,
-  eyeScale: 1.15,
-  mouthY: 12.5,
-  mouthW: 8,
-  earR: 6.5,
-  neckW: 20,
-  shoulder: 1,
-  shoulderY: 13,
-  spike: 12,
-  fringe: 7.5,
-} as const;
+/** The choices that need no purchase; the other values of a part come from the shop. */
+export const FREE_LOOK: { eyes: readonly Eyes[]; mouth: readonly Mouth[] } = { eyes: ["open", "blij"], mouth: ["lach", "open-lach"] };
 
 export const LOOK_LABEL: Record<string, string> = {
-  licht: "Licht",
-  "medium-licht": "Medium licht",
-  "medium-donker": "Medium donker",
-  donker: "Donker",
-  rond: "Rond",
-  ovaal: "Ovaal",
-  hoekig: "Hoekig",
-  kort: "Kort",
-  lang: "Lang",
-  krullen: "Krullen",
-  knot: "Knot",
-  stekeltjes: "Stekeltjes",
-  staart: "Staart",
-  geen: "Geen",
-  zwart: "Zwart",
-  bruin: "Bruin",
-  blond: "Blond",
-  rood: "Rood",
-  grijs: "Grijs",
-  blij: "Blij",
   open: "Open",
-  stip: "Stip",
+  blij: "Blij",
   knipoog: "Knipoog",
-  lach: "Lach",
-  grijns: "Grijns",
-  neutraal: "Neutraal",
-  verrast: "Verrast",
-  shirt: "Shirt",
-  hoodie: "Hoodie",
-  kraag: "Kraag",
-  tong: "Tong",
   dicht: "Dicht",
+  lach: "Lach",
   "open-lach": "Open lach",
+  grijns: "Grijns",
+  tong: "Tong",
+  verrast: "Verrast",
   zang: "Zang",
-  poppetje: "Poppetje",
-  pluizenbol: "Pluizenbol",
-  zacht: "Zacht",
-  stekelig: "Stekelig",
-  krullig: "Krullig",
+  bruin: "Bruin",
   blauw: "Blauw",
   groen: "Groen",
+  grijs: "Grijs",
   amber: "Amber",
   paars: "Paars",
 };

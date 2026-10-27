@@ -12,8 +12,6 @@ export function newId(): string {
   return typeof crypto.randomUUID === "function" ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
-export { AVATAR_COLORS } from "../engine/game/avatar.ts";
-
 // Profiles
 
 export async function createProfile(name: string, avatar: Avatar, kidMode: boolean, dayGoal: number): Promise<Profile> {

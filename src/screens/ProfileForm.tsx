@@ -1,23 +1,6 @@
 import { Avatar } from "../components/common/Avatar.tsx";
 import { Segmented } from "../components/common/Segmented.tsx";
-import {
-  AVATAR_COLORS,
-  AVATAR_KINDS,
-  CLOTHES_STYLES,
-  EYE_STYLES,
-  FREE_LOOK,
-  FUR_COLORS,
-  FUZZBALL_EYES,
-  FUZZBALL_MOUTHS,
-  HAIR_COLORS,
-  HAIR_STYLES,
-  HEAD_SHAPES,
-  IRIS_COLORS,
-  LOOK_LABEL,
-  MOUTH_STYLES,
-  SKIN_TONES,
-  type AvatarLook,
-} from "../engine/game/avatar.ts";
+import { FREE_LOOK, FUR_COLORS, FUZZBALL_EYES, FUZZBALL_MOUTHS, IRIS_COLORS, LOOK_LABEL, type AvatarLook } from "../engine/game/avatar.ts";
 import { DAY_GOALS } from "../engine/game/rules.ts";
 import { unlockedValues } from "../engine/game/shop.ts";
 import type { Avatar as AvatarData } from "../storage/db.ts";
@@ -33,7 +16,7 @@ export interface ProfileFormValue {
 interface Props {
   value: ProfileFormValue;
   onChange: (v: ProfileFormValue) => void;
-  /** Shop items this profile owns: they unlock extra hair, faces, clothes and colours. */
+  /** Shop items this profile owns: they unlock extra eyes and mouths. */
   owned: ReadonlySet<string>;
   /** What the profile wears now (hat, glasses, headphones, bow, background), so the preview shows the whole avatar. */
   wearing?: Pick<AvatarData, "hat" | "eyes" | "ears" | "neck" | "background">;
@@ -43,11 +26,10 @@ interface Props {
 export function ProfileForm({ value, onChange, owned, wearing }: Props) {
   const avatar: AvatarData = { hat: null, ...wearing, color: value.color, look: value.look };
   const setLook = (part: Partial<AvatarLook>) => onChange({ ...value, look: { ...value.look, ...part } });
-  const kind = value.look.kind;
-  const picks = <K extends keyof AvatarLook>(part: K, all: readonly AvatarLook[K][], label: string) => {
-    const free = (FREE_LOOK[kind] as Partial<Record<keyof AvatarLook, readonly string[]>>)[part];
-    const extra = free ? unlockedValues(part === "eyes" ? "face" : (part as "hair" | "mouth" | "clothes" | "fuzz"), owned) : [];
-    const options = all.filter((v) => !free || free.includes(v) || extra.includes(v));
+  const picks = <K extends "eyes" | "mouth">(part: K, all: readonly AvatarLook[K][], label: string) => {
+    const free = FREE_LOOK[part] as readonly string[];
+    const extra = unlockedValues(part === "eyes" ? "face" : "mouth", owned);
+    const options = all.filter((v) => free.includes(v) || extra.includes(v));
     const hidden = all.length - options.length;
     return (
       <div>
@@ -75,7 +57,7 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
       </div>
     );
   };
-  const colors = kind === "pluizenbol" ? [...FUR_COLORS] : [...AVATAR_COLORS, ...unlockedValues("color", owned)];
+  const colors: string[] = [...FUR_COLORS];
   if (!colors.includes(value.color)) colors.push(value.color);
   const swatches = (label: string, entries: readonly [string, string][], current: string, pick: (v: string) => void, note?: string) => (
     <div>
@@ -118,38 +100,16 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
       <div className="center">
         <Avatar avatar={avatar} name={value.name} size={140} />
       </div>
-      {picks("kind", AVATAR_KINDS, "Soort")}
-      {kind === "poppetje" ? (
-        <>
-          {swatches("Huid", Object.entries(SKIN_TONES), value.look.skin, (v) => setLook({ skin: v as AvatarLook["skin"] }))}
-          {picks("head", Object.keys(HEAD_SHAPES) as AvatarLook["head"][], "Hoofd")}
-          {picks("hair", HAIR_STYLES, "Haar")}
-          {swatches("Haarkleur", Object.entries(HAIR_COLORS), value.look.hairColor, (v) => setLook({ hairColor: v as AvatarLook["hairColor"] }))}
-          {picks("eyes", EYE_STYLES, "Ogen")}
-          {picks("mouth", MOUTH_STYLES, "Mond")}
-          {picks("clothes", CLOTHES_STYLES, "Kleding")}
-          {swatches(
-            "Kleur",
-            colors.map((c) => [c, c]),
-            value.color,
-            (c) => onChange({ ...value, color: c }),
-            "De kleur van de kleding; de achtergrond kleurt vanzelf mee.",
-          )}
-        </>
-      ) : (
-        <>
-          {swatches(
-            "Vacht",
-            colors.map((c) => [c, c]),
-            value.color,
-            (c) => onChange({ ...value, color: c }),
-            "De kleur van de vacht; de achtergrond kleurt vanzelf mee.",
-          )}
-          {swatches("Iris", Object.entries(IRIS_COLORS), value.look.iris, (v) => setLook({ iris: v as AvatarLook["iris"] }))}
-          {picks("eyes", FUZZBALL_EYES, "Blik")}
-          {picks("mouth", FUZZBALL_MOUTHS, "Mond")}
-        </>
+      {swatches(
+        "Vacht",
+        colors.map((c) => [c, c]),
+        value.color,
+        (c) => onChange({ ...value, color: c }),
+        "De kleur van de vacht; de achtergrond kleurt vanzelf mee.",
       )}
+      {swatches("Iris", Object.entries(IRIS_COLORS), value.look.iris, (v) => setLook({ iris: v as AvatarLook["iris"] }))}
+      {picks("eyes", FUZZBALL_EYES, "Blik")}
+      {picks("mouth", FUZZBALL_MOUTHS, "Mond")}
       <div>
         <h2>Kindmodus</h2>
         <Segmented

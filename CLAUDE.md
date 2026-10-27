@@ -66,16 +66,15 @@ Engine (`src/engine/`):
   goed herkende antwoorden; dagdoel 5, level 10, badge 10). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
-- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, ook pluis, zonnebril en de strik,
-  thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar), `unlockedValues` (wat een
-  profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend voor deze soort: grijs met "Komt nog") en `itemShown`
-  (niet te koop wat de soort gratis heeft of niet kent).
-- `game/avatar.ts` - de avatar: soort (`kind`: poppetje of pluizenbol), huidtinten, hoofdvormen, kapsels, haarkleuren, ogen, monden,
-  kleding, en voor de pluizenbol iris en pluis (`AvatarLook`, `DEFAULT_LOOK`, `lookOf`, `FREE_LOOK` per soort; `FUZZBALL_EYES`,
-  `FUZZBALL_MOUTHS` zijn de lagen van de tekening), de kleding- en vachtkleuren met hun contrasterende achtergrond
-  (`contrastBg`), `tint`/`outline` (lichtheid en verzadiging verschuiven; lijnkleur), `furRoles` (de kleurrollen van de
-  getekende pluizenbol per vachtkleur; oranje houdt de originele kleuren) en de maten van het poppetje uit de avatar-werkbank
-  (`FIGURE_GEOM`): verander maten daar, niet in de component.
+- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen per slot (hoeden, bril, koptelefoon, strik, achtergrond),
+  blikken en monden, thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar),
+  `unlockedValues` (wat een profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend: grijs met "Komt nog") en
+  `itemShown` (niet te koop wat iedereen gratis heeft).
+- `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`) en iris (`AvatarLook`,
+  `DEFAULT_LOOK`, `lookOf`: vult ontbrekende of onbekende delen aan, ook bij een profiel van het poppetje uit de eerste versie;
+  `FREE_LOOK`: wat gratis is), de vachtkleuren met hun contrasterende achtergrond (`FUR_COLORS`, `contrastBg`), `tint`/`outline`
+  (lichtheid en verzadiging verschuiven; lijnkleur) en `furRoles` (de kleurrollen van de tekening per vachtkleur; oranje houdt
+  de originele kleuren).
 
 `src/state/useInstrument.ts` onthoudt het gekozen instrumenttabblad (les kiezen en voortgang delen het, op het apparaat).
 
@@ -107,12 +106,15 @@ Componenten (`src/components/`):
 - `music/ChordDiagram.tsx` - klein greepdiagram (songboek-stijl), ook als keuzeknop.
 - `common/Icon.tsx` - de icoonset (41 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
-- `common/Avatar.tsx` - de avatar: kiest op `look.kind` tussen het poppetje (gezicht, nek, schouders op een schijf, in dit
-  bestand, alle vlakken met lijn en één schaduw) en `common/Fuzzball.tsx` (de pluizenbol: de tekening uit
-  `art/pluizenbolletje.svg`, op dezelfde schijf, in de vachtkleur via `furRoles`, met per keuze een laag voor ogen, mond, pet,
-  bril, zonnebril, bolhoed en de sterrenachtergrond). De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py`
-  uit de SVG: na een nieuwe export (alle lagen zichtbaar, groepen benoemd) het script draaien, nieuwe lagen daar en in
-  `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER`/`BACKGROUND_LAYER` opnemen en het winkelitem uit `NOT_YET` halen.
+- `common/Avatar.tsx` - de avatar: de pluizenbol, de tekening uit `art/pluizenbolletje.svg` op een schijf in de vachtkleur via
+  `furRoles`, met per keuze een laag voor ogen, mond, bril, zonnebril, pet, bolhoed, hoge hoed, kroon, strik en de
+  achtergronden sterren en noten; de hoge hoed heeft een masker dat de bol afsnijdt zodat het pluis er niet doorheen steekt.
+  De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py` uit de SVG: na een
+  nieuwe export (alle lagen zichtbaar, groepen benoemd) het script draaien, nieuwe lagen daar en in
+  `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER`/`BACKGROUND_LAYER` opnemen en het winkelitem uit `NOT_YET` halen; een masker
+  in de laag Bolletje hoort bij een item en staat in `MASKED`. Het script stopt met een melding als een bekende laag in de
+  export ontbreekt (verborgen in Affinity). Het poppetje van de eerste versie is weg (27 okt 2026); zo'n profiel wordt een
+  pluizenbol in zijn oude kleur.
 - `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
   avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
 - `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.
