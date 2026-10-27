@@ -5,11 +5,11 @@
 export interface PitchOptions {
   minHz?: number;
   maxHz?: number;
-  /** Below this RMS level the stretch counts as silence. */
+  /** Below this RMS level the stretch counts as silence; a phone microphone without gain control stays fairly quiet. */
   minLevel?: number;
 }
 
-export function detectPitch(samples: Float32Array, sampleRate: number, { minHz = 70, maxHz = 400, minLevel = 0.01 }: PitchOptions = {}): number | null {
+export function detectPitch(samples: Float32Array, sampleRate: number, { minHz = 70, maxHz = 400, minLevel = 0.004 }: PitchOptions = {}): number | null {
   const n = samples.length;
   let energy = 0;
   for (let i = 0; i < n; i++) energy += samples[i] * samples[i];

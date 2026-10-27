@@ -83,9 +83,9 @@ Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `bad
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
 
 Audio (`src/audio/`): `sampler.ts` (Web Audio; piano- en gitaarsamples per `Timbre`, `playNote`/`playChord` met strum,
-goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek, `getContext`), `pitch.ts`
+goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek), `pitch.ts`
 (`detectPitch`: toonhoogte uit een stuk signaal, genormaliseerde autocorrelatie) en `mic.ts` (`openMic`: microfoon zonder
-ruisonderdrukking, geeft om de 80 ms 4096 samples; `micFailure` vertaalt een fout naar geweigerd/geen/bezet).
+ruisonderdrukking in een eigen AudioContext dat pas na `getUserMedia` wordt gemaakt (iOS), geeft om de 80 ms 4096 samples; `micFailure` vertaalt een fout naar geweigerd/geen/bezet).
 
 Componenten (`src/components/`):
 

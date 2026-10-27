@@ -18,6 +18,9 @@ const SILENCE_MS = 1200;
 /** In tune this long, and the string counts as done. */
 const HOLD_MS = 500;
 
+/** With `?debug=1`: the raw level and pitch of every frame, to see what the microphone delivers on a phone. */
+const DEBUG = typeof location !== "undefined" && location.search.includes("debug");
+
 const STRING_LABEL = ["lage E-snaar", "A-snaar", "D-snaar", "G-snaar", "B-snaar", "hoge E-snaar"];
 const FAILURE_TEXT: Record<MicFailure, { title: string; text: string }> = {
   denied: {
@@ -38,6 +41,7 @@ export function TunerScreen() {
   const [status, setStatus] = useState<"idle" | "starting" | "listening" | MicFailure>("idle");
   const [heard, setHeard] = useState<Heard | null>(null);
   const [tuned, setTuned] = useState<Set<number>>(() => new Set());
+  const [raw, setRaw] = useState("");
   const mic = useRef<MicHandle | null>(null);
   const recent = useRef<{ hz: number; at: number }[]>([]);
   const okSince = useRef<number | null>(null);
@@ -50,6 +54,11 @@ export function TunerScreen() {
   const onFrame = (samples: Float32Array, sampleRate: number) => {
     const now = performance.now();
     const hz = detectPitch(samples, sampleRate);
+    if (DEBUG) {
+      let energy = 0;
+      for (const v of samples) energy += v * v;
+      setRaw(`${sampleRate} Hz · niveau ${Math.sqrt(energy / samples.length).toFixed(4)} · ${hz === null ? "–" : `${hz.toFixed(1)} Hz`}`);
+    }
     recent.current = recent.current.filter((r) => now - r.at < WINDOW_MS);
     if (hz !== null) recent.current.push({ hz, at: now });
     const last = recent.current[recent.current.length - 1];
@@ -153,6 +162,7 @@ export function TunerScreen() {
               </div>
             </Card>
           )}
+          {DEBUG && <p className="center debug inline">{raw}</p>}
           <div className="grow" />
           <Button block variant="ghost" onClick={stop}>
             Stop

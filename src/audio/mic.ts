@@ -1,5 +1,3 @@
-import { getContext } from "./sampler.ts";
-
 export interface MicHandle {
   sampleRate: number;
   stop: () => void;
@@ -15,23 +13,34 @@ export function micFailure(e: unknown): MicFailure {
   return "busy";
 }
 
+type AudioContextCtor = typeof AudioContext;
+
 /**
  * Opens the microphone and hands a stretch of the signal to `onFrame` every `intervalMs`, raw: no echo
  * cancellation, noise suppression or gain control, since those blur the pitch of a plucked string.
+ *
+ * The microphone gets its own audio context, created only after the stream is there: iOS switches the audio
+ * session to recording at that moment, and a context from before the switch hears silence or the wrong sample
+ * rate. The analyser also runs into a muted output, since WebKit only pulls a graph that reaches the speaker.
  */
 export async function openMic(onFrame: (samples: Float32Array, sampleRate: number) => void, intervalMs = 80): Promise<MicHandle> {
   if (!navigator.mediaDevices?.getUserMedia) throw new TypeError("getUserMedia missing");
-  const ctx = getContext();
-  if (!ctx) throw new TypeError("Web Audio missing");
+  const Ctor = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext) as AudioContextCtor | undefined;
+  if (!Ctor) throw new TypeError("Web Audio missing");
   const stream = await navigator.mediaDevices.getUserMedia({
     audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
   });
+  const ctx = new Ctor();
   if (ctx.state !== "running") await ctx.resume().catch(() => undefined);
   const source = ctx.createMediaStreamSource(stream);
   const analyser = ctx.createAnalyser();
   analyser.fftSize = 4096;
   analyser.smoothingTimeConstant = 0;
+  const mute = ctx.createGain();
+  mute.gain.value = 0;
   source.connect(analyser);
+  analyser.connect(mute);
+  mute.connect(ctx.destination);
   const samples = new Float32Array(analyser.fftSize);
   const timer = window.setInterval(() => {
     analyser.getFloatTimeDomainData(samples);
@@ -43,6 +52,7 @@ export async function openMic(onFrame: (samples: Float32Array, sampleRate: numbe
       clearInterval(timer);
       source.disconnect();
       for (const track of stream.getTracks()) track.stop();
+      void ctx.close().catch(() => undefined);
     },
   };
 }
