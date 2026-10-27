@@ -25,3 +25,6 @@ dist-ssr
 
 # PWA dev artefacts
 dev-dist
+
+# Bestanden die de eigenaar met Claude deelt (back-ups, schetsen, screenshots); blijven lokaal.
+gedeeld/
