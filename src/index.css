@@ -203,7 +203,7 @@ p {
  */
 @media (display-mode: standalone) {
   .screen {
-    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+    padding-top: calc(28px + env(safe-area-inset-top, 0px));
   }
 }
 
