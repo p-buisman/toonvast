@@ -20,6 +20,24 @@ import { useApp } from "./state/useApp.ts";
 function Router() {
   const { nav, profile } = useApp();
   const { route } = nav;
+  const mode = profile?.kidMode ? "speels" : "rustig";
+  const theme = profile?.theme ?? "klassiek";
+
+  // The look also goes on the document itself, so the page behind the app and the iOS status bar (which takes its
+  // colour from the theme-color meta) follow the mode and the theme instead of staying light.
+  useEffect(() => {
+    const root = document.documentElement;
+    root.dataset.mode = mode;
+    root.dataset.theme = theme;
+    const bg = getComputedStyle(root).getPropertyValue("--bg").trim();
+    let meta = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    if (bg) meta.content = bg;
+  }, [mode, theme]);
 
   useEffect(() => {
     // The first taps unlock audio and start loading the samples. iOS only counts touchend/click as a
@@ -76,7 +94,7 @@ function Router() {
   }
   const debug = typeof location !== "undefined" && location.search.includes("debug");
   return (
-    <div className={profile?.kidMode ? "app kid" : "app"} data-mode={profile?.kidMode ? "speels" : "rustig"} data-theme={profile?.theme ?? "klassiek"}>
+    <div className={profile?.kidMode ? "app kid" : "app"} data-mode={mode} data-theme={theme}>
       {screen}
       {debug && <AudioDebug />}
     </div>
