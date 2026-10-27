@@ -178,6 +178,29 @@ p {
   gap: 12px;
 }
 
+/*
+ * As an installed app on iOS the status bar fades the top of the page into a light haze that reaches well below the
+ * bar itself. The screen therefore starts a bit lower there, and a solid band in the screen colour sits under the bar
+ * so that whatever scrolls up disappears behind it instead of fading.
+ */
+@media (display-mode: standalone) {
+  .screen {
+    padding-top: calc(52px + env(safe-area-inset-top, 0px));
+  }
+}
+
+.app::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  z-index: 30;
+  pointer-events: none;
+}
+
 /* Screen layout */
 .app {
   width: 100%;
