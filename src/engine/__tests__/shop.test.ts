@@ -50,7 +50,7 @@ describe("fur colours of the drawn fuzzball", () => {
 describe("what the shop sells", () => {
   it("marks what is not drawn yet and hides what is free", () => {
     expect(itemReady(shopItem("headphones")!)).toBe(false);
-    for (const id of ["sunglasses", "hat-crown", "hat-cap", "hat-top", "hat-tall", "bow", "mouth-grijns", "bg-stars", "bg-notes"]) {
+    for (const id of ["sunglasses", "glasses", "glasses-color", "hat-crown", "hat-cap", "hat-top", "hat-tall", "bow", "mouth-grijns", "bg-stars", "bg-notes"]) {
       expect(itemReady(shopItem(id)!)).toBe(true);
     }
     expect(itemShown(shopItem("face-open")!)).toBe(false);
@@ -59,6 +59,7 @@ describe("what the shop sells", () => {
     expect(itemShown(shopItem("theme-zee")!)).toBe(true);
     expect(shopItem("face-dicht")!.value).toBe("dicht");
     expect(shopItem("mouth-zang")!.slot).toBe("mouth");
+    expect(shopItem("glasses-color")!.slot).toBe("eyes");
     expect(shopItem("fuzz-stekelig")).toBeUndefined();
     expect(shopItem("hair-krullen")).toBeUndefined();
   });

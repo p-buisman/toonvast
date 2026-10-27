@@ -108,7 +108,8 @@ Componenten (`src/components/`):
 - `common/Icon.tsx` - de icoonset (41 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - de avatar: de pluizenbol, de tekening uit `art/pluizenbolletje.svg` op een schijf in de vachtkleur via
-  `furRoles`, met per keuze een laag voor ogen, mond, bril, zonnebril, pet, bolhoed, hoge hoed, kroon, strik en de
+  `furRoles`, met per keuze een laag voor ogen, mond, zwarte en
+  gekleurde bril, zonnebril, pet, bolhoed, hoge hoed, kroon, strik en de
   achtergronden sterren en noten; de hoge hoed heeft een masker dat de bol afsnijdt zodat het pluis er niet doorheen steekt.
   Alles wat in een attribuut rood is, staat in de laagstrings als `{{accent|r,g,b}}` en krijgt de accentkleur van het profiel.
   De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py` uit de SVG: na een

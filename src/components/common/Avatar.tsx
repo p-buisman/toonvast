@@ -24,6 +24,7 @@ const ITEM_LAYER: Record<string, Item> = {
   "hat-tall": "hoge-hoed",
   "hat-crown": "kroon",
   glasses: "bril",
+  "glasses-color": "gekleurde-bril",
   sunglasses: "zonnebril",
   bow: "strik",
 };
@@ -66,7 +67,7 @@ function fuzzballArt(
 
 /**
  * The profile's avatar: the fuzzball of art/pluizenbolletje.svg on a disc, in the fur colour of the profile, with the
- * eyes, mouth, items (glasses, sunglasses, cap, bowler hat, top hat, crown, bow) in the accent colour, and background
+ * eyes, mouth, items (black or coloured glasses, sunglasses, cap, bowler hat, top hat, crown, bow) in the accent colour, and background
  * the profile chose. The drawing fills the disc edge to edge; items are drawn in the order of the drawing: glasses, hat, bow.
  */
 export function Avatar({ avatar, name, size = 48, className }: { avatar: AvatarData; name: string; size?: number; className?: string }) {
