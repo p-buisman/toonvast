@@ -2,10 +2,13 @@ import {
   chordName,
   chordPcs,
   INVERSION_NAME,
+  keyByTonic,
+  keyName,
   pcKey,
   pcName,
   pcSemitone,
   QUALITY_NAME,
+  signatureText,
   type Inversion,
   type PitchClass,
   type Quality,
@@ -13,8 +16,8 @@ import {
 import { midiOf, pitchName, sameSpelling, spellMidi, type Accidental, type Letter, type Pitch } from "../common/pitch.ts";
 import { midiAt, positionsFor, type FretPosition } from "../instruments/guitar.ts";
 import { sameShape, shapeFor, shapeMidis, type ChordShape, type Shape } from "../instruments/guitarChords.ts";
-import type { ChordItem, LearnItem, NoteItem } from "./items.ts";
-import { playsShape, type ModuleDef } from "./modules.ts";
+import type { ChordItem, KeyItem, LearnItem, NoteItem } from "./items.ts";
+import { hears, playsShape, type ModuleDef } from "./modules.ts";
 
 export type Answer =
   | { kind: "name"; letter: Letter; acc: Accidental }
@@ -24,7 +27,9 @@ export type Answer =
   | { kind: "pianoSet"; midis: number[] }
   | { kind: "staffSet"; pitches: Pitch[] }
   | { kind: "shape"; frets: Shape }
-  | { kind: "shapeChoice"; shape: ChordShape };
+  | { kind: "shapeChoice"; shape: ChordShape }
+  /** A key by the pitch-class key of its tonic ("G", "Bb"). */
+  | { kind: "key"; tonic: string };
 
 export interface Verdict {
   correct: boolean;
@@ -46,7 +51,8 @@ export function heardName(p: Pitch): string {
 
 /** What the player had to give, in words, for the feedback card. */
 export function describeTarget(module: ModuleDef, item: LearnItem): string {
-  if (item.kind === "note") return module.question === "sound" ? heardName(item.pitch) : pitchName(item.pitch);
+  if (item.kind === "note") return hears(module) ? heardName(item.pitch) : pitchName(item.pitch);
+  if (item.kind === "key") return `${keyName(item.tonality)} (${signatureText(item.tonality)})`;
   const name = chordName(item.chord);
   const inversion = item.chord.inversion !== 0 || module.answer === "staff" || module.question === "staff" ? ` (${INVERSION_NAME[item.chord.inversion]})` : "";
   // When the notes had to be given, name them too, from the bass up.
@@ -185,8 +191,31 @@ function checkChord(module: ModuleDef, item: ChordItem, answer: Answer): Verdict
   }
 }
 
+/** How many steps apart two keys are on the circle of fifths. */
+export function keyDistance(a: string, b: string): number {
+  return Math.abs(keyByTonic(a).signature - keyByTonic(b).signature);
+}
+
+function checkKey(item: KeyItem, answer: Answer): Verdict {
+  if (answer.kind !== "key") return { correct: false };
+  const target = pcKey(item.tonality.tonic);
+  if (answer.tonic === target) return { correct: true };
+  const given = keyByTonic(answer.tonic);
+  if (keyDistance(answer.tonic, target) === 1) return { correct: false, note: `Dicht in de buurt: ${keyName(given)} heeft ${signatureText(given)}.` };
+  if (Math.sign(given.signature) === -Math.sign(item.tonality.signature) && given.signature !== 0)
+    return { correct: false, note: "Kijk of het kruizen of mollen zijn." };
+  return { correct: false };
+}
+
 export function checkAnswer(module: ModuleDef, item: LearnItem, answer: Answer): Verdict {
-  return item.kind === "note" ? checkNote(module, item, answer) : checkChord(module, item, answer);
+  switch (item.kind) {
+    case "note":
+      return checkNote(module, item, answer);
+    case "chord":
+      return checkChord(module, item, answer);
+    case "key":
+      return checkKey(item, answer);
+  }
 }
 
 /** The MIDI numbers an answer sounds, for the distance to what was heard; null when the answer has no pitch. */
@@ -209,11 +238,16 @@ export function answerMidis(module: ModuleDef, answer: Answer): number[] | null 
   }
 }
 
+/** A neighbouring key on the circle of fifths counts like this many semitones: wrong, but not far off. */
+const KEY_STEP_SEMITONES = 3;
+
 /**
  * How far a heard-question answer is from the target, in semitones: for a note the distance between the two
- * pitches, for a chord two semitones per note of the chord that was not given. 0 when right, null when unknown.
+ * pitches, for a chord two semitones per note of the chord that was not given, for a key three per step on the
+ * circle of fifths. 0 when right, null when unknown.
  */
 export function answerDistance(module: ModuleDef, item: LearnItem, answer: Answer): number | null {
+  if (item.kind === "key") return answer.kind === "key" ? KEY_STEP_SEMITONES * keyDistance(answer.tonic, pcKey(item.tonality.tonic)) : null;
   const given = answerMidis(module, answer);
   if (!given || given.length === 0) return null;
   if (item.kind === "note") return Math.abs(given[0] - soundingMidi(module, item.pitch));

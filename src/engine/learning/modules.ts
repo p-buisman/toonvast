@@ -2,12 +2,12 @@ export type Instrument = "theory" | "piano" | "guitar";
 export const INSTRUMENT_NAME: Record<Instrument, string> = { theory: "Theorie", piano: "Piano", guitar: "Gitaar" };
 export const INSTRUMENTS: readonly Instrument[] = ["theory", "piano", "guitar"];
 
-/** What is learned: single notes or triads. */
-export type ItemKind = "note" | "chord";
-/** How the question is shown: on the staff, as a name, or played. */
-export type QuestionKind = "staff" | "name" | "sound";
+/** What is learned: single notes, triads or keys (a melody in a key). */
+export type ItemKind = "note" | "chord" | "key";
+/** How the question is shown: on the staff, as a name, played, or played and shown at once. */
+export type QuestionKind = "staff" | "name" | "sound" | "sound+staff";
 /** How the answer is given. */
-export type AnswerKind = "name" | "piano" | "guitar" | "staff";
+export type AnswerKind = "name" | "piano" | "guitar" | "staff" | "key";
 /** Which samples a module plays: the guitar modules sound like a guitar. */
 export type Timbre = "piano" | "guitar";
 
@@ -27,7 +27,9 @@ export type ModuleId =
   | "ear-chord-piano-keys"
   | "ear-chord-guitar-staff"
   | "ear-chord-guitar-shape"
-  | "key-melody";
+  | "key-read"
+  | "key-hear-read"
+  | "key-hear";
 
 export interface ModuleDef {
   id: ModuleId;
@@ -247,13 +249,39 @@ export const MODULES: readonly ModuleDef[] = [
     timbre: G,
   },
   {
-    id: "key-melody",
-    title: "Toonsoort herkennen",
-    description: "Melodie → toonsoort",
+    id: "key-read",
+    title: "Toonsoort lezen",
+    description: "Melodie met voortekens vooraan → toonsoort",
     instrument: "theory",
-    kind: "note",
+    kind: "key",
+    question: "staff",
+    answer: "key",
+    clefs: "any",
+    writtenOffset: 0,
+    phase: 4,
+    timbre: P,
+  },
+  {
+    id: "key-hear-read",
+    title: "Toonsoort horen en lezen",
+    description: "Melodie klinkt en staat er, losse voortekens → toonsoort",
+    instrument: "theory",
+    kind: "key",
+    question: "sound+staff",
+    answer: "key",
+    clefs: "any",
+    writtenOffset: 0,
+    phase: 4,
+    timbre: P,
+  },
+  {
+    id: "key-hear",
+    title: "Toonsoort horen",
+    description: "Eerst een C, dan de melodie → toonsoort",
+    instrument: "theory",
+    kind: "key",
     question: "sound",
-    answer: "name",
+    answer: "key",
     clefs: "any",
     writtenOffset: 0,
     phase: 4,
@@ -261,7 +289,7 @@ export const MODULES: readonly ModuleDef[] = [
   },
 ];
 
-export const PLAYABLE_PHASE = 3;
+export const PLAYABLE_PHASE = 4;
 
 export function moduleById(id: ModuleId): ModuleDef {
   const m = MODULES.find((x) => x.id === id);
@@ -275,7 +303,17 @@ export function modulesFor(instrument: Instrument): ModuleDef[] {
 
 /** Does the staff (and so the clef) play a part in this module's question or answer? */
 export function usesStaff(m: ModuleDef): boolean {
-  return m.question === "staff" || m.answer === "staff";
+  return m.question === "staff" || m.question === "sound+staff" || m.answer === "staff";
+}
+
+/** Is the question (also) played, so that the player listens first and may try twice? */
+export function hears(m: ModuleDef): boolean {
+  return m.question === "sound" || m.question === "sound+staff";
+}
+
+/** Is the question shown on the staff? */
+export function showsStaff(m: ModuleDef): boolean {
+  return m.question === "staff" || m.question === "sound+staff";
 }
 
 /** A chord played on the guitar is its shape (five or six strings), not the written three-note voicing. */

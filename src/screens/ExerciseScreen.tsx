@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { loadSamples, playChord, playCue, playNote, unlockAudio } from "../audio/sampler.ts";
 import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
@@ -11,8 +11,11 @@ import { ChordNameButtons } from "../components/music/ChordNameButtons.tsx";
 import { Fretboard, type FretDot } from "../components/music/Fretboard.tsx";
 import { NoteNameButtons } from "../components/music/NoteNameButtons.tsx";
 import { Piano } from "../components/music/Piano.tsx";
+import { KeyButtons } from "../components/music/KeyButtons.tsx";
+import { KeyIntro } from "../components/music/KeyIntro.tsx";
 import { Staff, type StaffNote } from "../components/music/Staff.tsx";
-import { chordName, INVERSION_NAME, type Quality } from "../engine/common/chord.ts";
+import { useMelodyPlayer } from "../components/music/useMelodyPlayer.ts";
+import { chordName, INVERSION_NAME, pcKey, type Key, type Quality } from "../engine/common/chord.ts";
 import { CLEF_NAME, pitchAtPosition } from "../engine/common/clef.ts";
 import { midiOf, sameSpelling, type Accidental, type Pitch } from "../engine/common/pitch.ts";
 import { seeded, shuffle } from "../engine/common/random.ts";
@@ -20,8 +23,9 @@ import { type FretPosition, midiAt, positionsFor } from "../engine/instruments/g
 import { CHORD_SHAPES, highestFret, shapeFor, shapeMidis, type ChordShape, type Shape } from "../engine/instruments/guitarChords.ts";
 import { resolvePianoRange, type PianoRange } from "../engine/instruments/piano.ts";
 import { answerDistance, checkAnswer, describeTarget, soundingMidi, type Answer, type Verdict } from "../engine/learning/answers.ts";
-import { itemsFor, type ChordItem, type LearnItem } from "../engine/learning/items.ts";
-import { moduleById, playsShape, type ModuleId } from "../engine/learning/modules.ts";
+import { itemsFor, type ChordItem, type KeyItem, type LearnItem } from "../engine/learning/items.ts";
+import { melodyFor, referencePitch } from "../engine/learning/melody.ts";
+import { hears, moduleById, playsShape, showsStaff, type ModuleId } from "../engine/learning/modules.ts";
 import { MAX_ATTEMPTS, recognitionScore, type CardRecord } from "../engine/learning/scheduler.ts";
 import { buildSession } from "../engine/learning/session.ts";
 import type { ModuleSettings } from "../engine/learning/settings.ts";
@@ -36,6 +40,8 @@ import { Icon } from "../components/common/Icon.tsx";
 const OK = "#22a06b";
 const BAD = "#d64545";
 const PICK = "#2f6fed";
+/** The note of a melody that sounds right now. */
+const LIT = "var(--accent)";
 // The tapped note sounds first; the "right" cue follows once it has been heard.
 const CUE_DELAY_MS = 500;
 const AUTO_NEXT_MS = 1200;
@@ -59,6 +65,7 @@ const PROMPT: Record<string, string> = {
   "chord:piano": "Tik de drie toetsen",
   "chord:staff": "Zet de drie noten op de notenbalk",
   "chord:guitar": "Welke greep hoort erbij?",
+  "key:key": "Welke toonsoort is dit?",
 };
 const HEARD_PROMPT: Record<string, string> = {
   "note:piano": "Tik de toets die je hoorde",
@@ -67,12 +74,14 @@ const HEARD_PROMPT: Record<string, string> = {
   "chord:piano": "Tik de drie toetsen die je hoorde",
   "chord:staff": "Zet de drie noten die je hoorde op de notenbalk",
   "chord:guitar": "Welke greep hoorde je?",
+  "key:key": "Welke toonsoort hoorde je?",
 };
 
 const ALL_OPEN: Shape = [0, 0, 0, 0, 0, 0];
 
 function soundingOf(module: ReturnType<typeof moduleById>, item: LearnItem): number[] {
   if (item.kind === "note") return [soundingMidi(module, item.pitch)];
+  if (item.kind === "key") return [];
   if (playsShape(module)) {
     const shape = shapeFor(item.chord);
     return shape ? shapeMidis(shape.frets) : item.voicing.map((p) => soundingMidi(module, p));
@@ -112,6 +121,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const [retryHint, setRetryHint] = useState<string | null>(null);
   const shownAt = useRef(0);
   const [startedAt] = useState(() => Date.now());
+  const player = useMelodyPlayer();
 
   useEffect(() => {
     if (!profile) return;
@@ -149,6 +159,12 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   const playQuestion = () => {
     if (!question) return;
     unlockAudio();
+    if (question.kind === "key" && melody) {
+      // Only the ear: a C first, as a reference; otherwise the melody alone.
+      const lead = module.question === "sound" ? midiOf(referencePitch(question.tonality, question.clef)) : undefined;
+      player.play(melody.map(midiOf), { timbre: module.timbre, lead });
+      return;
+    }
     const target = soundingOf(module, question);
     if (target.length === 1) playNote(target[0], 1.6, 1, module.timbre);
     else playChord(target, 2, module.timbre === "guitar" ? STRUM_MS : 0, module.timbre);
@@ -156,13 +172,18 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
 
   // A heard question plays itself when it appears; the listen button repeats it.
   useEffect(() => {
-    if (module.question !== "sound" || !loaded || intro || feedback) return;
+    if (!hears(module) || !loaded || intro || feedback) return;
     const t = setTimeout(playQuestion, 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [module.question, loaded, intro, index]);
 
   const question = loaded?.questions[index];
+  /** A key question gets a fresh melody each time; the seed keeps it the same while the question is on screen. */
+  const melody = useMemo(
+    () => (question?.kind === "key" ? melodyFor(question.tonality, question.clef, (startedAt % 100000) * 31 + index) : null),
+    [question, startedAt, index],
+  );
 
   const finish = async (all: SessionAnswer[]) => {
     if (!profile || !loaded || busy) return;
@@ -173,6 +194,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
 
   const next = (all: SessionAnswer[]) => {
     if (!loaded) return;
+    player.stop();
     if (index + 1 >= loaded.questions.length) void finish(all);
     else {
       setFeedback(null);
@@ -191,7 +213,7 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     unlockAudio();
     const verdict = checkAnswer(module, question, a);
     const ms = Math.max(1, Math.round(performance.now() - shownAt.current));
-    const heard = module.question === "sound";
+    const heard = hears(module);
     const distance = heard ? answerDistance(module, question, a) : null;
     if (heard && !verdict.correct && tries.length + 1 < MAX_ATTEMPTS) {
       // Not yet: one more go at the same sound, with a hint on how far off it was.
@@ -214,7 +236,11 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
     setFeedback({ answer: a, verdict });
     const target = soundingOf(module, question);
     const strum = module.timbre === "guitar" ? STRUM_MS : 0;
-    const playTarget = () => (target.length === 1 ? playNote(target[0], 1.6, 1, module.timbre) : playChord(target, 2, strum, module.timbre));
+    const playTarget = () => {
+      if (target.length === 0) return;
+      if (target.length === 1) playNote(target[0], 1.6, 1, module.timbre);
+      else playChord(target, 2, strum, module.timbre);
+    };
     const alreadyHeard = a.kind === "piano" || a.kind === "pianoSet" || a.kind === "guitar";
     if (verdict.correct) {
       if (!alreadyHeard) playTarget();
@@ -286,17 +312,21 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   if (intro) {
     const one = intro.length === 1;
     const what =
-      module.kind === "note"
+      module.kind === "key"
         ? one
-          ? "Nieuwe noot"
-          : "Nieuwe noten"
-        : module.answer === "guitar"
+          ? "Nieuwe toonsoort"
+          : "Nieuwe toonsoorten"
+        : module.kind === "note"
           ? one
-            ? "Nieuwe greep"
-            : "Nieuwe grepen"
-          : one
-            ? "Nieuw akkoord"
-            : "Nieuwe akkoorden";
+            ? "Nieuwe noot"
+            : "Nieuwe noten"
+          : module.answer === "guitar"
+            ? one
+              ? "Nieuwe greep"
+              : "Nieuwe grepen"
+            : one
+              ? "Nieuw akkoord"
+              : "Nieuwe akkoorden";
     const introShapes: ChordShape[] =
       module.answer === "guitar" && module.kind === "chord" ? intro.flatMap((i) => (i.kind === "chord" ? (shapeFor(i.chord) ?? []) : [])) : [];
     return (
@@ -311,7 +341,13 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         <p className="muted">
           {one ? "Dit komt" : "Deze komen"} voor het eerst voorbij in deze ronde. Bekijk {one ? "het" : "ze"} even en tik erop om {one ? "het" : "ze"} te horen.
         </p>
-        {introShapes.length > 0 ? <ShapeGallery shapes={introShapes} /> : <ItemGallery module={module} items={intro} />}
+        {module.kind === "key" ? (
+          <KeyIntro items={intro.filter((i): i is KeyItem => i.kind === "key")} />
+        ) : introShapes.length > 0 ? (
+          <ShapeGallery shapes={introShapes} />
+        ) : (
+          <ItemGallery module={module} items={intro} />
+        )}
         <div className="grow" />
         <Button block onClick={() => setIntro(null)}>
           {one ? "Gezien, start" : "Ik heb ze gezien, start"}
@@ -353,16 +389,20 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
   if (!rootAcc.includes(0)) rootAcc.push(0);
   const qualities: Quality[] = settings.qualities === "both" ? ["major", "minor"] : [settings.qualities];
   const chordItem = question.kind === "chord" ? (question as ChordItem) : null;
+  const keyItem = question.kind === "key" ? (question as KeyItem) : null;
+  const keysOffered: Key[] = [...new Map(loaded.items.flatMap((i) => (i.kind === "key" ? [[pcKey(i.tonality.tonic), i.tonality] as const] : []))).values()];
   const targetMidis = soundingOf(module, question);
   const targetShape = chordItem ? shapeFor(chordItem.chord) : undefined;
 
   // What the staff shows: the question, or the notes placed as an answer (coloured after the verdict).
   let staffNotes: StaffNote[] = [];
-  if (module.question === "staff") {
-    const notes = question.kind === "note" ? [question.pitch] : question.voicing;
+  if (keyItem && melody) {
+    staffNotes = melody.map((pitch, i) => ({ pitch, color: i === player.playing ? LIT : undefined }));
+  } else if (module.question === "staff") {
+    const notes = question.kind === "note" ? [question.pitch] : question.kind === "chord" ? question.voicing : [];
     staffNotes = notes.map((pitch) => ({ pitch, color: feedback && correct ? OK : undefined }));
   } else if (module.answer === "staff") {
-    const wanted: Pitch[] = question.kind === "note" ? [question.pitch] : question.voicing;
+    const wanted: Pitch[] = question.kind === "note" ? [question.pitch] : question.kind === "chord" ? question.voicing : [];
     const matches = (v: Pitch, p: Pitch) =>
       sameSpelling(v, p) ||
       (module.question === "sound" ? midiOf(v) === midiOf(p) || (playsShape(module) && midiOf(v) % 12 === midiOf(p) % 12) : midiOf(v) % 12 === midiOf(p) % 12);
@@ -410,7 +450,10 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         )
       : [];
 
-  const prompt = (module.question === "sound" ? HEARD_PROMPT : PROMPT)[`${module.kind}:${module.answer}`];
+  const prompt = (hears(module) ? HEARD_PROMPT : PROMPT)[`${module.kind}:${module.answer}`];
+  // A key melody: shown when the module shows it, and after the verdict; the signature once the key may be known.
+  const showMelody = !!keyItem && (showsStaff(module) || !!feedback);
+  const showSignature = module.question === "staff" || !!feedback;
   const inversionLabel = chordItem && (settings.inversions || chordItem.chord.inversion !== 0) ? INVERSION_NAME[chordItem.chord.inversion] : null;
 
   return (
@@ -433,14 +476,14 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         </span>
       </div>
 
-      {module.question === "sound" && (
+      {hears(module) && (
         <button type="button" className="listen" onClick={playQuestion} aria-label="Nog eens luisteren">
           <span className="listen-icon">
             <Icon name="play" />
           </span>
           <span>
             <b>Luister</b>
-            <small>tik om nog eens te horen</small>
+            <small>{keyItem ? "tik om de melodie nog eens te horen" : "tik om nog eens te horen"}</small>
           </span>
         </button>
       )}
@@ -453,9 +496,14 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
           </small>
         </div>
       )}
-      {(module.question === "staff" || module.answer === "staff") && (
+      {!keyItem && (module.question === "staff" || module.answer === "staff") && (
         <Card tight>
           <Staff clef={question.clef} notes={staffNotes} onTap={module.answer === "staff" && !feedback ? tapStaff : undefined} previewAcc={acc} />
+        </Card>
+      )}
+      {keyItem && showMelody && (
+        <Card tight>
+          <Staff clef={question.clef} layout="melody" signature={showSignature ? keyItem.tonality.signature : 0} notes={staffNotes} width={400} />
         </Card>
       )}
 
@@ -491,6 +539,19 @@ export function ExerciseScreen({ moduleId }: { moduleId: ModuleId }) {
         </div>
       )}
 
+      {keyItem && (
+        <>
+          <KeyButtons
+            keys={keysOffered}
+            onAnswer={(tonic) => answer({ kind: "key", tonic })}
+            disabled={!!feedback}
+            verdict={feedback?.answer.kind === "key" ? { chosen: feedback.answer.tonic, target: pcKey(keyItem.tonality.tonic), correct } : undefined}
+          />
+          <p className="muted center" style={{ margin: 0 }}>
+            Van links naar rechts: mollen, geen voortekens, kruizen.
+          </p>
+        </>
+      )}
       {module.answer === "name" && question.kind === "note" && (
         <NoteNameButtons accidentals={allowedAcc} onAnswer={(letter, a) => answer({ kind: "name", letter, acc: a })} disabled={!!feedback} />
       )}

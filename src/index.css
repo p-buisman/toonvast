@@ -733,6 +733,19 @@ svg.ico {
   background: var(--accent-soft);
 }
 
+/* After the verdict on a key: the right one green, a wrong choice red. */
+.name-keys button.ok {
+  border-color: var(--ok);
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+
+.name-keys button.bad {
+  border-color: var(--bad);
+  background: var(--bad-soft);
+  color: var(--bad);
+}
+
 .acc-keys {
   display: flex;
   gap: 6px;

@@ -19,6 +19,7 @@ export function ItemGallery({ module, items }: { module: ModuleDef; items: reado
   return (
     <div className="stack">
       {items.map((item) => {
+        if (item.kind === "key") return null;
         const midis = item.kind === "note" ? [soundingMidi(module, item.pitch)] : item.voicing.map((p) => soundingMidi(module, p));
         const title = item.kind === "note" ? pitchName(item.pitch, true) : `${chordName(item.chord)} · ${INVERSION_NAME[item.chord.inversion]}`;
         const notes = item.kind === "note" ? [item.pitch] : item.voicing;

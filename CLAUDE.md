@@ -34,18 +34,23 @@ Engine (`src/engine/`):
   (bereik 0-4 hulplijnen; 3 is nodig voor de lage E-snaar van de gitaar, 4 komt in pianomuziek voor).
 - `common/random.ts` - `pick`, `shuffle`, `seeded` (vaste reeks voor tests en vaste keuzes per vraag).
 - `common/chord.ts` - drieklanken met spelling: `PitchClass`, `triadPcs`, `chordPcs` (per ligging), `voicing` (ligging op de
-  notenbalk per sleutel), `chordName`/`chordKey`, de majeurtoonsoorten (`MAJOR_KEYS`) en `diatonicTriads`.
+  notenbalk per sleutel), `chordName`/`chordKey`, de majeurtoonsoorten (`MAJOR_KEYS`, `keyName`, `keysInLearningOrder`: op aantal
+  voortekens), `scaleOf`, de voortekens vooraan (`signatureAccidentals`, `signatureText`) en `diatonicTriads`.
 - `instruments/piano.ts` - toetsindeling voor een bereik: `whiteKeys`, `blackKeys`, `PIANO_RANGES`, `rangeCovering`.
 - `instruments/guitar.ts` - standaardstemming, `positionsFor(midi, maxFret)`, `preferredPosition` (hoogste snaar, laagste
   fret), `midiAt(string, fret)`, `GUITAR_WRITTEN_OFFSET`.
 - `instruments/guitarChords.ts` - de greeptabel (`CHORD_SHAPES`, één standaardgreep per akkoord), `shapeFor`, `shapeMidis`.
-- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord), vraag (notenbalk, naam,
-  geluid) en antwoordvorm, klank (`timbre`); `usesStaff`, `playsShape`.
+- `learning/modules.ts` - de oefenvormen (`MODULES`): id, naam, instrument, soort (noot/akkoord/toonsoort), vraag (notenbalk, naam,
+  geluid, geluid+notenbalk) en antwoordvorm, klank (`timbre`); `usesStaff`, `showsStaff`, `hears`, `playsShape`.
 - `learning/items.ts` - de leeritems van een module binnen de instellingen, in didactische volgorde (`itemsFor`:
-  `noteItemsFor` en `chordItemsFor`); een `LearnItem` is een `NoteItem` of een `ChordItem` met zijn ligging.
+  `noteItemsFor`, `chordItemsFor` en `keyItemsFor`); een `LearnItem` is een `NoteItem`, een `ChordItem` met zijn ligging of een
+  `KeyItem` (toonsoort, per sleutel waar de melodie geschreven staat).
+- `learning/melody.ts` - de melodie bij een toonsoort: `melodyFor(key, clef, seed)` (6-8 noten, stapjes met een enkele sprong,
+  kwint en leidtoon erin, slot op de grondtoon), `scaleFor` (toonladder voor de introductie), `referencePitch` (de C vooraf bij
+  alleen horen), `tonicPitch`/`degreePitch` (ligging binnen de balk), `NOTE_MS`.
 - `learning/answers.ts` - `checkAnswer` voor alle antwoordvormen (naam, toets, hals, akkoordnaam, toetsenset, notenset,
-  greep) met uitleg bij een bijna-goed antwoord; `describeTarget` voor de feedbackkaart; `answerDistance` (halve tonen
-  naast het gehoorde, bij akkoorden twee per ontbrekende noot) en `answerMidis`.
+  greep, toonsoort) met uitleg bij een bijna-goed antwoord; `describeTarget` voor de feedbackkaart; `answerDistance` (halve tonen
+  naast het gehoorde, bij akkoorden twee per ontbrekende noot, bij toonsoorten drie per stap op de kwintencirkel) en `answerMidis`.
 - `learning/scheduler.ts` - FSRS-koppeling: `rateAnswer` (goed/fout, reactietijd, poging en afstand → beoordeling: tweede
   poging of een halve toon ernaast = Hard), `recognitionScore` (0..1, telt in rondescore en XP), `review`, `masteryOf`.
   Gehoorvragen krijgen `MAX_ATTEMPTS` (2) pogingen.
@@ -80,7 +85,11 @@ goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagn
 
 Componenten (`src/components/`):
 
-- `music/Staff.tsx` - notenbalk (SVG) met sleutel, noten, voortekens, hulplijnen; ook als invoer (tik op positie).
+- `music/Staff.tsx` - notenbalk (SVG) met sleutel, noten, voortekens, hulplijnen; `layout="melody"` zet noten naast elkaar,
+  `signature` tekent de voortekens vooraan (noten in de toonsoort krijgen dan geen los voorteken); ook als invoer (tik op positie).
+- `music/KeyButtons.tsx` - toonsoortknoppen in kwintenvolgorde (zelfde raster als de letterknoppen); `music/KeyIntro.tsx` - de
+  introductie van een nieuwe toonsoort (uitleg, toonladder op de balk, afspelen); `music/useMelodyPlayer.ts` - speelt een melodie
+  noot voor noot en zegt welke noot klinkt (oplichten op de balk), met een eventuele C vooraf.
 - `music/Piano.tsx` - schermpiano (SVG, scrollbaar) met oplichtende toetsen.
 - `music/Fretboard.tsx` - gitaarhals (SVG) met frets 0-4, stippen en open snaren.
 - `music/NoteNameButtons.tsx` - letterknoppen met ♯/♭-schakelaar.
@@ -101,6 +110,8 @@ Componenten (`src/components/`):
 
 Schermen (`src/screens/`) gebruiken alleen bovenstaande; een scherm bevat geen muziektheorie en geen opslagcode.
 `ExerciseScreen` is de ene oefenpagina voor alle modules: de vraag- en antwoordvorm van de module bepaalt wat er staat;
+bij een toonsoortvraag krijgt elke vraag een nieuwe melodie (seed uit starttijd en vraagnummer) en staat na het antwoord de melodie
+met de voortekens vooraan;
 bij een gehoorvraag krijgt de speler na een misser een tweede poging met alleen een maat van de misser (net niet /
 dit klopte niet / flink ernaast), nooit de richting. `GoalsScreen` is
 "Wat wil je leren"; `HomeScreen` toont alleen het dagdoel, de volgende les met Start les en één rij "Zelf een les kiezen" naar `LessonsScreen`

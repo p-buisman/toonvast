@@ -57,6 +57,9 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
   };
   const count = itemsFor(module, settings).length;
   const isChord = module.kind === "chord";
+  const isKey = module.kind === "key";
+  const isNote = module.kind === "note";
+  const what = isChord ? (count === 1 ? "akkoord" : "akkoorden") : isKey ? (count === 1 ? "toonsoort" : "toonsoorten") : count === 1 ? "noot" : "noten";
   const toggleKey = (k: string) => {
     const keys = settings.keys.includes(k) ? settings.keys.filter((x) => x !== k) : [...settings.keys, k];
     if (keys.length > 0) update({ keys });
@@ -89,7 +92,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
           )}
         </Card>
       )}
-      {!isChord && (
+      {isNote && (
         <Card>
           <h2>Bereik notenbalk</h2>
           <Segmented<RangeLevel>
@@ -102,7 +105,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
           </p>
         </Card>
       )}
-      {!isChord && (
+      {isNote && (
         <Card>
           <h2>Voortekens</h2>
           <Segmented<AccidentalChoice>
@@ -117,7 +120,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
           />
         </Card>
       )}
-      {isChord && (
+      {(isChord || isKey) && (
         <Card>
           <h2>Toonsoorten</h2>
           <div className="keys-grid" role="group" aria-label="Toonsoorten">
@@ -137,8 +140,9 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
             })}
           </div>
           <p className="muted" style={{ marginTop: 6 }}>
-            Van elke toonsoort de drieklanken op de trappen I, IV en V (majeur) en ii, iii en vi (mineur). Van links naar rechts: meer mollen, geen voortekens,
-            meer kruizen.
+            {isKey
+              ? "De toonsoorten die gevraagd worden; ze komen erbij op volgorde van het aantal voortekens. Van links naar rechts: meer mollen, geen voortekens, meer kruizen."
+              : "Van elke toonsoort de drieklanken op de trappen I, IV en V (majeur) en ii, iii en vi (mineur). Van links naar rechts: meer mollen, geen voortekens, meer kruizen."}
           </p>
         </Card>
       )}
@@ -203,7 +207,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
         />
       </Card>
       <Card>
-        <h2>{isChord ? "Akkoorden tegelijk leren" : "Noten tegelijk leren"}</h2>
+        <h2>{isChord ? "Akkoorden tegelijk leren" : isKey ? "Toonsoorten tegelijk leren" : "Noten tegelijk leren"}</h2>
         <Segmented<WorkingSet>
           options={WORKING_SETS.map((n) => ({ value: n, label: String(n) }))}
           value={settings.workingSet}
@@ -214,7 +218,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
         </p>
       </Card>
       <p className="muted center">
-        {count} {isChord ? (count === 1 ? "akkoord" : "akkoorden") : count === 1 ? "noot" : "noten"} binnen deze instellingen
+        {count} {what} binnen deze instellingen
       </p>
       <div className="grow" />
       <Button block disabled={count === 0} onClick={() => nav.replace({ name: "exercise", moduleId, nonce: Date.now() })}>

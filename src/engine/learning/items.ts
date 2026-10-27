@@ -1,5 +1,17 @@
 import { CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../common/clef.ts";
-import { chordKey, diatonicTriads, keyByTonic, MAJOR_KEYS, pcKey, voicing, type Chord, type Inversion, type Quality } from "../common/chord.ts";
+import {
+  chordKey,
+  diatonicTriads,
+  keyByTonic,
+  keysInLearningOrder,
+  MAJOR_KEYS,
+  pcKey,
+  voicing,
+  type Chord,
+  type Inversion,
+  type Key,
+  type Quality,
+} from "../common/chord.ts";
 import { midiOf, pitchKey, type Accidental, type Pitch } from "../common/pitch.ts";
 import { fretRange, preferredPosition } from "../instruments/guitar.ts";
 import { shapeFor } from "../instruments/guitarChords.ts";
@@ -23,7 +35,15 @@ export interface ChordItem {
   voicing: Pitch[];
 }
 
-export type LearnItem = NoteItem | ChordItem;
+/** A major key, to recognise from a melody; written in a clef where the staff plays a part. */
+export interface KeyItem {
+  kind: "key";
+  key: string;
+  clef: Clef;
+  tonality: Key;
+}
+
+export type LearnItem = NoteItem | ChordItem | KeyItem;
 
 export function itemKey(clef: Clef, pitch: Pitch): string {
   return `${clef}:${pitchKey(pitch)}`;
@@ -143,6 +163,30 @@ export function chordItemsFor(module: ModuleDef, settings: ModuleSettings): Chor
   return sorted(rows);
 }
 
+/**
+ * The keys of a key module within the settings, in learning order (C, G, F, D, B♭ …), treble before bass where the
+ * melody is written; a key heard without the staff is one item.
+ */
+export function keyItemsFor(module: ModuleDef, settings: ModuleSettings): KeyItem[] {
+  const clefs = clefsFor(module, settings.clefs);
+  const rows: { item: KeyItem; order: number[] }[] = [];
+  keysInLearningOrder(settings.keys).forEach((tonality, keyIndex) => {
+    for (const clef of clefs) {
+      const tonic = pcKey(tonality.tonic);
+      const key = usesStaff(module) ? `${clef}:key:${tonic}` : `key:${tonic}`;
+      rows.push({ item: { kind: "key", key, clef, tonality }, order: [keyIndex, clef === "treble" ? 0 : 1] });
+    }
+  });
+  return sorted(rows);
+}
+
 export function itemsFor(module: ModuleDef, settings: ModuleSettings): LearnItem[] {
-  return module.kind === "chord" ? chordItemsFor(module, settings) : noteItemsFor(module, settings);
+  switch (module.kind) {
+    case "chord":
+      return chordItemsFor(module, settings);
+    case "key":
+      return keyItemsFor(module, settings);
+    default:
+      return noteItemsFor(module, settings);
+  }
 }

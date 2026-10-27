@@ -2,12 +2,12 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { Card } from "../components/common/Card.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
-import { chordName, INVERSION_NAME } from "../engine/common/chord.ts";
+import { chordName, INVERSION_NAME, MAJOR_KEYS, pcKey, pcName } from "../engine/common/chord.ts";
 import { CLEF_NAME, CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../engine/common/clef.ts";
 import { pitchName } from "../engine/common/pitch.ts";
 import { BADGES, COINS_BADGE } from "../engine/game/badges.ts";
-import { chordItemsFor, itemKey } from "../engine/learning/items.ts";
-import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, type ModuleDef } from "../engine/learning/modules.ts";
+import { chordItemsFor, itemKey, keyItemsFor } from "../engine/learning/items.ts";
+import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, usesStaff, type ModuleDef } from "../engine/learning/modules.ts";
 import { masteryOf, type Mastery } from "../engine/learning/scheduler.ts";
 import { withDefaults } from "../engine/learning/settings.ts";
 import { db, type StoredCard } from "../storage/db.ts";
@@ -63,6 +63,34 @@ function NoteMaps({ module, cards }: { module: ModuleDef; cards: StoredCard[] })
         </Card>
       ))}
     </>
+  );
+}
+
+/** The keys of a key module in circle-of-fifths order, one row per clef where the melody is written. */
+function KeyMap({ module, cards, clefs }: { module: ModuleDef; cards: StoredCard[]; clefs: Clef[] }) {
+  const byKey = new Map(cards.map((c) => [c.itemKey, c]));
+  const all = MAJOR_KEYS.map((k) => pcKey(k.tonic));
+  return (
+    <Card>
+      <h2>Toonsoorten · {module.title.toLowerCase()}</h2>
+      {clefs.map((clef) => {
+        const items = keyItemsFor(module, { ...withDefaults(undefined), keys: all, clefs: clef });
+        const inFifths = [...items].sort((a, b) => a.tonality.signature - b.tonality.signature);
+        return (
+          <div key={clef} className="notemap" style={{ marginBottom: 6 }}>
+            {inFifths.map((i) => {
+              const m = masteryOf(byKey.get(i.key));
+              return (
+                <span key={i.key} className={MASTERY_CLASS[m]} title={`${CLEF_NAME[clef]} · ${m}`}>
+                  {pcName(i.tonality.tonic)}
+                </span>
+              );
+            })}
+          </div>
+        );
+      })}
+      <Legend />
+    </Card>
   );
 }
 
@@ -130,11 +158,9 @@ export function ProgressScreen() {
       {modules.map((m) => {
         const own = cards.filter((c) => c.moduleId === m.id);
         if (own.length === 0 && m.id !== noteModule.id) return null;
-        return m.kind === "note" ? (
-          <NoteMaps key={m.id} module={m} cards={own} />
-        ) : (
-          <ChordMap key={m.id} module={m} cards={own} keys={withDefaults(settings.find((s) => s.moduleId === m.id)?.settings).keys} />
-        );
+        if (m.kind === "note") return <NoteMaps key={m.id} module={m} cards={own} />;
+        if (m.kind === "key") return <KeyMap key={m.id} module={m} cards={own} clefs={usesStaff(m) ? [...CLEFS] : ["treble"]} />;
+        return <ChordMap key={m.id} module={m} cards={own} keys={withDefaults(settings.find((s) => s.moduleId === m.id)?.settings).keys} />;
       })}
       <p className="muted">Een module komt hier te staan zodra je hem één keer hebt geoefend.</p>
       <Card>

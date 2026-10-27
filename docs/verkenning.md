@@ -1,6 +1,6 @@
 # Verkenning muziek-app Toonvast
 
-Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 3 gebouwd (noten lezen, akkoorden, badges, winkel, gehoortraining); zie §11.
+Datum: 24 oktober 2026, bijgewerkt tijdens het bouwen. Status: fase 0 t/m 4 gebouwd (noten lezen, akkoorden, badges, winkel, gehoortraining, toonsoorten); zie §11.
 
 Een educatieve web-app (PWA) voor een gezin dat piano en gitaar leert. De speler leert noten op de notenbalk, pianotoetsen, gitaargrepen, akkoorden, toonsoorten en gehoor. Per persoon en per instrument wordt de voortgang bijgehouden, met een spelelement om te blijven oefenen.
 
@@ -36,20 +36,20 @@ Een educatieve web-app (PWA) voor een gezin dat piano en gitaar leert. De speler
 
 Elke oefenvorm is een _module_. Een module stelt een vraag in één vorm (zien of horen) en vraagt een antwoord in één invoervorm. Dezelfde bouwstenen (notenbalk, schermpiano, gitaarhals, naamknoppen, afspeelknop) worden steeds hergebruikt.
 
-| Nr  | Module                 | Vraag                                            | Antwoord                                            | Instrument-voortgang     | Fase |
-| --- | ---------------------- | ------------------------------------------------ | --------------------------------------------------- | ------------------------ | ---- |
-| M1  | Noot benoemen          | Noot op notenbalk                                | Naamknop (A–G + ♯/♭)                                | Theorie                  | 1    |
-| M2  | Noot op piano          | Noot op notenbalk                                | Tik toets op schermpiano                            | Piano                    | 1    |
-| M3  | Noot op gitaar         | Noot op notenbalk                                | Tik positie op gitaarhals (fret 0–4)                | Gitaar                   | 1    |
-| M4a | Akkoord lezen          | Drieklank op notenbalk                           | Akkoordnaam (bijv. Dm)                              | Theorie                  | 2    |
-| M4b | Akkoord op piano       | Akkoordnaam (met omkering)                       | Tik 3 toetsen                                       | Piano                    | 2    |
-| M4c | Akkoord noteren        | Akkoordnaam                                      | Tik 3 noten op lege notenbalk                       | Theorie                  | 2    |
-| M4d | Akkoord lezen op piano | Drieklank op notenbalk                           | Tik 3 toetsen                                       | Piano                    | 2    |
-| M5  | Akkoord op gitaar      | Akkoordnaam                                      | Kies/plaats de greep op de hals                     | Gitaar                   | 2    |
-| M6  | Toon horen             | Afgespeelde toon                                 | Notenbalk, pianotoets of gitaarpositie (instelbaar) | Theorie / Piano / Gitaar | 3    |
-| M8  | Piano-akkoord horen    | Afgespeeld piano-akkoord                         | Noten op notenbalk of toetsen op piano              | Theorie / Piano          | 3    |
-| M9  | Gitaarakkoord horen    | Afgespeeld gitaarakkoord                         | Noten op notenbalk of greep op de hals              | Theorie / Gitaar         | 3    |
-| M7  | Toonsoort herkennen    | Melodie: horen+zien, alleen horen of alleen zien | Toonsoortknop (C, G, D, … F, B♭ …)                  | Theorie                  | 4    |
+| Nr  | Module                 | Vraag                                         | Antwoord                                            | Instrument-voortgang     | Fase |
+| --- | ---------------------- | --------------------------------------------- | --------------------------------------------------- | ------------------------ | ---- |
+| M1  | Noot benoemen          | Noot op notenbalk                             | Naamknop (A–G + ♯/♭)                                | Theorie                  | 1    |
+| M2  | Noot op piano          | Noot op notenbalk                             | Tik toets op schermpiano                            | Piano                    | 1    |
+| M3  | Noot op gitaar         | Noot op notenbalk                             | Tik positie op gitaarhals (fret 0–4)                | Gitaar                   | 1    |
+| M4a | Akkoord lezen          | Drieklank op notenbalk                        | Akkoordnaam (bijv. Dm)                              | Theorie                  | 2    |
+| M4b | Akkoord op piano       | Akkoordnaam (met omkering)                    | Tik 3 toetsen                                       | Piano                    | 2    |
+| M4c | Akkoord noteren        | Akkoordnaam                                   | Tik 3 noten op lege notenbalk                       | Theorie                  | 2    |
+| M4d | Akkoord lezen op piano | Drieklank op notenbalk                        | Tik 3 toetsen                                       | Piano                    | 2    |
+| M5  | Akkoord op gitaar      | Akkoordnaam                                   | Kies/plaats de greep op de hals                     | Gitaar                   | 2    |
+| M6  | Toon horen             | Afgespeelde toon                              | Notenbalk, pianotoets of gitaarpositie (instelbaar) | Theorie / Piano / Gitaar | 3    |
+| M8  | Piano-akkoord horen    | Afgespeeld piano-akkoord                      | Noten op notenbalk of toetsen op piano              | Theorie / Piano          | 3    |
+| M9  | Gitaarakkoord horen    | Afgespeeld gitaarakkoord                      | Noten op notenbalk of greep op de hals              | Theorie / Gitaar         | 3    |
+| M7  | Toonsoort herkennen    | Melodie: zien, horen+zien of horen (na een C) | Toonsoortknop (C, G, D, … F, B♭ …)                  | Theorie                  | 4    |
 
 Toelichting per module:
 
@@ -57,7 +57,7 @@ Toelichting per module:
 - **M4 Akkoorden.** Grondligging, eerste en tweede omkering. De naamknoppen bieden grondtoon + majeur/mineur; de omkering wordt bij M4a apart gevraagd als de instelling "omkeringen" aan staat. Bij M4b en M4d telt elke correcte verzameling toetsen in de gevraagde ligging; bij M4d is de ligging die van de genoteerde drieklank, en de toetsen moeten in hetzelfde octaaf liggen als de notatie.
 - **M5 Gitaargrepen.** Een vaste greeptabel met één standaardgreep per akkoord, zoals in gangbare beginnersmethodes: open grepen C, D, E, G, A, Am, Dm, Em (C met de G-snaar open, G met drie vingers), en F, B, Bm, F♯m, C♯m, G♯m als barré-vorm. Varianten van dezelfde greep komen pas later en tellen dan ook als goed. Twee antwoordvormen: kiezen uit vier greepdiagrammen (makkelijk) of zelf vingers op de hals plaatsen (moeilijk, per profiel instelbaar).
 - **M6, M8, M9 Gehoor.** Een afspeelknop; herhalen is onbeperkt maar kost een klein deel van de snelheidsbonus. Bij M8/M9 klinkt het echte instrument (piano-sample of gitaar-sample met strum).
-- **M7 Toonsoort.** De app genereert een korte diatonische melodie (6–8 noten) die eindigt op de grondtoon en de leidtoon en kwint bevat. Drie varianten, elk met eigen voortgang. Alleen-zien toont voortekens vooraan; horen+zien toont losse voortekens zonder voortekens vooraan. Mineur komt later als uitbreiding.
+- **M7 Toonsoort.** De app genereert een korte diatonische melodie (6–8 noten) die eindigt op de grondtoon en de leidtoon en kwint bevat; de melodie begint op de grondtoon, terts of kwint en gaat vooral in stapjes. Drie lessen, elk met eigen voortgang per toonsoort: _Toonsoort lezen_ (voortekens vooraan, geen geluid), _Toonsoort horen en lezen_ (de melodie klinkt en staat er met losse voortekens; de klinkende noot licht op) en _Toonsoort horen_ (alleen geluid; eerst klinkt een C als houvast, anders zou het absoluut gehoor vragen). Na het antwoord staat de melodie met de voortekens vooraan. Een nieuwe toonsoort wordt eerst uitgelegd, met de toonladder om af te spelen. Leervolgorde op aantal voortekens: C, G, F, D, B♭ … Mineur komt later als uitbreiding.
 
 ---
 
@@ -206,7 +206,7 @@ Versienummers van bibliotheken worden bij het opzetten gecontroleerd; deze verke
 | 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                                  | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
 | 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                                       | Versie 2: akkoorden en winkel                              |
 | 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)            | Versie 3: gehoortraining                                   |
-| 4    | M7 toonsoort (drie varianten), daarna mineur; eventueel fret 5–12 en barré-vormen                                                       | Versie 4: toonsoorten                                      |
+| 4    | M7 toonsoort (drie lessen; gebouwd), daarna mineur; eventueel fret 5–12 en barré-vormen                                                 | Versie 4: toonsoorten                                      |
 | 5    | Gitaarstemmer: toonhoogte uit de microfoon, herkent vanzelf welke snaar klinkt, toont hoe ver ernaast en welke kant de stemknop op moet | Versie 5: stemmen                                          |
 
 ---
@@ -214,7 +214,7 @@ Versienummers van bibliotheken worden bij het opzetten gecontroleerd; deze verke
 ## 12. Open punten en risico's
 
 - **Gitaarstemmer (fase 5)**: toonhoogtedetectie in de browser (Web Audio, autocorrelatie of YIN) op de microfoon; de snaar volgt uit de dichtstbijzijnde van E2 A2 D3 G3 B3 E4, de afwijking in cents bepaalt de pijl (omhoog = aandraaien). Microfoontoegang vraagt een gebruikersgebaar en werkt in de PWA op iOS alleen in de voorgrond.
-- **Melodiegenerator (M7)**: moet herkenbaar genoeg klinken zonder saai te worden; kort prototype in fase 4 nodig.
+- **Melodiegenerator (M7)**: gebouwd als `engine/learning/melody.ts` (stapjes met af en toe een sprong, kwint en leidtoon verplicht, slot op de grondtoon). Of de melodieën op den duur te eentonig worden, blijkt in het gebruik; ritme is een mogelijke uitbreiding.
 - **Samplegrootte**: 3–5 MB piano plus gitaar is op wifi prima, maar de eerste start moet een laadindicatie krijgen; daarna cachet de service worker alles.
 - **Kindmodus vs. volwassen modus**: één codebase met variabelen voor grootte en speelsheid; geen twee aparte interfaces.
 - **Icoon**: nog te ontwerpen voor het beginscherm van de iPhone.

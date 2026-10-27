@@ -1,6 +1,7 @@
 import type { CardRecord } from "../learning/scheduler.ts";
 import { masteryOf } from "../learning/scheduler.ts";
-import { chordItemsFor, noteItemsFor } from "../learning/items.ts";
+import { chordItemsFor, keyItemsFor, noteItemsFor } from "../learning/items.ts";
+import { MAJOR_KEYS, pcKey } from "../common/chord.ts";
 import { moduleById, type Instrument, type ModuleId } from "../learning/modules.ts";
 import { DEFAULT_SETTINGS } from "../learning/settings.ts";
 
@@ -66,6 +67,14 @@ export const BADGES: readonly BadgeDef[] = [
     icon: "piano",
     mark: "notes",
   },
+  {
+    id: "all-keys",
+    title: "Alle toonsoorten",
+    description: "Alle toonsoorten in de vioolsleutel gelezen en beheerst",
+    instrument: "theory",
+    icon: "staff",
+    mark: "♯",
+  },
 ];
 
 export function badgeById(id: string): BadgeDef | undefined {
@@ -107,5 +116,7 @@ export function earnedBadges(ctx: BadgeContext): string[] {
   if (allMastered(ctx.cardsByModule.get("chord-guitar"), guitarChords)) out.push("open-chords");
   const pianoChords = chordItemsFor(moduleById("chord-piano"), { ...DEFAULT_SETTINGS, keys: ["C", "G", "F"], qualities: "major" }).map((i) => i.key);
   if (allMastered(ctx.cardsByModule.get("chord-piano"), pianoChords)) out.push("chords-piano");
+  const allKeys = keyItemsFor(moduleById("key-read"), { ...DEFAULT_SETTINGS, keys: MAJOR_KEYS.map((k) => pcKey(k.tonic)), clefs: "treble" }).map((i) => i.key);
+  if (allMastered(ctx.cardsByModule.get("key-read"), allKeys)) out.push("all-keys");
   return out;
 }

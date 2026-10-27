@@ -30,7 +30,7 @@ export function LessonsScreen() {
     const items = itemsFor(m, withDefaults(settings.find((s) => s.moduleId === m.id)?.settings));
     const known = new Set(own.filter((c) => c.reps > 0).map((c) => c.itemKey));
     const fresh = items.filter((i) => !known.has(i.key)).length;
-    const what = m.kind === "chord" ? "akkoorden" : "noten";
+    const what = m.kind === "chord" ? "akkoorden" : m.kind === "key" ? "toonsoorten" : "noten";
     if (own.length === 0) return `${items.length} ${what} om te leren`;
     const parts = [];
     if (due > 0) parts.push(`${due} te herhalen`);

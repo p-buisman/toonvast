@@ -150,6 +150,45 @@ export function keyByTonic(tonic: string): Key {
   return k;
 }
 
+/** The seven notes of the major scale, spelled from the tonic. */
+export function scaleOf(key: Key): PitchClass[] {
+  const t = key.tonic;
+  return [t, pcAbove(t, 1, 2), pcAbove(t, 2, 4), pcAbove(t, 3, 5), pcAbove(t, 4, 7), pcAbove(t, 5, 9), pcAbove(t, 6, 11)];
+}
+
+const SHARP_ORDER: readonly Letter[] = ["F", "C", "G", "D", "A", "E", "B"];
+const FLAT_ORDER: readonly Letter[] = ["B", "E", "A", "D", "G", "C", "F"];
+
+/** The sharps (signature > 0) or flats (< 0) of a key signature, in the order they are written after the clef. */
+export function signatureAccidentalsOf(signature: number): PitchClass[] {
+  const n = Math.abs(signature);
+  return (signature > 0 ? SHARP_ORDER : FLAT_ORDER).slice(0, n).map((letter) => ({ letter, acc: signature > 0 ? 1 : -1 }));
+}
+
+export function signatureAccidentals(key: Key): PitchClass[] {
+  return signatureAccidentalsOf(key.signature);
+}
+
+const COUNT_WORD = ["geen", "één", "twee", "drie", "vier", "vijf", "zes", "zeven"];
+
+/** "één kruis: F♯", "twee mollen: B♭ en E♭", "geen voortekens". */
+export function signatureText(key: Key): string {
+  const n = Math.abs(key.signature);
+  if (n === 0) return "geen voortekens";
+  const what = key.signature > 0 ? (n === 1 ? "kruis" : "kruizen") : n === 1 ? "mol" : "mollen";
+  const names = signatureAccidentals(key).map(pcName);
+  const list = names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} en ${names[names.length - 1]}`;
+  return `${COUNT_WORD[n]} ${what}: ${list}`;
+}
+
+/**
+ * The order in which keys are learnt: by the number of accidentals, sharps before flats (C, G, F, D, B♭, A, E♭ …);
+ * only the keys asked for, by their pitch-class key.
+ */
+export function keysInLearningOrder(selected: readonly string[]): Key[] {
+  return MAJOR_KEYS.filter((k) => selected.includes(pcKey(k.tonic))).sort((a, b) => Math.abs(a.signature) - Math.abs(b.signature) || b.signature - a.signature);
+}
+
 /** The major triads (I, IV, V) and minor triads (ii, iii, vi) of a major key. */
 export function diatonicTriads(key: Key): { root: PitchClass; quality: Quality; degree: number }[] {
   const t = key.tonic;
