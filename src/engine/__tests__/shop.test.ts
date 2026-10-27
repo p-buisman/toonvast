@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint, type AvatarLook } from "../game/avatar.ts";
+import { accentShade, contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint, toHsl, type AvatarLook } from "../game/avatar.ts";
 import { applyItem, itemActive, itemReady, itemShown, shopItem, unlockedValues, type ShopAvatar } from "../game/shop.ts";
 
 const base: ShopAvatar = { color: "#3d8bd9", hat: null };
@@ -11,6 +11,18 @@ describe("avatar look", () => {
     expect(lookOf({ look: { eyes: "knipoog" } }).mouth).toBe("lach");
     const figure = { look: { kind: "poppetje", eyes: "stip", mouth: "neutraal", hair: "lang" } as unknown as Partial<AvatarLook> };
     expect(lookOf(figure)).toEqual(DEFAULT_LOOK);
+    expect(lookOf({ look: { accent: "blauw" } }).accent).toBe("blauw");
+  });
+
+  it("recolours the reds of the items in the accent colour and keeps their lightness", () => {
+    const hsl = (hex: string) => toHsl(parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16));
+    expect(accentShade(237, 35, 13, "rood")).toBe("rgb(237,35,13)");
+    const [h, s, l] = hsl(accentShade(237, 35, 13, "blauw"));
+    const [hb, sb] = hsl("#2f6fed");
+    expect(Math.abs(h - hb)).toBeLessThan(0.01);
+    expect(Math.abs(s - sb)).toBeLessThan(0.02);
+    expect(Math.abs(l - toHsl(237, 35, 13)[2])).toBeLessThan(0.01);
+    expect(hsl(accentShade(155, 10, 0, "blauw"))[2]).toBeLessThan(l); // a darker red stays darker
   });
 
   it("gives every clothing colour a background and darkens an outline", () => {

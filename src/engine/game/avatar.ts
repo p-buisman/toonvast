@@ -11,13 +11,27 @@ export const FUZZBALL_MOUTHS = ["lach", "open-lach", "grijns", "tong", "verrast"
 export type Eyes = (typeof FUZZBALL_EYES)[number];
 export type Mouth = (typeof FUZZBALL_MOUTHS)[number];
 
+/** The accent colour of the items (cap, hat bands, crown gems, bow); `rood` is the drawing's own red. */
+export const ACCENT_COLORS = {
+  rood: "#ed230d",
+  oranje: "#ff8110",
+  geel: "#f4a300",
+  groen: "#2e9e5b",
+  turkoois: "#0e7c86",
+  blauw: "#2f6fed",
+  paars: "#8e44ad",
+  roze: "#e879b6",
+} as const;
+export type Accent = keyof typeof ACCENT_COLORS;
+
 export interface AvatarLook {
   eyes: Eyes;
   mouth: Mouth;
   iris: Iris;
+  accent: Accent;
 }
 
-export const DEFAULT_LOOK: AvatarLook = { eyes: "blij", mouth: "lach", iris: "bruin" };
+export const DEFAULT_LOOK: AvatarLook = { eyes: "blij", mouth: "lach", iris: "bruin", accent: "rood" };
 
 const has = <T extends string>(all: readonly T[], v: unknown): v is T => typeof v === "string" && (all as readonly string[]).includes(v);
 
@@ -31,6 +45,7 @@ export function lookOf(avatar: { look?: Partial<AvatarLook> }): AvatarLook {
     eyes: has(FUZZBALL_EYES, l.eyes) ? l.eyes : DEFAULT_LOOK.eyes,
     mouth: has(FUZZBALL_MOUTHS, l.mouth) ? l.mouth : DEFAULT_LOOK.mouth,
     iris: has(Object.keys(IRIS_COLORS) as Iris[], l.iris) ? l.iris : DEFAULT_LOOK.iris,
+    accent: has(Object.keys(ACCENT_COLORS) as Accent[], l.accent) ? l.accent : DEFAULT_LOOK.accent,
   };
 }
 
@@ -84,14 +99,18 @@ export const LOOK_LABEL: Record<string, string> = {
   grijs: "Grijs",
   amber: "Amber",
   paars: "Paars",
+  rood: "Rood",
+  oranje: "Oranje",
+  geel: "Geel",
+  turkoois: "Turkoois",
+  roze: "Roze",
 };
 
-/** Same hue, lightness and saturation moved (both clamped); negative `dLight` makes it lighter. */
-export function tint(hex: string, dSat: number, dLight: number): string {
-  const n = hex.replace("#", "");
-  const r = parseInt(n.slice(0, 2), 16) / 255;
-  const g = parseInt(n.slice(2, 4), 16) / 255;
-  const b = parseInt(n.slice(4, 6), 16) / 255;
+/** Hue, saturation and lightness (0..1) of an rgb colour (0..255). */
+export function toHsl(r: number, g: number, b: number): [number, number, number] {
+  r /= 255;
+  g /= 255;
+  b /= 255;
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h = 0;
@@ -104,10 +123,12 @@ export function tint(hex: string, dSat: number, dLight: number): string {
     else if (max === g) h = ((b - r) / d + 2) / 6;
     else h = ((r - g) / d + 4) / 6;
   }
-  const l2 = Math.min(0.93, Math.max(0.1, l - dLight));
-  const s2 = Math.min(1, Math.max(0, s + dSat));
-  const q = l2 < 0.5 ? l2 * (1 + s2) : l2 + s2 - l2 * s2;
-  const p = 2 * l2 - q;
+  return [h, s, l];
+}
+
+function hslToHex(h: number, s: number, l: number): string {
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
   const hue = (t: number) => {
     if (t < 0) t += 1;
     if (t > 1) t -= 1;
@@ -121,6 +142,27 @@ export function tint(hex: string, dSat: number, dLight: number): string {
       .toString(16)
       .padStart(2, "0");
   return `#${c(hue(h + 1 / 3))}${c(hue(h))}${c(hue(h - 1 / 3))}`;
+}
+
+function hexRgb(hex: string): [number, number, number] {
+  const n = hex.replace("#", "");
+  return [parseInt(n.slice(0, 2), 16), parseInt(n.slice(2, 4), 16), parseInt(n.slice(4, 6), 16)];
+}
+
+/** Same hue, lightness and saturation moved (both clamped); negative `dLight` makes it lighter. */
+export function tint(hex: string, dSat: number, dLight: number): string {
+  const [h, s, l] = toHsl(...hexRgb(hex));
+  return hslToHex(h, Math.min(1, Math.max(0, s + dSat)), Math.min(0.93, Math.max(0.1, l - dLight)));
+}
+
+/**
+ * A red of the drawing's items in the accent colour: the hue and saturation of that colour with the red's own
+ * lightness, so the shading of the item stays. `rood` keeps the red as drawn.
+ */
+export function accentShade(r: number, g: number, b: number, accent: Accent): string {
+  if (accent === "rood") return `rgb(${r},${g},${b})`;
+  const [h, s] = toHsl(...hexRgb(ACCENT_COLORS[accent]));
+  return hslToHex(h, s, toHsl(r, g, b)[2]);
 }
 
 /** Same hue, more saturated and darker: the outline of every filled shape. */

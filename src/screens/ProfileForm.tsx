@@ -1,6 +1,6 @@
 import { Avatar } from "../components/common/Avatar.tsx";
 import { Segmented } from "../components/common/Segmented.tsx";
-import { FREE_LOOK, FUR_COLORS, FUZZBALL_EYES, FUZZBALL_MOUTHS, IRIS_COLORS, LOOK_LABEL, type AvatarLook } from "../engine/game/avatar.ts";
+import { ACCENT_COLORS, FREE_LOOK, FUR_COLORS, FUZZBALL_EYES, FUZZBALL_MOUTHS, IRIS_COLORS, LOOK_LABEL, type AvatarLook } from "../engine/game/avatar.ts";
 import { DAY_GOALS } from "../engine/game/rules.ts";
 import { unlockedValues } from "../engine/game/shop.ts";
 import type { Avatar as AvatarData } from "../storage/db.ts";
@@ -108,6 +108,13 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
         "De kleur van de vacht; de achtergrond kleurt vanzelf mee.",
       )}
       {swatches("Iris", Object.entries(IRIS_COLORS), value.look.iris, (v) => setLook({ iris: v as AvatarLook["iris"] }))}
+      {swatches(
+        "Kleur van je spullen",
+        Object.entries(ACCENT_COLORS),
+        value.look.accent,
+        (v) => setLook({ accent: v as AvatarLook["accent"] }),
+        "Pet, hoeden, kroon en strik kleuren mee.",
+      )}
       {picks("eyes", FUZZBALL_EYES, "Blik")}
       {picks("mouth", FUZZBALL_MOUTHS, "Mond")}
       <div>

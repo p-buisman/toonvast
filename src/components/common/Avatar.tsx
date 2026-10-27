@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { contrastBg, furRoles, IRIS_COLORS, lookOf, outline, type Eyes, type Mouth } from "../../engine/game/avatar.ts";
+import { accentShade, contrastBg, furRoles, IRIS_COLORS, lookOf, outline, type Accent, type Eyes, type Mouth } from "../../engine/game/avatar.ts";
 import type { Avatar as AvatarData } from "../../storage/db.ts";
 import {
   FUZZBALL_BACKGROUND_ART,
@@ -33,7 +33,14 @@ const BACKGROUND_LAYER: Record<string, keyof typeof FUZZBALL_BACKGROUND_ART> = {
  * The drawing with its placeholders filled in: the colour roles, the iris and a prefix for the ids. An item with a mask
  * (the top hat) clips the ball, eyes and mouth so the fuzz does not poke through it.
  */
-function fuzzballArt(values: Record<string, string>, eyes: Eyes, mouth: Mouth, items: Item[], background: keyof typeof FUZZBALL_BACKGROUND_ART | null): string {
+function fuzzballArt(
+  values: Record<string, string>,
+  accent: Accent,
+  eyes: Eyes,
+  mouth: Mouth,
+  items: Item[],
+  background: keyof typeof FUZZBALL_BACKGROUND_ART | null,
+): string {
   const masks = items.flatMap((i) => FUZZBALL_ITEM_MASK[i] ?? []);
   const art =
     FUZZBALL_DEFS +
@@ -47,13 +54,20 @@ function fuzzballArt(values: Record<string, string>, eyes: Eyes, mouth: Mouth, i
     "</g>".repeat(masks.length) +
     FUZZBALL_CLOSE +
     items.map((i) => FUZZBALL_ITEM_ART[i]).join("");
-  return art.replace(/\{\{(\w+)\}\}/g, (_, key: string) => values[key] ?? "");
+  // The reds of the items ({{accent|r,g,b}}) take the accent colour; the other placeholders take their value.
+  return art.replace(/\{\{(\w+)(?:\|([\d,]+))?\}\}/g, (_, key: string, rgb?: string) => {
+    if (key === "accent" && rgb) {
+      const [r, g, b] = rgb.split(",").map(Number);
+      return accentShade(r, g, b, accent);
+    }
+    return values[key] ?? "";
+  });
 }
 
 /**
  * The profile's avatar: the fuzzball of art/pluizenbolletje.svg on a disc, in the fur colour of the profile, with the
- * eyes, mouth, items (glasses, sunglasses, cap, bowler hat, top hat, crown, bow) and background the profile chose. The
- * drawing fills the disc edge to edge; items are drawn in the order of the drawing: glasses, hat, bow.
+ * eyes, mouth, items (glasses, sunglasses, cap, bowler hat, top hat, crown, bow) in the accent colour, and background
+ * the profile chose. The drawing fills the disc edge to edge; items are drawn in the order of the drawing: glasses, hat, bow.
  */
 export function Avatar({ avatar, name, size = 48, className }: { avatar: AvatarData; name: string; size?: number; className?: string }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
@@ -61,7 +75,7 @@ export function Avatar({ avatar, name, size = 48, className }: { avatar: AvatarD
   const bg = contrastBg(avatar.color);
   const items = [avatar.eyes, avatar.hat, avatar.neck].flatMap((worn) => (worn && ITEM_LAYER[worn] ? [ITEM_LAYER[worn]] : []));
   const background = (avatar.background && BACKGROUND_LAYER[avatar.background]) || null;
-  const html = fuzzballArt({ ...furRoles(avatar.color), iris: IRIS_COLORS[look.iris], id }, look.eyes, look.mouth, items, background);
+  const html = fuzzballArt({ ...furRoles(avatar.color), iris: IRIS_COLORS[look.iris], id }, look.accent, look.eyes, look.mouth, items, background);
   return (
     <svg
       className={["avatar-svg", className ?? ""].join(" ")}

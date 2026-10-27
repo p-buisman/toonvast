@@ -9,10 +9,11 @@ The drawing is 1600x1600 with a test circle that is dropped. Layer groups at the
 Benen, Armen, Bolletje (with Bol, Wenkbrauwen, Monden/<mouth>, Ogen/<eyes>), Attributen/<item>. A clipping mask in the
 Bolletje layer belongs to an item (the top hat: the fuzz must not poke through it) and is applied only when that item is
 worn; masks are matched to `MASKED` in the order they sit in the file. The oranges of the drawing become colour roles
-({{light}}, {{mid}}, ...) that the component fills in per fur colour; the iris becomes {{iris}}; ids get the {{id}}
-prefix so several fuzzballs can share a page.
+({{light}}, {{mid}}, ...) that the component fills in per fur colour; the iris becomes {{iris}}; every red of an item
+(cap, hat bands, crown gems, bow) becomes {{accent|r,g,b}}, which the component recolours in the profile's accent colour
+or leaves as it is; ids get the {{id}} prefix so several fuzzballs can share a page.
 """
-import pathlib, re, subprocess, sys
+import colorsys, pathlib, re, subprocess, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SRC = (ROOT / "art/pluizenbolletje.svg").read_text()
@@ -21,7 +22,7 @@ OUT = ROOT / "src/components/common/fuzzballLayers.ts"
 # The original colours per role, so orange keeps the drawing's own colours.
 ROLES = {
     "light": ["rgb(255,154,27)", "rgb(255,155,28)", "rgb(255,158,29)", "rgb(255,148,21)", "rgb(255,152,27)"],
-    "mid": ["rgb(255,129,16)"],
+    "mid": ["rgb(255,129,16)", "rgb(253,122,13)", "rgb(254,127,14)"],  # the last two: the line of the grin
     "deep": ["rgb(246,90,0)", "rgb(255,110,4)"],
     "brow": ["rgb(241,102,0)", "rgb(242,94,13)"],
     "limb": ["rgb(223,60,0)"],
@@ -63,6 +64,16 @@ def masks() -> list[str]:
     return [m.group(0) for m in re.finditer(r'<clipPath id="([^"]+)">.*?</clipPath>\s*<g clip-path="url\(#\1\)">', group("Bolletje"), re.S)]
 
 
+def is_red(r: int, g: int, b: int) -> bool:
+    h, _, sat = colorsys.rgb_to_hls(r / 255, g / 255, b / 255)
+    return sat > 0.5 and (h < 0.05 or h > 0.95)
+
+
+def accent(s: str) -> str:
+    """The reds of an item as {{accent|r,g,b}}: the component keeps or recolours them."""
+    return re.sub(r"rgb\((\d+),(\d+),(\d+)\)", lambda m: "{{accent|" + ",".join(m.groups()) + "}}" if is_red(*map(int, m.groups())) else m.group(0), s)
+
+
 def clean(s: str) -> str:
     s = re.sub(r'\s*serif:id="[^"]*"', "", s)
     s = re.sub(r"\s+", " ", s).replace("> <", "><").strip()
@@ -84,8 +95,8 @@ defs = SRC[SRC.index("<defs>") : SRC.index("</defs>") + 7]
 ogen, monden = opening(group("Ogen")), opening(group("Monden"))
 
 
-def ts_record(name: str, parts: dict[str, str], type_: str = "") -> str:
-    rows = ",\n".join(f"  {k!r}: `{clean(v)}`" for k, v in parts.items())
+def ts_record(name: str, parts: dict[str, str], type_: str = "", accented: bool = False) -> str:
+    rows = ",\n".join(f"  {k!r}: `{accent(clean(v)) if accented else clean(v)}`" for k, v in parts.items())
     return f"export const {name}{type_} = {{\n{rows},\n}}{'' if type_ else ' as const'};\n"
 
 
@@ -113,8 +124,8 @@ export const FUZZBALL_CLOSE = "</g>";
 
 {ts_record("FUZZBALL_EYES_ART", {k: ogen + group(v) + "</g>" for k, v in EYES.items()})}
 {ts_record("FUZZBALL_MOUTH_ART", {k: monden + group(v) + "</g>" for k, v in MOUTHS.items()})}
-/** Worn on top of everything, outside the Bolletje group. */
-{ts_record("FUZZBALL_ITEM_ART", {k: group(v) for k, v in ITEMS.items()})}
+/** Worn on top of everything, outside the Bolletje group; their reds are {{{{accent|r,g,b}}}}. */
+{ts_record("FUZZBALL_ITEM_ART", {k: group(v) for k, v in ITEMS.items()}, accented=True)}
 /**
  * The clipping mask an item puts on the ball (the fuzz does not poke through the top hat): the clipPath and the opening
  * tag of the clipped group, placed right after `FUZZBALL_BALL_OPEN`; the component closes that group before

@@ -70,11 +70,12 @@ Engine (`src/engine/`):
   blikken en monden, thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar),
   `unlockedValues` (wat een profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend: grijs met "Komt nog") en
   `itemShown` (niet te koop wat iedereen gratis heeft).
-- `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`) en iris (`AvatarLook`,
+- `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`), iris en accentkleur van de
+  spullen (`ACCENT_COLORS`, `accentShade`: het rood van een attribuut in de accentkleur met behoud van lichtheid) (`AvatarLook`,
   `DEFAULT_LOOK`, `lookOf`: vult ontbrekende of onbekende delen aan, ook bij een profiel van het poppetje uit de eerste versie;
   `FREE_LOOK`: wat gratis is), de vachtkleuren met hun contrasterende achtergrond (`FUR_COLORS`, `contrastBg`), `tint`/`outline`
-  (lichtheid en verzadiging verschuiven; lijnkleur) en `furRoles` (de kleurrollen van de tekening per vachtkleur; oranje houdt
-  de originele kleuren).
+  (lichtheid en verzadiging verschuiven; lijnkleur), `toHsl` en `furRoles` (de kleurrollen van de tekening per vachtkleur;
+  oranje houdt de originele kleuren).
 
 `src/state/useInstrument.ts` onthoudt het gekozen instrumenttabblad (les kiezen en voortgang delen het, op het apparaat).
 
@@ -109,6 +110,7 @@ Componenten (`src/components/`):
 - `common/Avatar.tsx` - de avatar: de pluizenbol, de tekening uit `art/pluizenbolletje.svg` op een schijf in de vachtkleur via
   `furRoles`, met per keuze een laag voor ogen, mond, bril, zonnebril, pet, bolhoed, hoge hoed, kroon, strik en de
   achtergronden sterren en noten; de hoge hoed heeft een masker dat de bol afsnijdt zodat het pluis er niet doorheen steekt.
+  Alles wat in een attribuut rood is, staat in de laagstrings als `{{accent|r,g,b}}` en krijgt de accentkleur van het profiel.
   De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py` uit de SVG: na een
   nieuwe export (alle lagen zichtbaar, groepen benoemd) het script draaien, nieuwe lagen daar en in
   `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER`/`BACKGROUND_LAYER` opnemen en het winkelitem uit `NOT_YET` halen; een masker
