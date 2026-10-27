@@ -39,6 +39,9 @@ describe("what the shop sells per kind of avatar", () => {
     expect(itemReady(shopItem("sunglasses")!, "poppetje")).toBe(false);
     expect(itemReady(shopItem("hat-crown")!, "pluizenbol")).toBe(false);
     expect(itemReady(shopItem("hat-cap")!, "pluizenbol")).toBe(true);
+    expect(itemReady(shopItem("hat-top")!, "pluizenbol")).toBe(true);
+    expect(itemReady(shopItem("bg-stars")!, "pluizenbol")).toBe(true);
+    expect(itemReady(shopItem("bg-notes")!, "pluizenbol")).toBe(false);
     expect(itemShown(shopItem("face-open")!, "pluizenbol")).toBe(false);
     expect(itemShown(shopItem("face-open")!, "poppetje")).toBe(true);
     expect(itemShown(shopItem("hat-cap")!, "pluizenbol")).toBe(true);

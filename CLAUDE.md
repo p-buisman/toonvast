@@ -110,9 +110,9 @@ Componenten (`src/components/`):
 - `common/Avatar.tsx` - de avatar: kiest op `look.kind` tussen het poppetje (gezicht, nek, schouders op een schijf, in dit
   bestand, alle vlakken met lijn en één schaduw) en `common/Fuzzball.tsx` (de pluizenbol: de tekening uit
   `art/pluizenbolletje.svg`, op dezelfde schijf, in de vachtkleur via `furRoles`, met per keuze een laag voor ogen, mond, pet,
-  bril en zonnebril). De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py`
+  bril, zonnebril, bolhoed en de sterrenachtergrond). De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py`
   uit de SVG: na een nieuwe export (alle lagen zichtbaar, groepen benoemd) het script draaien, nieuwe lagen daar en in
-  `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER` opnemen en het winkelitem uit `NOT_YET` halen.
+  `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER`/`BACKGROUND_LAYER` opnemen en het winkelitem uit `NOT_YET` halen.
 - `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
   avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
 - `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.

@@ -5,8 +5,8 @@ Run it after a new export of the drawing (all layers visible, groups named):
 
     python3 scripts/fuzzball-art.py
 
-The drawing is 1600x1600 with a test circle that is dropped. Layer groups at the top level: Benen, Armen, Bolletje
-(with Bol, Wenkbrauwen, Monden/<mouth>, Ogen/<eyes>), Bril, Zonnebril, Pet. The oranges of the drawing become colour
+The drawing is 1600x1600 with a test circle that is dropped. Layer groups at the top level: Achtergronden/<background>,
+Benen, Armen, Bolletje (with Bol, Wenkbrauwen, Monden/<mouth>, Ogen/<eyes>), Attributen/<item>. The oranges of the drawing become colour
 roles ({{light}}, {{mid}}, ...) that the component fills in per fur colour; the iris becomes {{iris}}; ids get the
 {{id}} prefix so several fuzzballs can share a page.
 """
@@ -29,7 +29,8 @@ ROLES = {
 IRIS = "rgb(13,121,242)"
 EYES = {"open": "Open-ogen", "blij": "Lachende-ogen", "knipoog": "Knipoog", "dicht": "Gesloten-ogen"}
 MOUTHS = {"lach": "Lach", "open-lach": "Open-lach", "tong": "Tong", "verrast": "Verbazing", "zang": "Zang"}
-ITEMS = {"pet": "Pet", "bril": "Bril", "zonnebril": "Zonnebril"}
+ITEMS = {"pet": "Pet", "bril": "Bril", "zonnebril": "Zonnebril", "bolhoed": "Bolhoed"}
+BACKGROUNDS = {"sterren": "Sterren"}
 
 
 def group(gid: str) -> str:
@@ -78,6 +79,8 @@ out = f'''/**
  */
 export const FUZZBALL_SIZE = 1600;
 
+/** Behind the body, on the disc. */
+{ts_record("FUZZBALL_BACKGROUND_ART", BACKGROUNDS)}
 /** Gradients and clip paths. */
 export const FUZZBALL_DEFS = `{clean(defs)}`;
 

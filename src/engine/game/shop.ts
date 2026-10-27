@@ -19,7 +19,7 @@ export interface ShopItem {
 export const SHIELD_ITEM_ID = "shield";
 
 export const SHOP_ITEMS: readonly ShopItem[] = [
-  { id: "hat-top", title: "Hoedje", price: 50, category: "avatar", slot: "hat" },
+  { id: "hat-top", title: "Bolhoed", price: 50, category: "avatar", slot: "hat" },
   { id: "hat-cap", title: "Pet", price: 40, category: "avatar", slot: "hat" },
   { id: "hat-crown", title: "Kroon", price: 150, category: "avatar", slot: "hat" },
   { id: "glasses", title: "Bril", price: 40, category: "avatar", slot: "eyes" },
@@ -64,7 +64,7 @@ export const THEMES: readonly { id: string; title: string }[] = [
 /** Items not drawn yet for a kind of avatar: the shop shows them grey as "coming", and nothing wears them. */
 const NOT_YET: Record<AvatarKind, ReadonlySet<string>> = {
   poppetje: new Set(["sunglasses", "face-dicht", "mouth-tong", "mouth-zang", "fuzz-stekelig", "fuzz-krullig"]),
-  pluizenbol: new Set(["hat-top", "hat-crown", "headphones", "bg-stars", "bg-notes", "bow", "mouth-grijns", "fuzz-stekelig", "fuzz-krullig"]),
+  pluizenbol: new Set(["hat-crown", "headphones", "bg-notes", "bow", "mouth-grijns", "fuzz-stekelig", "fuzz-krullig"]),
 };
 
 export function itemReady(item: ShopItem, kind: AvatarKind): boolean {
