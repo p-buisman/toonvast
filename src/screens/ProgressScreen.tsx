@@ -41,7 +41,7 @@ function Legend() {
 function NoteMaps({ module, cards }: { module: ModuleDef; cards: StoredCard[] }) {
   const byKey = new Map(cards.map((c) => [c.itemKey, c]));
   const clefs: Clef[] = module.clefs === "treble" ? ["treble"] : [...CLEFS];
-  const { min, max } = rangeForLevel(3);
+  const { min, max } = rangeForLevel(module.instrument === "guitar" ? 3 : 4);
   return (
     <>
       {clefs.map((clef) => (

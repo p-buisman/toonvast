@@ -65,18 +65,18 @@ Toelichting per module:
 
 Instellingen horen bij een profiel en bij een module. Standaardwaarden zijn bewust klein, zodat een beginner niet verdwaalt.
 
-| Instelling                                 | Opties                                                              | Standaard        |
-| ------------------------------------------ | ------------------------------------------------------------------- | ---------------- |
-| Sleutels                                   | Vioolsleutel, bassleutel, beide                                     | Vioolsleutel     |
-| Bereik notenbalk                           | Binnen de lijnen; met 1, 2 of 3 hulplijnen (3 voor de lage E-snaar) | Binnen de lijnen |
-| Voortekens                                 | Geen; alleen ♯; alleen ♭; beide                                     | Geen             |
-| Toonsoorten (akkoord- en toonsoortmodules) | Vinkjes per toonsoort, gegroepeerd op aantal voortekens             | C, G, F          |
-| Akkoorden                                  | Alleen noten; majeur; mineur; omkeringen aan/uit                    | Alleen noten     |
-| Pianobereik                                | 2 octaven (C3–C5); 4 octaven (C2–C6); volledig (A0–C8, scrollbaar)  | 2 octaven        |
-| Gitaarhals                                 | Fret 0–4 (later: 0–12)                                              | 0–4              |
-| Greepinvoer (M5)                           | Kiezen uit diagrammen; vingers zelf plaatsen                        | Kiezen           |
-| Sessielengte                               | 5, 10, 20 vragen                                                    | 10               |
-| Noten tegelijk leren (werkvoorraad)        | 2, 4, 6                                                             | 4                |
+| Instelling                                 | Opties                                                                                | Standaard        |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- | ---------------- |
+| Sleutels                                   | Vioolsleutel, bassleutel, beide                                                       | Vioolsleutel     |
+| Bereik notenbalk                           | Binnen de lijnen; met 1 t/m 4 hulplijnen (3 voor de lage E-snaar, 4 voor pianomuziek) | Binnen de lijnen |
+| Voortekens                                 | Geen; alleen ♯; alleen ♭; beide                                                       | Geen             |
+| Toonsoorten (akkoord- en toonsoortmodules) | Vinkjes per toonsoort, gegroepeerd op aantal voortekens                               | C, G, F          |
+| Akkoorden                                  | Alleen noten; majeur; mineur; omkeringen aan/uit                                      | Alleen noten     |
+| Pianobereik                                | 2 octaven (C3–C5); 4 octaven (C2–C6); volledig (A0–C8, scrollbaar)                    | 2 octaven        |
+| Gitaarhals                                 | Fret 0–4 (later: 0–12)                                                                | 0–4              |
+| Greepinvoer (M5)                           | Kiezen uit diagrammen; vingers zelf plaatsen                                          | Kiezen           |
+| Sessielengte                               | 5, 10, 20 vragen                                                                      | 10               |
+| Noten tegelijk leren (werkvoorraad)        | 2, 4, 6                                                                               | 4                |
 
 De adaptieve vraagkeuze (§6) werkt _binnen_ deze instellingen: wat uitgeschakeld is komt niet voor, en nieuwe items komen er geleidelijk bij.
 
@@ -200,18 +200,20 @@ Versienummers van bibliotheken worden bij het opzetten gecontroleerd; deze verke
 
 ## 11. Fasering
 
-| Fase | Inhoud                                                                                                                         | Resultaat                                                  |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
-| 0    | Repo, Vite/PWA-opzet, theorie-engine met tests, SVG-notenbalk, schermpiano, gitaarhals, sampler met piano-geluid, GitHub Pages | Lege app die noten toont en toetsen laat klinken           |
-| 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                         | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
-| 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                              | Versie 2: akkoorden en winkel                              |
-| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)   | Versie 3: gehoortraining                                   |
-| 4    | M7 toonsoort (drie varianten), daarna mineur; eventueel fret 5–12 en barré-vormen                                              | Versie 4: toonsoorten                                      |
+| Fase | Inhoud                                                                                                                                  | Resultaat                                                  |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| 0    | Repo, Vite/PWA-opzet, theorie-engine met tests, SVG-notenbalk, schermpiano, gitaarhals, sampler met piano-geluid, GitHub Pages          | Lege app die noten toont en toetsen laat klinken           |
+| 1    | Profielen, M1–M3, instellingen, FSRS-sessies, XP/level/dagdoel/streak, voortgangsscherm, export/import                                  | **Versie 1: noten lezen**, bruikbaar op computer en iPhone |
+| 2    | M4a–c en M5 (akkoorden, grepen), badges, munten en winkel met avatar en thema's, streakbeschermer                                       | Versie 2: akkoorden en winkel                              |
+| 3    | M6, M8, M9 (gehoor), gitaar-samples en strum (gebouwd; M6 als drie modules: notenbalk, piano, gitaar; M8 en M9 elk als twee)            | Versie 3: gehoortraining                                   |
+| 4    | M7 toonsoort (drie varianten), daarna mineur; eventueel fret 5–12 en barré-vormen                                                       | Versie 4: toonsoorten                                      |
+| 5    | Gitaarstemmer: toonhoogte uit de microfoon, herkent vanzelf welke snaar klinkt, toont hoe ver ernaast en welke kant de stemknop op moet | Versie 5: stemmen                                          |
 
 ---
 
 ## 12. Open punten en risico's
 
+- **Gitaarstemmer (fase 5)**: toonhoogtedetectie in de browser (Web Audio, autocorrelatie of YIN) op de microfoon; de snaar volgt uit de dichtstbijzijnde van E2 A2 D3 G3 B3 E4, de afwijking in cents bepaalt de pijl (omhoog = aandraaien). Microfoontoegang vraagt een gebruikersgebaar en werkt in de PWA op iOS alleen in de voorgrond.
 - **Melodiegenerator (M7)**: moet herkenbaar genoeg klinken zonder saai te worden; kort prototype in fase 4 nodig.
 - **Samplegrootte**: 3–5 MB piano plus gitaar is op wifi prima, maar de eerste start moet een laadindicatie krijgen; daarna cachet de service worker alles.
 - **Kindmodus vs. volwassen modus**: één codebase met variabelen voor grootte en speelsheid; geen twee aparte interfaces.

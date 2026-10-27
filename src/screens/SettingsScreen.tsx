@@ -98,7 +98,7 @@ export function SettingsScreen({ moduleId }: { moduleId: ModuleId }) {
             onChange={(range) => update({ range })}
           />
           <p className="muted" style={{ marginTop: 6 }}>
-            Nieuwe noten komen er stap voor stap bij. De lage E-snaar van de gitaar vraagt drie hulplijnen.
+            Nieuwe noten komen er stap voor stap bij. De lage E-snaar van de gitaar vraagt drie hulplijnen; pianomuziek gaat tot vier.
           </p>
         </Card>
       )}

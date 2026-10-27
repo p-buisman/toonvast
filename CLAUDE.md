@@ -31,7 +31,7 @@ Engine (`src/engine/`):
 - `common/pitch.ts` - toonhoogte met spelling: `Pitch` (letter, voorteken, octaaf), `midiOf`, `pitchKey`, `pitchName`,
   `sameSound` (enharmonisch gelijk), `spellMidi` (een MIDI-nummer spellen met ♯ of ♭).
 - `common/clef.ts` - notenbalkpositie per sleutel: `staffPosition`, `pitchAtPosition`, `ledgerLines`, `rangeForLevel`
-  (bereik 0-3 hulplijnen; 3 is nodig voor de lage E-snaar van de gitaar).
+  (bereik 0-4 hulplijnen; 3 is nodig voor de lage E-snaar van de gitaar, 4 komt in pianomuziek voor).
 - `common/random.ts` - `pick`, `shuffle`, `seeded` (vaste reeks voor tests en vaste keuzes per vraag).
 - `common/chord.ts` - drieklanken met spelling: `PitchClass`, `triadPcs`, `chordPcs` (per ligging), `voicing` (ligging op de
   notenbalk per sleutel), `chordName`/`chordKey`, de majeurtoonsoorten (`MAJOR_KEYS`) en `diatonicTriads`.
@@ -68,6 +68,9 @@ Engine (`src/engine/`):
   avatar-werkbank (`FIGURE_GEOM`, `FUZZBALL_GEOM`): verander maten daar, niet in de componenten.
 
 `src/state/useInstrument.ts` onthoudt het gekozen instrumenttabblad (les kiezen en voortgang delen het, op het apparaat).
+
+Het app-icoon (`public/icons/icon-192/512/1024.png`) is het logo van de gebruiker (vioolsleutel met drie noten op geel), ook als
+favicon; `icon-1024.png` is de bron voor nieuwe maten.
 
 Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.

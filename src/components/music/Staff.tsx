@@ -44,7 +44,7 @@ export function Staff({ clef, notes, onTap, previewAcc = 0, width = 340, height 
   const positionAt = (e: PointerEvent<SVGSVGElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     const y = ((e.clientY - rect.top) / rect.height) * height;
-    return Math.max(-7, Math.min(15, Math.round((bottom - y) / (SP / 2))));
+    return Math.max(-9, Math.min(17, Math.round((bottom - y) / (SP / 2))));
   };
   const down = (e: PointerEvent<SVGSVGElement>) => {
     if (!onTap) return;

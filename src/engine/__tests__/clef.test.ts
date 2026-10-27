@@ -37,5 +37,6 @@ describe("clef", () => {
     expect(rangeForLevel(0)).toEqual({ min: -1, max: 9 });
     expect(rangeForLevel(2)).toEqual({ min: -5, max: 13 });
     expect(rangeForLevel(3)).toEqual({ min: -7, max: 15 }); // written E3: the guitar's low E
+    expect(rangeForLevel(4)).toEqual({ min: -9, max: 17 }); // C3 and A6 in the treble clef, as piano music has them
   });
 });
