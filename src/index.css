@@ -134,6 +134,7 @@
   --accent-soft: #38415f;
   --gold: #f4c04f;
   --gold-soft: #4b4120;
+  --gold-ink: #ffd98a;
   --ok-soft: #244434;
   --bad-soft: #4a2a2a;
   --line: #3b3f55;
@@ -1247,7 +1248,8 @@ svg.ico {
   width: 76px;
   height: 76px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--gold-soft);
+  border: 3px solid var(--gold);
   color: var(--gold-ink);
   display: flex;
   flex-direction: column;
