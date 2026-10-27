@@ -7,7 +7,20 @@ import { Icon, type IconName } from "../components/common/Icon.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { MAX_SHIELDS } from "../engine/game/rules.ts";
-import { applyItem, buyRefusal, DEFAULT_THEME, itemActive, SHIELD_ITEM_ID, SHOP_ITEMS, THEMES, type ShopCategory, type ShopItem } from "../engine/game/shop.ts";
+import { lookOf } from "../engine/game/avatar.ts";
+import {
+  applyItem,
+  buyRefusal,
+  DEFAULT_THEME,
+  itemActive,
+  itemReady,
+  itemShown,
+  SHIELD_ITEM_ID,
+  SHOP_ITEMS,
+  THEMES,
+  type ShopCategory,
+  type ShopItem,
+} from "../engine/game/shop.ts";
 import { buyItem, updateProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
 import { useProfilePurchases } from "../state/queries.ts";
@@ -16,8 +29,8 @@ import { MainTabs } from "./MainTabs.tsx";
 const THEME_ICON: Record<string, IconName> = { "theme-zee": "wave", "theme-bos": "tree", "theme-zon": "sun", "theme-nacht": "moon" };
 const REFUSAL = { owned: "Al gekocht", coins: "Niet genoeg munten", shields: "Je hebt er al twee" };
 const CATEGORY_HINT: Record<ShopCategory, string> = {
-  avatar: "Hoeden, bril, koptelefoon en achtergronden. Tik op iets dat je hebt om het aan of uit te zetten.",
-  look: "Extra kapsels, gezichten, kleding en kleuren. Gekocht is voor altijd van jou; kiezen doe je hier of bij je profiel.",
+  avatar: "Hoeden, brillen, koptelefoon en achtergronden. Tik op iets dat je hebt om het aan of uit te zetten. Grijs is nog in de maak voor jouw soort avatar.",
+  look: "Extra kapsels, gezichten, kleding en kleuren. Gekocht is voor altijd van jou; kiezen doe je hier of bij je profiel. Grijs is nog in de maak voor jouw soort avatar.",
   theme: "Een thema kleurt de hele app. Tik op een thema dat je hebt om het aan te zetten.",
   extra: "",
 };
@@ -31,9 +44,11 @@ export function ShopScreen() {
   const owned = useProfilePurchases(profile?.id);
   if (!profile) return null;
 
+  const kind = lookOf(profile.avatar).kind;
   const isActive = (item: ShopItem) => (item.category === "theme" ? profile.theme === item.id : itemActive(profile.avatar, item));
 
   const tap = async (item: ShopItem) => {
+    if (!itemReady(item, kind)) return;
     if (item.id !== SHIELD_ITEM_ID && owned.has(item.id)) {
       // Owned: put it on or take it off.
       if (item.category === "theme") await updateProfile(profile.id, { theme: isActive(item) ? DEFAULT_THEME : item.id });
@@ -62,7 +77,8 @@ export function ShopScreen() {
   };
 
   const previewAvatar = preview?.slot ? applyItem(profile.avatar, preview) : profile.avatar;
-  const items = SHOP_ITEMS.filter((i) => i.category === category);
+  // What this kind of avatar gets for free, or has no part for, is not for sale to it.
+  const items = SHOP_ITEMS.filter((i) => i.category === category && itemShown(i, kind));
   const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Standaard";
 
   /** What a card shows: the avatar wearing the item, or the icon of a theme. */
@@ -120,17 +136,21 @@ export function ShopScreen() {
         <div className="shop-grid">
           {items.map((item) => {
             const has = owned.has(item.id);
-            const active = has && isActive(item);
+            const ready = itemReady(item, kind);
+            const active = ready && has && isActive(item);
             return (
               <button
                 key={item.id}
                 type="button"
-                className={["shop-item", has ? "owned" : "", active ? "active" : ""].join(" ")}
+                className={["shop-item", has ? "owned" : "", active ? "active" : "", ready ? "" : "soon"].join(" ")}
+                disabled={!ready}
                 onClick={() => void tap(item)}
               >
                 <div className="pic">{picture(item)}</div>
                 <b>{item.title}</b>
-                {active ? (
+                {!ready ? (
+                  <Chip tone="grey">Komt nog</Chip>
+                ) : active ? (
                   <Chip>Aan</Chip>
                 ) : has ? (
                   <Chip tone="ok">Gekocht</Chip>

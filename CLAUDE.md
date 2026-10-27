@@ -66,13 +66,16 @@ Engine (`src/engine/`):
   goed herkende antwoorden; dagdoel 5, level 10, badge 10). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
-- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, ook pluis en de strik, thema's,
-  streakbeschermer), `buyRefusal`,
-  `applyItem`/`itemActive` (item aan of uit op een avatar), `unlockedValues` (wat een profiel per onderdeel mag kiezen).
+- `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen en uiterlijk per slot, ook pluis, zonnebril en de strik,
+  thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar), `unlockedValues` (wat een
+  profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend voor deze soort: grijs met "Komt nog") en `itemShown`
+  (niet te koop wat de soort gratis heeft of niet kent).
 - `game/avatar.ts` - de avatar: soort (`kind`: poppetje of pluizenbol), huidtinten, hoofdvormen, kapsels, haarkleuren, ogen, monden,
-  kleding, en voor de pluizenbol pluis, oogmaat en iris (`AvatarLook`, `DEFAULT_LOOK`, `lookOf`, `FREE_LOOK` per soort), de
-  kleding- en vachtkleuren met hun contrasterende achtergrond (`contrastBg`), `outline` (lijnkleur), en de maten uit de
-  avatar-werkbank (`FIGURE_GEOM`, `FUZZBALL_GEOM`): verander maten daar, niet in de componenten.
+  kleding, en voor de pluizenbol iris en pluis (`AvatarLook`, `DEFAULT_LOOK`, `lookOf`, `FREE_LOOK` per soort; `FUZZBALL_EYES`,
+  `FUZZBALL_MOUTHS` zijn de lagen van de tekening), de kleding- en vachtkleuren met hun contrasterende achtergrond
+  (`contrastBg`), `tint`/`outline` (lichtheid en verzadiging verschuiven; lijnkleur), `furRoles` (de kleurrollen van de
+  getekende pluizenbol per vachtkleur; oranje houdt de originele kleuren) en de maten van het poppetje uit de avatar-werkbank
+  (`FIGURE_GEOM`): verander maten daar, niet in de component.
 
 `src/state/useInstrument.ts` onthoudt het gekozen instrumenttabblad (les kiezen en voortgang delen het, op het apparaat).
 
@@ -105,8 +108,11 @@ Componenten (`src/components/`):
 - `common/Icon.tsx` - de icoonset (41 outline-iconen, `icons.tsx` is gegenereerd uit het design system): `<Icon name="…" />`,
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - de avatar: kiest op `look.kind` tussen het poppetje (gezicht, nek, schouders op een schijf, in dit
-  bestand) en `common/Fuzzball.tsx` (de pluizenbol: bol met pluis, armen, benen, grote ogen met iris); beide aangekleed met
-  dezelfde winkelitems, alle vlakken met lijn en één schaduw.
+  bestand, alle vlakken met lijn en één schaduw) en `common/Fuzzball.tsx` (de pluizenbol: de tekening uit
+  `art/pluizenbolletje.svg`, op dezelfde schijf, in de vachtkleur via `furRoles`, met per keuze een laag voor ogen, mond, pet,
+  bril en zonnebril). De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py`
+  uit de SVG: na een nieuwe export (alle lagen zichtbaar, groepen benoemd) het script draaien, nieuwe lagen daar en in
+  `FUZZBALL_EYES`/`FUZZBALL_MOUTHS`/`ITEM_LAYER` opnemen en het winkelitem uit `NOT_YET` halen.
 - `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
   avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
 - `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.

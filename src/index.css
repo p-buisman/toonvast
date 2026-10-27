@@ -1060,6 +1060,15 @@ svg.ico {
   background: var(--accent-soft);
 }
 
+/* Not drawn yet for this kind of avatar: grey, not to be tapped */
+.shop-item.soon {
+  opacity: 0.55;
+}
+
+.shop-item.soon .pic {
+  filter: grayscale(1);
+}
+
 .shop-item .pic {
   width: 56px;
   height: 56px;

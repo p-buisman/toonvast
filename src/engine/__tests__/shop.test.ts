@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { contrastBg, DEFAULT_LOOK, lookOf, outline } from "../game/avatar.ts";
-import { applyItem, itemActive, shopItem, unlockedValues, type ShopAvatar } from "../game/shop.ts";
+import { contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint } from "../game/avatar.ts";
+import { applyItem, itemActive, itemReady, itemShown, shopItem, unlockedValues, type ShopAvatar } from "../game/shop.ts";
 
 const base: ShopAvatar = { color: "#3d8bd9", hat: null };
 
@@ -16,6 +16,37 @@ describe("avatar look", () => {
     expect(contrastBg("#123456")).toBe("#f1ede4");
     expect(outline("#3d8bd9")).toMatch(/^#[0-9a-f]{6}$/);
     expect(outline("#3d8bd9")).not.toBe("#3d8bd9");
+  });
+});
+
+describe("fur colours of the drawn fuzzball", () => {
+  it("keeps the drawing's own oranges and derives the roles for another fur", () => {
+    expect(furRoles(FUR_ORANGE).mid).toBe(FUR_ORANGE);
+    expect(furRoles(FUR_ORANGE).limb).toBe("#df3c00");
+    for (const fur of FUR_COLORS) {
+      const r = furRoles(fur);
+      expect(r.mid).toBe(fur);
+      expect(new Set([r.light, r.mid, r.deep, r.brow, r.limb, r.dark]).size).toBe(6);
+      expect(contrastBg(fur)).not.toBe("#f1ede4");
+    }
+    expect(tint("#2f6fed", 0, 0.5)).toBe(tint("#2f6fed", 0, 0.9)); // clamped at the dark end
+  });
+});
+
+describe("what the shop sells per kind of avatar", () => {
+  it("marks what is not drawn yet and hides what is free", () => {
+    expect(itemReady(shopItem("sunglasses")!, "pluizenbol")).toBe(true);
+    expect(itemReady(shopItem("sunglasses")!, "poppetje")).toBe(false);
+    expect(itemReady(shopItem("hat-crown")!, "pluizenbol")).toBe(false);
+    expect(itemReady(shopItem("hat-cap")!, "pluizenbol")).toBe(true);
+    expect(itemShown(shopItem("face-open")!, "pluizenbol")).toBe(false);
+    expect(itemShown(shopItem("face-open")!, "poppetje")).toBe(true);
+    expect(itemShown(shopItem("hat-cap")!, "pluizenbol")).toBe(true);
+    expect(itemShown(shopItem("hair-knot")!, "pluizenbol")).toBe(false);
+    expect(itemShown(shopItem("color-paars")!, "pluizenbol")).toBe(false);
+    expect(itemShown(shopItem("theme-zee")!, "pluizenbol")).toBe(true);
+    expect(shopItem("face-dicht")!.value).toBe("dicht");
+    expect(shopItem("mouth-zang")!.slot).toBe("mouth");
   });
 });
 

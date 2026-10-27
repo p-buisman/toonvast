@@ -4,12 +4,11 @@ import {
   AVATAR_COLORS,
   AVATAR_KINDS,
   CLOTHES_STYLES,
-  EYE_SIZES,
   EYE_STYLES,
   FREE_LOOK,
   FUR_COLORS,
-  FUZZ_STYLES,
   FUZZBALL_EYES,
+  FUZZBALL_MOUTHS,
   HAIR_COLORS,
   HAIR_STYLES,
   HEAD_SHAPES,
@@ -127,11 +126,7 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
           {picks("hair", HAIR_STYLES, "Haar")}
           {swatches("Haarkleur", Object.entries(HAIR_COLORS), value.look.hairColor, (v) => setLook({ hairColor: v as AvatarLook["hairColor"] }))}
           {picks("eyes", EYE_STYLES, "Ogen")}
-          {picks(
-            "mouth",
-            MOUTH_STYLES.filter((m) => m !== "tong"),
-            "Mond",
-          )}
+          {picks("mouth", MOUTH_STYLES, "Mond")}
           {picks("clothes", CLOTHES_STYLES, "Kleding")}
           {swatches(
             "Kleur",
@@ -150,11 +145,9 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
             (c) => onChange({ ...value, color: c }),
             "De kleur van de vacht; de achtergrond kleurt vanzelf mee.",
           )}
-          {picks("fuzz", FUZZ_STYLES, "Pluis")}
-          {picks("eyeSize", Object.keys(EYE_SIZES) as AvatarLook["eyeSize"][], "Ogen")}
           {swatches("Iris", Object.entries(IRIS_COLORS), value.look.iris, (v) => setLook({ iris: v as AvatarLook["iris"] }))}
           {picks("eyes", FUZZBALL_EYES, "Blik")}
-          {picks("mouth", MOUTH_STYLES, "Mond")}
+          {picks("mouth", FUZZBALL_MOUTHS, "Mond")}
         </>
       )}
       <div>

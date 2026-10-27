@@ -38,6 +38,9 @@ function Figure({ avatar, name, size = 48, className }: { avatar: AvatarData; na
   const eyeY = CY + G.eyeY;
   const eyeX = [CX - G.eyeGap, CX + G.eyeGap];
   const mouthY = CY + G.mouthY;
+  // Values that exist on the fuzzball only fall back to the figure's nearest look.
+  const eyes = look.eyes === "dicht" ? "blij" : look.eyes;
+  const mouth = look.mouth === "tong" || look.mouth === "open-lach" || look.mouth === "zang" ? "lach" : look.mouth;
   const cap = `M${CX - rx - 1} ${CY - 2}Q${CX - rx - 1} ${top - 8} ${CX} ${top - 8}Q${CX + rx + 1} ${top - 8} ${CX + rx + 1} ${CY - 2}Q${CX + rx - 4} ${top + fr + 1} ${CX} ${top + fr}Q${CX - rx + 4} ${top + fr + 1} ${CX - rx - 1} ${CY - 2}Z`;
   const fringe = `M${CX - rx - 1} ${CY - 2}Q${CX - rx + 4} ${top + fr + 1} ${CX} ${top + fr}Q${CX + rx - 4} ${top + fr + 1} ${CX + rx + 1} ${CY - 2}`;
   // A point on the head's outline at `deg`, scaled by `f` and pushed `out` further.
@@ -172,28 +175,26 @@ function Figure({ avatar, name, size = 48, className }: { avatar: AvatarData; na
       )}
       {(look.hair === "kort" || look.hair === "lang" || look.hair === "knot" || look.hair === "staart") && <path d={cap} fill={hair} {...line(hair)} />}
       {/* Face */}
-      {look.eyes === "knipoog" ? (
+      {eyes === "knipoog" ? (
         <>
           {eye(eyeX[0], "blij")}
           {eye(eyeX[1], "stip")}
         </>
       ) : (
         <>
-          {eye(eyeX[0], look.eyes)}
-          {eye(eyeX[1], look.eyes)}
+          {eye(eyeX[0], eyes)}
+          {eye(eyeX[1], eyes)}
         </>
       )}
-      {(look.mouth === "lach" || look.mouth === "tong") && (
-        <path d={`M${CX - mw} ${mouthY - 1}q${mw} 6 ${2 * mw} 0`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />
-      )}
-      {look.mouth === "grijns" && (
+      {mouth === "lach" && <path d={`M${CX - mw} ${mouthY - 1}q${mw} 6 ${2 * mw} 0`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />}
+      {mouth === "grijns" && (
         <>
           <path d={`M${CX - mw - 1} ${mouthY - 2}h${2 * mw + 2}a${mw + 1} ${mw + 1} 0 0 1-${2 * mw + 2} 0z`} fill="#8c3b3b" />
           <rect x={CX - mw + 2} y={mouthY - 2} width={2 * mw - 4} height="3" rx="1" fill="#fff" />
         </>
       )}
-      {look.mouth === "neutraal" && <path d={`M${CX - mw + 1} ${mouthY}h${2 * mw - 2}`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />}
-      {look.mouth === "verrast" && <ellipse cx={CX} cy={mouthY} rx={mw / 2} ry="4" fill="#8c3b3b" />}
+      {mouth === "neutraal" && <path d={`M${CX - mw + 1} ${mouthY}h${2 * mw - 2}`} fill="none" stroke={INK} strokeWidth="2.2" strokeLinecap="round" />}
+      {mouth === "verrast" && <ellipse cx={CX} cy={mouthY} rx={mw / 2} ry="4" fill="#8c3b3b" />}
       {/* Shop items, fitted to the head */}
       {avatar.eyes === "glasses" && (
         <g fill="none" stroke={INK} strokeWidth="2">

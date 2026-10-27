@@ -1,4 +1,4 @@
-import { AVATAR_COLORS, DEFAULT_LOOK, type AvatarLook } from "./avatar.ts";
+import { AVATAR_COLORS, DEFAULT_LOOK, FREE_LOOK, type AvatarKind, type AvatarLook } from "./avatar.ts";
 
 /** What coins can buy: avatar parts, the look (hair, face, clothes, colours), colour themes and the streak shield. */
 export type ShopCategory = "avatar" | "look" | "theme" | "extra";
@@ -23,6 +23,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "hat-cap", title: "Pet", price: 40, category: "avatar", slot: "hat" },
   { id: "hat-crown", title: "Kroon", price: 150, category: "avatar", slot: "hat" },
   { id: "glasses", title: "Bril", price: 40, category: "avatar", slot: "eyes" },
+  { id: "sunglasses", title: "Zonnebril", price: 40, category: "avatar", slot: "eyes" },
   { id: "headphones", title: "Koptelefoon", price: 60, category: "avatar", slot: "ears" },
   { id: "bg-stars", title: "Sterren", price: 50, category: "avatar", slot: "background" },
   { id: "bg-notes", title: "Noten", price: 50, category: "avatar", slot: "background" },
@@ -33,9 +34,11 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "hair-staart", title: "Staart", price: 40, category: "look", slot: "hair", value: "staart" },
   { id: "face-open", title: "Open ogen", price: 30, category: "look", slot: "face", value: "open" },
   { id: "face-knipoog", title: "Knipoog", price: 30, category: "look", slot: "face", value: "knipoog" },
+  { id: "face-dicht", title: "Dichte ogen", price: 30, category: "look", slot: "face", value: "dicht" },
   { id: "mouth-grijns", title: "Grijns", price: 30, category: "look", slot: "mouth", value: "grijns" },
   { id: "mouth-verrast", title: "Verrast", price: 30, category: "look", slot: "mouth", value: "verrast" },
   { id: "mouth-tong", title: "Tong", price: 30, category: "look", slot: "mouth", value: "tong" },
+  { id: "mouth-zang", title: "Zang", price: 30, category: "look", slot: "mouth", value: "zang" },
   { id: "fuzz-stekelig", title: "Stekelig pluis", price: 40, category: "look", slot: "fuzz", value: "stekelig" },
   { id: "fuzz-krullig", title: "Krullig pluis", price: 40, category: "look", slot: "fuzz", value: "krullig" },
   { id: "clothes-hoodie", title: "Hoodie", price: 50, category: "look", slot: "clothes", value: "hoodie" },
@@ -57,6 +60,29 @@ export const THEMES: readonly { id: string; title: string }[] = [
   { id: "theme-zon", title: "Zonsondergang" },
   { id: "theme-nacht", title: "Nacht" },
 ];
+
+/** Items not drawn yet for a kind of avatar: the shop shows them grey as "coming", and nothing wears them. */
+const NOT_YET: Record<AvatarKind, ReadonlySet<string>> = {
+  poppetje: new Set(["sunglasses", "face-dicht", "mouth-tong", "mouth-zang", "fuzz-stekelig", "fuzz-krullig"]),
+  pluizenbol: new Set(["hat-top", "hat-crown", "headphones", "bg-stars", "bg-notes", "bow", "mouth-grijns", "fuzz-stekelig", "fuzz-krullig"]),
+};
+
+export function itemReady(item: ShopItem, kind: AvatarKind): boolean {
+  return !NOT_YET[kind].has(item.id);
+}
+
+/** Slots the fuzzball does not have: hair, clothes and the clothing colour (its fur colours are all free). */
+const FIGURE_ONLY: ReadonlySet<AvatarSlot> = new Set(["hair", "clothes", "color"]);
+
+/** Whether the shop shows the item to this kind of avatar: not what it gets for free, not a part it does not have. */
+export function itemShown(item: ShopItem, kind: AvatarKind): boolean {
+  if (!item.slot) return true;
+  if (kind === "pluizenbol" && FIGURE_ONLY.has(item.slot)) return false;
+  if (item.value === undefined) return true;
+  const key = LOOK_KEY[item.slot];
+  const free = key && (FREE_LOOK[kind] as Partial<Record<keyof AvatarLook, readonly string[]>>)[key];
+  return !free || !free.includes(item.value);
+}
 
 export function shopItem(id: string): ShopItem | undefined {
   return SHOP_ITEMS.find((i) => i.id === id);
