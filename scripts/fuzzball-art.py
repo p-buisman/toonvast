@@ -10,8 +10,8 @@ Benen, Armen, Bolletje (with Bol, Wenkbrauwen, Monden/<mouth>, Ogen/<eyes>), Att
 Bolletje layer belongs to an item (the top hat: the fuzz must not poke through it) and is applied only when that item is
 worn; masks are matched to `MASKED` in the order they sit in the file. The oranges of the drawing become colour roles
 ({{light}}, {{mid}}, ...) that the component fills in per fur colour; the iris becomes {{iris}}; every red of an item
-(cap, hat bands, crown gems, bow) becomes {{accent|r,g,b}}, which the component recolours in the profile's accent colour
-or leaves as it is; ids get the {{id}} prefix so several fuzzballs can share a page.
+(cap, hat bands, crown gems, bow, the lenses of the coloured glasses, also inside the gradients an item uses) becomes
+{{accent|r,g,b}}, which the component recolours in the profile's accent colour or leaves as it is; ids get the {{id}} prefix so several fuzzballs can share a page.
 """
 import colorsys, pathlib, re, subprocess, sys
 
@@ -91,7 +91,11 @@ found = masks()
 if len(found) != len(MASKED):
     sys.exit(f"{len(found)} clipping masks in the Bolletje layer, but MASKED names {len(MASKED)} items")
 
-defs = SRC[SRC.index("<defs>") : SRC.index("</defs>") + 7]
+defs = clean(SRC[SRC.index("<defs>") : SRC.index("</defs>") + 7])
+# The gradients an item uses (the lenses of the coloured glasses) get their reds as accent placeholders too.
+item_gradients = {g for v in ITEMS.values() for g in re.findall(r"url\(#_([A-Za-z]+\d+)\)", group(v))}
+for gid in item_gradients:
+    defs = re.sub(r'<(linear|radial)Gradient id="\{\{id\}\}' + gid + r'".*?</\1Gradient>', lambda m: accent(m.group(0)), defs, flags=re.S)
 ogen, monden = opening(group("Ogen")), opening(group("Monden"))
 
 
@@ -109,8 +113,8 @@ export const FUZZBALL_SIZE = 1600;
 
 /** Behind the body, on the disc. */
 {ts_record("FUZZBALL_BACKGROUND_ART", {k: group(v) for k, v in BACKGROUNDS.items()})}
-/** Gradients. */
-export const FUZZBALL_DEFS = `{clean(defs)}`;
+/** Gradients; the ones of the items carry {{{{accent|r,g,b}}}} like the items themselves. */
+export const FUZZBALL_DEFS = `{defs}`;
 
 /** Legs and arms, behind the ball. */
 export const FUZZBALL_LIMBS = `{clean(group("Benen") + group("Armen"))}`;
