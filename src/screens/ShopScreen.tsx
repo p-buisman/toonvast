@@ -53,8 +53,9 @@ export function ShopScreen() {
       else if (item.slot) await updateProfile(profile.id, { avatar: applyItem(profile.avatar, item, !isActive(item)) });
       return;
     }
+    // Too few coins still opens the preview: the sheet says how much there is to save.
     const refusal = buyRefusal(item, wallet.coins, owned, wallet.shields, MAX_SHIELDS);
-    if (refusal) {
+    if (refusal && refusal !== "coins") {
       setMessage(REFUSAL[refusal]);
       return;
     }
@@ -75,6 +76,8 @@ export function ShopScreen() {
   };
 
   const previewAvatar = preview?.slot ? applyItem(profile.avatar, preview) : profile.avatar;
+  /** Coins still to save for the item in the sheet; 0 when it can be bought. */
+  const short = preview ? Math.max(0, preview.price - wallet.coins) : 0;
   // What every profile gets for free is not for sale.
   const items = SHOP_ITEMS.filter((i) => i.category === category && itemShown(i));
   const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Standaard";
@@ -214,11 +217,19 @@ export function ShopScreen() {
               </div>
             )}
             <p className="muted">
-              Je hebt {wallet.coins} munten; na deze aankoop {wallet.coins - preview.price}.
+              {short > 0
+                ? `Je hebt ${wallet.coins} munten; nog ${short} sparen.`
+                : `Je hebt ${wallet.coins} munten; na deze aankoop ${wallet.coins - preview.price}.`}
             </p>
-            <Button block onClick={() => void confirm()}>
-              Kopen voor <Icon name="coin" /> {preview.price}
-            </Button>
+            {short > 0 ? (
+              <Button block disabled>
+                Te weinig munten
+              </Button>
+            ) : (
+              <Button block onClick={() => void confirm()}>
+                Kopen voor <Icon name="coin" /> {preview.price}
+              </Button>
+            )}
             <Button block variant="ghost" onClick={() => setPreview(null)}>
               Annuleren
             </Button>

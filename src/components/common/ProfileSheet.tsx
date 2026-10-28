@@ -16,6 +16,7 @@ export function ProfileSheet({ onClose }: { onClose: () => void }) {
   const others = (profiles ?? []).filter((p) => p.id !== profile.id);
 
   const pick = async (id: string) => {
+    onClose();
     await touchProfile(id);
     chooseProfile(id);
     nav.reset({ name: "home" });

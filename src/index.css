@@ -1444,6 +1444,16 @@ svg.ico {
   border: 2px solid var(--edge);
 }
 
+/* In the shop the frame is a circle around the avatar, which steps in a little to fit inside it */
+[data-mode="speels"] .shop-item .pic {
+  border-radius: 50%;
+}
+
+[data-mode="speels"] .shop-item .pic .avatar-svg {
+  width: 48px;
+  height: 48px;
+}
+
 [data-mode="speels"] .tabbar button {
   font-weight: 800;
 }
