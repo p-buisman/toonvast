@@ -12,6 +12,7 @@ import {
   buyRefusal,
   DEFAULT_THEME,
   itemActive,
+  takesOff,
   itemReady,
   itemShown,
   SHIELD_ITEM_ID,
@@ -28,7 +29,7 @@ import { MainTabs } from "./MainTabs.tsx";
 const THEME_ICON: Record<string, IconName> = { "theme-zee": "wave", "theme-bos": "tree", "theme-zon": "sun", "theme-nacht": "moon" };
 const REFUSAL = { owned: "Al gekocht", coins: "Niet genoeg munten", shields: "Je hebt er al twee" };
 const CATEGORY_HINT: Record<ShopCategory, string> = {
-  avatar: "Hoeden, brillen, koptelefoon, strik en achtergronden. Tik op iets dat je hebt om het aan of uit te zetten. Grijs is nog in de maak.",
+  avatar: "Hoeden, brillen, koptelefoon, strik en achtergronden. Tik op iets dat je hebt om het aan of uit te zetten.",
   look: "Extra blikken en monden. Gekocht is voor altijd van jou; kiezen doe je hier of bij je profiel.",
   theme: "Een thema kleurt de hele app. Tik op een thema dat je hebt om het aan te zetten.",
   extra: "",
@@ -78,6 +79,7 @@ export function ShopScreen() {
   const previewAvatar = preview?.slot ? applyItem(profile.avatar, preview) : profile.avatar;
   /** Coins still to save for the item in the sheet; 0 when it can be bought. */
   const short = preview ? Math.max(0, preview.price - wallet.coins) : 0;
+  const off = preview ? takesOff(profile.avatar, preview) : undefined;
   // What every profile gets for free is not for sale.
   const items = SHOP_ITEMS.filter((i) => i.category === category && itemShown(i));
   const themeTitle = THEMES.find((t) => t.id === profile.theme)?.title ?? "Standaard";
@@ -216,6 +218,7 @@ export function ShopScreen() {
                 <div className="muted grow">Vangt één gemiste dag op, zodat je reeks doorloopt. Je hebt er na aankoop {wallet.shields + 1}.</div>
               </div>
             )}
+            {off && <p className="muted">Een koptelefoon past niet samen met een pet, hoed of kroon. Je {off.title.toLowerCase()} gaat af.</p>}
             <p className="muted">
               {short > 0
                 ? `Je hebt ${wallet.coins} munten; nog ${short} sparen.`

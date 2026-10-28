@@ -54,7 +54,7 @@ export const THEMES: readonly { id: string; title: string }[] = [
 ];
 
 /** Items not drawn yet: the shop shows them grey as "coming", and nothing wears them. */
-const NOT_YET: ReadonlySet<string> = new Set(["headphones"]);
+const NOT_YET: ReadonlySet<string> = new Set([]);
 
 export function itemReady(item: ShopItem): boolean {
   return !NOT_YET.has(item.id);
@@ -93,6 +93,8 @@ export interface ShopAvatar {
   look?: Partial<AvatarLook>;
 }
 
+type WornSlot = "hat" | "eyes" | "ears" | "neck" | "background";
+
 const LOOK_KEY: Partial<Record<AvatarSlot, "eyes" | "mouth">> = { face: "eyes", mouth: "mouth" };
 
 /** Whether the item is what the avatar wears in its slot right now. */
@@ -100,7 +102,17 @@ export function itemActive(avatar: ShopAvatar, item: ShopItem): boolean {
   if (!item.slot) return false;
   const key = LOOK_KEY[item.slot];
   if (key) return (avatar.look?.[key] ?? DEFAULT_LOOK[key]) === item.value;
-  return avatar[item.slot as "hat" | "eyes" | "ears" | "neck" | "background"] === item.id;
+  return avatar[item.slot as WornSlot] === item.id;
+}
+
+/** Slots that cannot be worn together: the headphones do not fit under a hat. */
+const CLASHES: Partial<Record<AvatarSlot, WornSlot>> = { hat: "ears", ears: "hat" };
+
+/** What the avatar wears now that putting the item on takes off, if anything. */
+export function takesOff(avatar: ShopAvatar, item: ShopItem): ShopItem | undefined {
+  const other = item.slot && CLASHES[item.slot];
+  const worn = other ? avatar[other] : null;
+  return worn ? shopItem(worn) : undefined;
 }
 
 /** The avatar with the item put on, or taken off again (back to the default of that part). */
@@ -108,7 +120,8 @@ export function applyItem<A extends ShopAvatar>(avatar: A, item: ShopItem, on = 
   if (!item.slot) return avatar;
   const key = LOOK_KEY[item.slot];
   if (key) return { ...avatar, look: { ...avatar.look, [key]: on ? item.value : DEFAULT_LOOK[key] } };
-  return { ...avatar, [item.slot]: on ? item.id : null };
+  const other = CLASHES[item.slot];
+  return { ...avatar, [item.slot]: on ? item.id : null, ...(on && other ? { [other]: null } : {}) };
 }
 
 /** The look values a profile may use for a part: what the shop gave it, on top of the free ones. */

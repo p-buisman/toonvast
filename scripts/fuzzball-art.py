@@ -32,7 +32,7 @@ ROLES = {
 IRIS = "rgb(13,121,242)"
 EYES = {"open": "Open-ogen", "blij": "Lachende-ogen", "knipoog": "Knipoog", "dicht": "Gesloten-ogen"}
 MOUTHS = {"lach": "Lach", "open-lach": "Open-lach", "grijns": "Grijns", "tong": "Tong", "verrast": "Verbazing", "zang": "Zang"}
-ITEMS = {"pet": "Pet", "bolhoed": "Bolhoed", "hoge-hoed": "Hoge-hoed", "kroon": "Kroon", "bril": "Zwarte-bril", "gekleurde-bril": "Gekleurde-bril", "zonnebril": "Zonnebril", "strik": "Strik"}
+ITEMS = {"pet": "Pet", "bolhoed": "Bolhoed", "hoge-hoed": "Hoge-hoed", "kroon": "Kroon", "bril": "Zwarte-bril", "gekleurde-bril": "Gekleurde-bril", "zonnebril": "Zonnebril", "koptelefoon": "Koptelefoon", "strik": "Strik"}
 BACKGROUNDS = {"sterren": "Sterren", "noten": "Noten"}
 # The items with a clipping mask on the ball, in the order of the masks in the Bolletje layer (outermost first).
 MASKED = ["hoge-hoed"]

@@ -113,7 +113,7 @@ export function ProfileForm({ value, onChange, owned, wearing }: Props) {
         Object.entries(ACCENT_COLORS),
         value.look.accent,
         (v) => setLook({ accent: v as AvatarLook["accent"] }),
-        "Pet, hoeden, kroon en strik kleuren mee.",
+        "Pet, hoeden, kroon, strik, gekleurde bril en koptelefoon kleuren mee.",
       )}
       {picks("eyes", FUZZBALL_EYES, "Blik")}
       {picks("mouth", FUZZBALL_MOUTHS, "Mond")}

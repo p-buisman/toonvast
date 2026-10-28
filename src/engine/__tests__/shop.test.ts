@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { accentShade, contrastBg, DEFAULT_LOOK, FUR_COLORS, FUR_ORANGE, furRoles, lookOf, outline, tint, toHsl, type AvatarLook } from "../game/avatar.ts";
-import { applyItem, itemActive, itemReady, itemShown, shopItem, unlockedValues, type ShopAvatar } from "../game/shop.ts";
+import { applyItem, itemActive, itemReady, itemShown, shopItem, takesOff, unlockedValues, type ShopAvatar } from "../game/shop.ts";
 
 const base: ShopAvatar = { color: "#3d8bd9", hat: null };
 
@@ -49,8 +49,20 @@ describe("fur colours of the drawn fuzzball", () => {
 
 describe("what the shop sells", () => {
   it("marks what is not drawn yet and hides what is free", () => {
-    expect(itemReady(shopItem("headphones")!)).toBe(false);
-    for (const id of ["sunglasses", "glasses", "glasses-color", "hat-crown", "hat-cap", "hat-top", "hat-tall", "bow", "mouth-grijns", "bg-stars", "bg-notes"]) {
+    for (const id of [
+      "headphones",
+      "sunglasses",
+      "glasses",
+      "glasses-color",
+      "hat-crown",
+      "hat-cap",
+      "hat-top",
+      "hat-tall",
+      "bow",
+      "mouth-grijns",
+      "bg-stars",
+      "bg-notes",
+    ]) {
       expect(itemReady(shopItem(id)!)).toBe(true);
     }
     expect(itemShown(shopItem("face-open")!)).toBe(false);
@@ -83,6 +95,20 @@ describe("shop items on the avatar", () => {
     expect(applyItem(on, wink, false).look?.eyes).toBe(DEFAULT_LOOK.eyes);
     const song = shopItem("mouth-zang")!;
     expect(applyItem(base, song).look?.mouth).toBe("zang");
+  });
+
+  it("takes the hat off for the headphones, and the other way round", () => {
+    const phones = shopItem("headphones")!;
+    const cap = shopItem("hat-cap")!;
+    const withCap = applyItem({ ...base, eyes: "glasses" }, cap);
+    expect(takesOff(withCap, phones)?.id).toBe("hat-cap");
+    const withPhones = applyItem(withCap, phones);
+    expect(withPhones).toMatchObject({ hat: null, ears: "headphones", eyes: "glasses" });
+    expect(takesOff(withPhones, cap)?.id).toBe("headphones");
+    expect(applyItem(withPhones, cap)).toMatchObject({ hat: "hat-cap", ears: null });
+    expect(applyItem(withPhones, phones, false).hat).toBeNull();
+    expect(takesOff(base, phones)).toBeUndefined();
+    expect(takesOff(withCap, shopItem("bow")!)).toBeUndefined();
   });
 
   it("puts the bow on and takes it off", () => {

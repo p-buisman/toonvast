@@ -26,6 +26,7 @@ const ITEM_LAYER: Record<string, Item> = {
   glasses: "bril",
   "glasses-color": "gekleurde-bril",
   sunglasses: "zonnebril",
+  headphones: "koptelefoon",
   bow: "strik",
 };
 const BACKGROUND_LAYER: Record<string, keyof typeof FUZZBALL_BACKGROUND_ART> = { "bg-stars": "sterren", "bg-notes": "noten" };
@@ -74,7 +75,7 @@ export function Avatar({ avatar, name, size = 48, className }: { avatar: AvatarD
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
   const look = lookOf(avatar);
   const bg = contrastBg(avatar.color);
-  const items = [avatar.eyes, avatar.hat, avatar.neck].flatMap((worn) => (worn && ITEM_LAYER[worn] ? [ITEM_LAYER[worn]] : []));
+  const items = [avatar.eyes, avatar.ears, avatar.hat, avatar.neck].flatMap((worn) => (worn && ITEM_LAYER[worn] ? [ITEM_LAYER[worn]] : []));
   const background = (avatar.background && BACKGROUND_LAYER[avatar.background]) || null;
   const html = fuzzballArt({ ...furRoles(avatar.color), iris: IRIS_COLORS[look.iris], id }, look.accent, look.eyes, look.mouth, items, background);
   return (

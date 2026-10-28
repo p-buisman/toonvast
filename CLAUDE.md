@@ -67,7 +67,8 @@ Engine (`src/engine/`):
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
 - `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen per slot (hoeden, bril, koptelefoon, strik, achtergrond),
-  blikken en monden, thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar),
+  blikken en monden, thema's, streakbeschermer), `buyRefusal`, `applyItem`/`itemActive` (item aan of uit op een avatar; hoofd en oren sluiten elkaar uit: koptelefoon
+  of hoofddeksel, `takesOff` zegt wat er afgaat),
   `unlockedValues` (wat een profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend: grijs met "Komt nog") en
   `itemShown` (niet te koop wat iedereen gratis heeft).
 - `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`), iris en accentkleur van de
@@ -109,7 +110,7 @@ Componenten (`src/components/`):
   1em groot in de tekstkleur. Geen emoji in de interface.
 - `common/Avatar.tsx` - de avatar: de pluizenbol, de tekening uit `art/pluizenbolletje.svg` op een schijf in de vachtkleur via
   `furRoles`, met per keuze een laag voor ogen, mond, zwarte en
-  gekleurde bril, zonnebril, pet, bolhoed, hoge hoed, kroon, strik en de
+  gekleurde bril, zonnebril, koptelefoon, pet, bolhoed, hoge hoed, kroon, strik en de
   achtergronden sterren en noten; de hoge hoed heeft een masker dat de bol afsnijdt zodat het pluis er niet doorheen steekt.
   Alles wat in een attribuut rood is, staat in de laagstrings als `{{accent|r,g,b}}` en krijgt de accentkleur van het profiel.
   De lagen staan als strings in `common/fuzzballLayers.ts`, gegenereerd door `scripts/fuzzball-art.py` uit de SVG: na een
