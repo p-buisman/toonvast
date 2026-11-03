@@ -236,3 +236,6 @@ Statische schermschetsen (zonder scripts) staan in `docs/schetsen/`:
 7. `07-voortgang.html` – voortgang per instrument met notenkaart
 
 `index.html` in dezelfde map toont ze naast elkaar.
+
+- **Reeksbonus (3 nov 2026):** elke 7 dagen reeks krijg je een gratis streakbeschermer. Zit je al op het maximum van 2, dan krijg je de prijs van een beschermer (30 munten), zodat wie er zelf voor spaarde niets misloopt. Een beschermer die op zo'n dag een gemiste dag opvangt, maakt eerst plek. Het resultaatscherm meldt het op een eigen kaart.
+- **Herinnering (schets 3 nov 2026, nog niet gebouwd):** één dagelijkse herinnering per apparaat via web push, overgeslagen als het dagdoel gehaald is. Dat vraagt een kleine server met tijdschema (voorstel: Cloudflare Worker) die alleen het push-adres, de tijd en de laatste oefendag kent; de tekst maakt het apparaat zelf. Op iPhone en iPad alleen vanaf het beginscherm (iOS 16.4 of nieuwer).

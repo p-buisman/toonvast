@@ -1,4 +1,5 @@
 import { DEFAULT_LOOK, FREE_LOOK, type AvatarLook } from "./avatar.ts";
+import { SHIELD_PRICE } from "./rules.ts";
 
 /** What coins can buy: avatar parts, the look (eyes and mouths), colour themes and the streak shield. */
 export type ShopCategory = "avatar" | "look" | "theme" | "extra";
@@ -41,7 +42,7 @@ export const SHOP_ITEMS: readonly ShopItem[] = [
   { id: "theme-bos", title: "Bos", price: 80, category: "theme" },
   { id: "theme-zon", title: "Zonsondergang", price: 80, category: "theme" },
   { id: "theme-nacht", title: "Nacht", price: 80, category: "theme" },
-  { id: SHIELD_ITEM_ID, title: "Streakbeschermer", price: 30, category: "extra" },
+  { id: SHIELD_ITEM_ID, title: "Streakbeschermer", price: SHIELD_PRICE, category: "extra" },
 ];
 
 export const DEFAULT_THEME = "klassiek";

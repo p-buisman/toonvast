@@ -1,6 +1,20 @@
 import { describe, expect, it } from "vitest";
 import { daysBetween } from "../common/dates.ts";
-import { bookSession, coinsForAnswers, emptyWallet, extendStreak, levelFor, streakStatus, xpForAnswer, xpForLevel } from "../game/rules.ts";
+import {
+  bookSession,
+  coinsForAnswers,
+  coinsLabel,
+  COINS_GOAL,
+  emptyWallet,
+  extendStreak,
+  levelFor,
+  MAX_SHIELDS,
+  SHIELD_PRICE,
+  streakStatus,
+  xpForAnswer,
+  xpForLevel,
+  type Wallet,
+} from "../game/rules.ts";
 
 describe("rules", () => {
   it("awards XP with speed and combo bonuses", () => {
@@ -60,5 +74,41 @@ describe("rules", () => {
     expect(again.wallet.streak).toBe(1);
     const nextDay = bookSession(again.wallet, { xp: 10, coins: 1 }, 60, "2026-10-25");
     expect(nextDay.wallet.todayXp).toBe(10);
+  });
+
+  it("gives a free shield every seven days of streak, or its price in coins at the maximum", () => {
+    const day6 = { ...emptyWallet("2026-10-24"), streak: 6, lastGoalDate: "2026-10-24" };
+    const book = (w: Wallet, today = "2026-10-25") => bookSession(w, { xp: 60, coins: 0 }, 60, today);
+
+    const free = book(day6);
+    expect(free.streakBonus).toBe("shield");
+    expect(free.wallet).toMatchObject({ streak: 7, shields: 1, coins: 5 });
+
+    const full = book({ ...day6, shields: MAX_SHIELDS });
+    expect(full.streakBonus).toBe("coins");
+    expect(full.coinsEarned).toBe(COINS_GOAL + SHIELD_PRICE);
+    expect(full.wallet).toMatchObject({ streak: 7, shields: MAX_SHIELDS, coins: COINS_GOAL + SHIELD_PRICE });
+
+    // A shield spent on a missed day on the way to day seven makes room for the free one.
+    const covered = book({ ...day6, shields: MAX_SHIELDS }, "2026-10-26");
+    expect(covered.streakBonus).toBe("shield");
+    expect(covered.wallet).toMatchObject({ streak: 7, shields: MAX_SHIELDS, coins: COINS_GOAL });
+
+    const fourteen = book({ ...day6, streak: 13 });
+    expect(fourteen.streakBonus).toBe("shield");
+
+    // Other days, and a streak that starts over, bring nothing.
+    const eight = book({ ...day6, streak: 7 });
+    expect(eight.streakBonus).toBeNull();
+    expect(eight.wallet.shields).toBe(0);
+    const restart = book({ ...day6, streak: 6 }, "2026-10-30");
+    expect(restart.streakBonus).toBeNull();
+    expect(restart.wallet.streak).toBe(1);
+  });
+
+  it("says one coin in the singular", () => {
+    expect(coinsLabel(1)).toBe("1 munt");
+    expect(coinsLabel(0)).toBe("0 munten");
+    expect(coinsLabel(30)).toBe("30 munten");
   });
 });

@@ -63,7 +63,8 @@ Engine (`src/engine/`):
 - `learning/lesson.ts` - `suggestLesson`: de volgende les uit de leerdoelen (meeste te herhalen, anders nog nooit geoefend,
   anders het langst geleden).
 - `game/rules.ts` - XP per antwoord, combo, levels, dagdoel, streak met beschermer, munten (`coinsForAnswers`: één munt per twee
-  goed herkende antwoorden; dagdoel 5, level 10, badge 10). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
+  goed herkende antwoorden; dagdoel 5, level 10, badge 10; `coinsLabel`: "1 munt", "3 munten"), elke `SHIELD_STREAK` (7) dagen reeks een
+  gratis beschermer of `SHIELD_PRICE` munten bij het maximum (`StreakBonus`). Prijzen 25-150 in `shop.ts`; de hele winkel hoort maanden te duren.
 - `game/badges.ts` - de badges (`BADGES`, per instrument waar dat zo is; elk met `icon` en `mark` voor de tekening) en
   `earnedBadges` (welke nu gelden).
 - `game/shop.ts` - de winkelcatalogus (`SHOP_ITEMS`: avatar-onderdelen per slot (hoeden, bril, koptelefoon, strik, achtergrond),
@@ -121,7 +122,8 @@ Componenten (`src/components/`):
   pluizenbol in zijn oude kleur.
 - `common/ProfileRow.tsx` - een profiel als rij (avatar, naam, level, streak); `common/ProfileSheet.tsx` - de sheet achter de
   avatar op start- en profielscherm: wie oefent, de andere profielen om met één tik naar te wisselen, nieuw profiel.
-- `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder.
+- `common/Badge.tsx` - een badge: gouden schijf met groot icoon en klein merkteken (icoon, getal of ♯), naam eronder; met `onClick` een
+  knop (op Voortgang opent tikken de uitleg in een blad).
 - `common/` - `Button`, `Card`, `Segmented`, `Tabs`, `Chip`, `ProgressBar`, `TabBar`, `GoalRing`, `ProgressDots`, `AudioDebug`
   (`?debug=1`).
 - `layout/Screen.tsx` - de schermopbouw (kop, inhoud, tabbalk).

@@ -1,5 +1,5 @@
 import { dayKey } from "../engine/common/dates.ts";
-import { bookSession, coinsForAnswers, levelFor, xpForAnswer } from "../engine/game/rules.ts";
+import { bookSession, coinsForAnswers, levelFor, xpForAnswer, type StreakBonus } from "../engine/game/rules.ts";
 import type { ModuleDef } from "../engine/learning/modules.ts";
 import { answerScore } from "../engine/learning/session.ts";
 import { newCardRecord, rateAnswer, review, type CardRecord } from "../engine/learning/scheduler.ts";
@@ -28,6 +28,8 @@ export interface SessionSummary {
   goalReached: boolean;
   leveledUp: boolean;
   streak: number;
+  /** What this day on the streak brought: a free shield, or its price in coins (counted in `coins`). */
+  streakBonus: StreakBonus | null;
   level: number;
   /** Badges earned with this session. */
   newBadges: string[];
@@ -80,6 +82,7 @@ export async function finishSession(
     goalReached: outcome.goalReached,
     leveledUp: outcome.leveledUp,
     streak: outcome.wallet.streak,
+    streakBonus: outcome.streakBonus,
     level: levelFor(outcome.wallet.xp).level,
   };
 }

@@ -2,7 +2,7 @@ import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
 import { badgeById, COINS_BADGE } from "../engine/game/badges.ts";
-import { COINS_GOAL, COINS_LEVEL_UP } from "../engine/game/rules.ts";
+import { COINS_GOAL, COINS_LEVEL_UP, SHIELD_PRICE } from "../engine/game/rules.ts";
 import { moduleById, type ModuleId } from "../engine/learning/modules.ts";
 import type { SessionSummary } from "../state/finishSession.ts";
 import { useApp } from "../state/useApp.ts";
@@ -32,7 +32,7 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
             </div>
             <div className="stat">
               <b>+{summary.coins}</b>
-              <small>munten</small>
+              <small>{summary.coins === 1 ? "munt" : "munten"}</small>
             </div>
             <div className="stat">
               <b>
@@ -59,6 +59,23 @@ export function ResultScreen({ moduleId, summary }: { moduleId: ModuleId; summar
             <b>Dagdoel gehaald</b>
             <div className="muted">
               Je reeks staat op {summary.streak} {summary.streak === 1 ? "dag" : "dagen"}. {COINS_GOAL} munten erbij.
+            </div>
+          </Card>
+        )}
+        {summary.streakBonus && (
+          <Card className="feedback ok" style={{ width: "100%" }}>
+            <div className="row">
+              <div style={{ fontSize: 32, lineHeight: 1 }} aria-hidden="true">
+                <Icon name="shield" />
+              </div>
+              <div className="grow">
+                <b>{summary.streak} dagen op rij!</b>
+                <div className="muted">
+                  {summary.streakBonus === "shield"
+                    ? "Je krijgt een gratis streakbeschermer."
+                    : `Je hebt al het maximum aan beschermers, dus je krijgt ${SHIELD_PRICE} munten.`}
+                </div>
+              </div>
             </div>
           </Card>
         )}

@@ -1094,6 +1094,15 @@ svg.ico {
   text-align: center;
 }
 
+button.badge-item {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
 .badge-label {
   font-size: 10px;
   font-weight: 600;

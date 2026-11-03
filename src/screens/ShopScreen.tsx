@@ -6,7 +6,7 @@ import { Chip } from "../components/common/Chip.tsx";
 import { Icon, type IconName } from "../components/common/Icon.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
-import { MAX_SHIELDS } from "../engine/game/rules.ts";
+import { coinsLabel, MAX_SHIELDS, SHIELD_PRICE, SHIELD_STREAK } from "../engine/game/rules.ts";
 import {
   applyItem,
   buyRefusal,
@@ -96,7 +96,7 @@ export function ShopScreen() {
       <div className="row spread">
         <h1>Winkel</h1>
         <Chip tone="gold" big>
-          <Icon name="coin" /> {wallet.coins} munten
+          <Icon name="coin" /> {coinsLabel(wallet.coins)}
         </Chip>
       </div>
       <Card className="row">
@@ -128,11 +128,12 @@ export function ShopScreen() {
           <div className="grow">
             <b>Streakbeschermer</b>
             <div className="muted">
-              Vangt één gemiste dag op · je hebt er {wallet.shields} (max. {MAX_SHIELDS})
+              Vangt één gemiste dag op · je hebt er {wallet.shields} (max. {MAX_SHIELDS}). Elke {SHIELD_STREAK} dagen op rij krijg je er één gratis, of{" "}
+              {SHIELD_PRICE} munten als je het maximum al hebt.
             </div>
           </div>
           <button type="button" className="chip gold big" onClick={() => void tap(SHOP_ITEMS.find((i) => i.id === SHIELD_ITEM_ID)!)}>
-            <Icon name="coin" /> 40
+            <Icon name="coin" /> {SHIELD_PRICE}
           </button>
         </Card>
       ) : (
@@ -221,8 +222,8 @@ export function ShopScreen() {
             {off && <p className="muted">Een koptelefoon past niet samen met een pet, hoed of kroon. Je {off.title.toLowerCase()} gaat af.</p>}
             <p className="muted">
               {short > 0
-                ? `Je hebt ${wallet.coins} munten; nog ${short} sparen.`
-                : `Je hebt ${wallet.coins} munten; na deze aankoop ${wallet.coins - preview.price}.`}
+                ? `Je hebt ${coinsLabel(wallet.coins)}; nog ${short} sparen.`
+                : `Je hebt ${coinsLabel(wallet.coins)}; na deze aankoop ${wallet.coins - preview.price}.`}
             </p>
             {short > 0 ? (
               <Button block disabled>

@@ -1,11 +1,13 @@
+import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
+import { Button } from "../components/common/Button.tsx";
 import { Card } from "../components/common/Card.tsx";
 import { Tabs } from "../components/common/Tabs.tsx";
 import { Screen } from "../components/layout/Screen.tsx";
 import { chordName, INVERSION_NAME, MAJOR_KEYS, pcKey, pcName } from "../engine/common/chord.ts";
 import { CLEF_NAME, CLEFS, pitchAtPosition, rangeForLevel, type Clef } from "../engine/common/clef.ts";
 import { pitchName } from "../engine/common/pitch.ts";
-import { BADGES, COINS_BADGE } from "../engine/game/badges.ts";
+import { BADGES, COINS_BADGE, type BadgeDef } from "../engine/game/badges.ts";
 import { chordItemsFor, itemKey, keyItemsFor } from "../engine/learning/items.ts";
 import { INSTRUMENT_NAME, INSTRUMENTS, modulesFor, PLAYABLE_PHASE, usesStaff, type ModuleDef } from "../engine/learning/modules.ts";
 import { masteryOf, type Mastery } from "../engine/learning/scheduler.ts";
@@ -118,6 +120,7 @@ function ChordMap({ module, cards, keys }: { module: ModuleDef; cards: StoredCar
 
 export function ProgressScreen() {
   const { profile } = useApp();
+  const [openBadge, setOpenBadge] = useState<BadgeDef | null>(null);
   const [instrument, setInstrument] = useInstrument();
   const cards = useProfileCards(profile?.id);
   const stats = useProfileStats(profile?.id);
@@ -167,13 +170,32 @@ export function ProgressScreen() {
         <h2>Badges · {INSTRUMENT_NAME[instrument].toLowerCase()}</h2>
         <div className="badges">
           {shown.map((b) => (
-            <Badge key={b.id} badge={b} earned={earned.has(b.id)} />
+            <Badge key={b.id} badge={b} earned={earned.has(b.id)} onClick={() => setOpenBadge(b)} />
           ))}
         </div>
         <p className="muted" style={{ marginTop: 8 }}>
-          Elke badge is {COINS_BADGE} munten waard. Houd je vinger op een badge voor de uitleg.
+          Elke badge is {COINS_BADGE} munten waard. Tik op een badge voor de uitleg.
         </p>
       </Card>
+      {openBadge && (
+        <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={openBadge.title} onClick={() => setOpenBadge(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="row">
+              <Badge badge={openBadge} earned={earned.has(openBadge.id)} />
+              <div className="grow">
+                <b>{openBadge.title}</b>
+                <div className="muted">{openBadge.description}</div>
+              </div>
+            </div>
+            <p className="muted">
+              {earned.has(openBadge.id) ? `Gehaald: ${COINS_BADGE} munten verdiend.` : `Nog niet gehaald. Deze badge is ${COINS_BADGE} munten waard.`}
+            </p>
+            <Button block variant="ghost" onClick={() => setOpenBadge(null)}>
+              Sluiten
+            </Button>
+          </div>
+        </div>
+      )}
     </Screen>
   );
 }

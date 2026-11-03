@@ -10,6 +10,9 @@ export const ANSWERS_PER_COIN = 2;
 export const COINS_GOAL = 5;
 export const COINS_LEVEL_UP = 10;
 export const MAX_SHIELDS = 2;
+export const SHIELD_PRICE = 30;
+/** Every so many days of streak a free shield, or its price in coins when the maximum is reached. */
+export const SHIELD_STREAK = 7;
 export const DAY_GOALS = [30, 60, 120] as const;
 export type DayGoal = (typeof DAY_GOALS)[number];
 
@@ -19,6 +22,11 @@ export function xpForAnswer(correct: boolean, fast: boolean, combo: number): { x
   const next = combo + 1;
   const bonus = next >= COMBO_FROM ? Math.min(COMBO_MAX, (next - COMBO_FROM + 1) * COMBO_STEP) : 0;
   return { xp: XP_CORRECT + (fast ? XP_FAST : 0) + bonus, combo: next };
+}
+
+/** "1 munt", "3 munten". */
+export function coinsLabel(coins: number): string {
+  return `${coins} ${coins === 1 ? "munt" : "munten"}`;
 }
 
 /** Coins for a session: `score` is the sum of the recognition scores (1 per answer right the first time). */
@@ -58,14 +66,29 @@ export function rolledToDay(wallet: Wallet, today: string): Wallet {
   return wallet.todayDate === today ? wallet : { ...wallet, todayDate: today, todayXp: 0 };
 }
 
+/** What a streak of a multiple of `SHIELD_STREAK` days brings; `bookSession` pays out the coins. */
+export type StreakBonus = "shield" | "coins";
+
+/** One day more on the streak, with the bonus it may bring; `shields` is what is left after covering a missed day. */
+function nextDay(wallet: Wallet, shields: number, today: string): { wallet: Wallet; bonus: StreakBonus | null } {
+  const streak = wallet.streak + 1;
+  const next = { ...wallet, streak, shields, lastGoalDate: today };
+  if (streak % SHIELD_STREAK !== 0) return { wallet: next, bonus: null };
+  if (shields >= MAX_SHIELDS) return { wallet: next, bonus: "coins" };
+  return { wallet: { ...next, shields: shields + 1 }, bonus: "shield" };
+}
+
 /** The streak after reaching today's goal: one more, or back to one, with a shield covering one missed day. */
+function reachGoal(wallet: Wallet, today: string): { wallet: Wallet; bonus: StreakBonus | null } {
+  if (wallet.lastGoalDate === today) return { wallet, bonus: null };
+  const gap = wallet.lastGoalDate === null ? null : daysBetween(wallet.lastGoalDate, today);
+  if (gap === 1) return nextDay(wallet, wallet.shields, today);
+  if (gap === 2 && wallet.shields > 0) return nextDay(wallet, wallet.shields - 1, today);
+  return { wallet: { ...wallet, streak: 1, lastGoalDate: today }, bonus: null };
+}
+
 export function extendStreak(wallet: Wallet, today: string): Wallet {
-  if (wallet.lastGoalDate === today) return wallet;
-  if (wallet.lastGoalDate === null) return { ...wallet, streak: 1, lastGoalDate: today };
-  const gap = daysBetween(wallet.lastGoalDate, today);
-  if (gap === 1) return { ...wallet, streak: wallet.streak + 1, lastGoalDate: today };
-  if (gap === 2 && wallet.shields > 0) return { ...wallet, streak: wallet.streak + 1, shields: wallet.shields - 1, lastGoalDate: today };
-  return { ...wallet, streak: 1, lastGoalDate: today };
+  return reachGoal(wallet, today).wallet;
 }
 
 export type StreakStatus = "done" | "open" | "at-risk" | "none";
@@ -90,6 +113,7 @@ export interface SessionOutcome {
   goalReached: boolean;
   leveledUp: boolean;
   coinsEarned: number;
+  streakBonus: StreakBonus | null;
 }
 
 /** Book a finished session: XP, coins, the day goal (with its coins and the streak) and a possible level-up. */
@@ -101,10 +125,12 @@ export function bookSession(wallet: Wallet, gain: SessionGain, goal: number, tod
   const leveledUp = levelFor(w.xp).level > levelBefore;
   if (leveledUp) coins += COINS_LEVEL_UP;
   const goalReached = w.todayXp >= goal && w.lastGoalDate !== today;
+  let streakBonus: StreakBonus | null = null;
   if (goalReached) {
     coins += COINS_GOAL;
-    w = extendStreak(w, today);
+    ({ wallet: w, bonus: streakBonus } = reachGoal(w, today));
+    if (streakBonus === "coins") coins += SHIELD_PRICE;
   }
   w = { ...w, coins: w.coins + coins };
-  return { wallet: w, goalReached, leveledUp, coinsEarned: coins };
+  return { wallet: w, goalReached, leveledUp, coinsEarned: coins, streakBonus };
 }
