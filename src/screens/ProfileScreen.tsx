@@ -9,6 +9,8 @@ import { deleteProfile, updateProfile } from "../storage/repo.ts";
 import { useApp } from "../state/useApp.ts";
 import { MainTabs } from "./MainTabs.tsx";
 import { ProfileForm, type ProfileFormValue } from "./ProfileForm.tsx";
+import { ReminderCard } from "./ReminderCard.tsx";
+import { removeReminder } from "../notifications/reminders.ts";
 import { lookOf } from "../engine/game/avatar.ts";
 import { useProfilePurchases } from "../state/queries.ts";
 import { Avatar } from "../components/common/Avatar.tsx";
@@ -39,6 +41,7 @@ export function ProfileScreen() {
 
   const remove = async () => {
     if (!window.confirm(`Profiel "${profile.name}" met alle voortgang verwijderen? Dit kan niet ongedaan worden gemaakt.`)) return;
+    if (profile.reminder) await removeReminder(profile).catch(() => undefined);
     await deleteProfile(profile.id);
     chooseProfile(null);
     nav.reset({ name: "profiles" });
@@ -75,6 +78,7 @@ export function ProfileScreen() {
       <Card className="stack">
         <ProfileForm value={value} onChange={change} owned={purchases} wearing={profile.avatar} />
       </Card>
+      <ReminderCard profile={profile} />
       <Card className="stack">
         <h2>Back-up</h2>
         <p className="muted">Alle profielen op dit apparaat in één bestand, om op een ander apparaat terug te zetten. Terugzetten voegt samen en wist niets.</p>

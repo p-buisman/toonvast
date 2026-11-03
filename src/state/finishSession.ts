@@ -19,6 +19,7 @@ import {
 import { COINS_BADGE, earnedBadges } from "../engine/game/badges.ts";
 import { MODULES, type ModuleId } from "../engine/learning/modules.ts";
 import { db } from "../storage/db.ts";
+import { reportGoalReached } from "../notifications/reminders.ts";
 
 export interface SessionSummary {
   total: number;
@@ -72,6 +73,7 @@ export async function finishSession(
   await saveSession({ id: newId(), profileId: profile.id, moduleId: module.id, startedAt, endedAt: now.getTime(), answers, xp, coins });
   const outcome = bookSession(await getWallet(profile.id), { xp, coins }, profile.dayGoal, dayKey(now));
   await saveWallet(profile.id, outcome.wallet);
+  if (outcome.goalReached) reportGoalReached(profile);
   const newBadges = await checkBadges(profile.id, outcome.wallet.streak);
   return {
     total: answers.length,

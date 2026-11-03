@@ -9,6 +9,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
+      // An own service worker (src/sw.ts), for the reminders; it precaches like the generated one did.
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
       includeAssets: ["icons/icon-192.png", "icons/icon-512.png"],
       manifest: {
         name: "Toonvast",
@@ -26,7 +30,7 @@ export default defineConfig({
           { src: "icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
       },
-      workbox: {
+      injectManifest: {
         // The piano samples are precached too, so the app works offline after the first visit.
         globPatterns: ["**/*.{js,css,html,svg,png,mp3,woff2}"],
       },

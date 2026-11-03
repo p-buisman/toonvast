@@ -72,6 +72,8 @@ Engine (`src/engine/`):
   of hoofddeksel, `takesOff` zegt wat er afgaat),
   `unlockedValues` (wat een profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend: grijs met "Komt nog") en
   `itemShown` (niet te koop wat iedereen gratis heeft).
+- `game/reminder.ts` - de dagelijkse herinnering, gedeeld door app, service worker en server: `REMINDER_TIMES` (kwartieren),
+  `reminderDue` (tijd gekomen, doel niet gehaald, vandaag nog niet verstuurd), `localMoment`, `reminderText` (de tekst, op het apparaat gemaakt).
 - `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`), iris en accentkleur van de
   spullen (`ACCENT_COLORS`, `accentShade`: het rood van een attribuut in de accentkleur met behoud van lichtheid) (`AvatarLook`,
   `DEFAULT_LOOK`, `lookOf`: vult ontbrekende of onbekende delen aan, ook bij een profiel van het poppetje uit de eerste versie;
@@ -86,6 +88,12 @@ favicon; `icon-1024.png` is de bron voor nieuwe maten.
 
 Opslag (`src/storage/`): `db.ts` (Dexie-schema, versie 2 met `purchases` en `badges`), `repo.ts` (alle lees/schrijf-functies,
 ook `buyItem`, `awardBadges`), `backup.ts` (export/import). `src/state/finishSession.ts` boekt een sessie en kent badges toe.
+
+Meldingen: `src/notifications/reminders.ts` (aanzetten, tijd, uitzetten, proefmelding, `reportGoalReached`, `syncReminders` bij het openen),
+`src/sw.ts` (eigen service worker met precache; maakt van een lege push een melding per profiel) en `workers/herinnering/` (Cloudflare Worker met
+D1-database, elk kwartier één lege push per apparaat met iets dat aan de beurt is; `npx wrangler deploy` in die map, geheime sleutel `VAPID_PRIVATE_KEY`).
+De server kent geen namen of voortgang: alleen push-adres, tijd, tijdzone, laatste doeldag en laatste verzenddag. De worker draait los van GitHub Pages;
+wijzig je hem, dan apart uitrollen. Service worker en push werken niet in `npm run dev`: test met de launch-configuratie `toonvast-build`.
 
 Audio (`src/audio/`): `sampler.ts` (Web Audio; piano- en gitaarsamples per `Timbre`, `playNote`/`playChord` met strum,
 goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek), `pitch.ts`

@@ -33,6 +33,15 @@ export interface BadgeRecord {
   earnedAt: number;
 }
 
+/** The daily reminder of a profile; the server knows the time too (`notifications/reminders.ts`). */
+export interface ProfileReminder {
+  time: string;
+  /** Day key of the last day the notification was shown. */
+  lastShown?: string;
+  /** Until this moment a push shows the test notification. */
+  testUntil?: number;
+}
+
 export interface Profile {
   id: string;
   name: string;
@@ -42,6 +51,7 @@ export interface Profile {
   theme: string;
   /** The modules this profile wants to learn; missing means every playable module. */
   goals?: ModuleId[];
+  reminder?: ProfileReminder;
   createdAt: number;
   /** Last time this profile was chosen; the list is sorted on it. */
   lastUsedAt: number;

@@ -44,6 +44,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // A tapped notification opens the app on the profile it is for.
+  useEffect(() => {
+    const open = (id: string) => {
+      void db.profiles.get(id).then((p) => {
+        if (!p) return;
+        chooseProfile(id);
+        nav.reset({ name: "home" });
+      });
+    };
+    const url = new URL(window.location.href);
+    const fromUrl = url.searchParams.get("profiel");
+    if (fromUrl) {
+      url.searchParams.delete("profiel");
+      window.history.replaceState(null, "", url);
+      open(fromUrl);
+    }
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === "open-profile" && event.data.profileId) open(event.data.profileId);
+    };
+    navigator.serviceWorker?.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker?.removeEventListener("message", onMessage);
+  }, [chooseProfile, nav]);
+
   const wallet = rolledToDay(walletRec ? { ...walletRec } : emptyWallet(dayKey()), dayKey());
   return <AppCtx.Provider value={{ profile: profile ?? null, wallet, chooseProfile, nav }}>{children}</AppCtx.Provider>;
 }

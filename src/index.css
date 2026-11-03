@@ -1278,6 +1278,17 @@ button.badge-item {
 }
 
 /* Purchase confirmation */
+.time-select {
+  min-height: var(--size-control);
+  padding: 0 12px;
+  border: var(--edge-w) solid var(--line);
+  border-radius: var(--radius-control);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  font-weight: 700;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;

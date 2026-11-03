@@ -1,0 +1,15 @@
+name = "toonvast-herinnering"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+
+[vars]
+VAPID_PUBLIC_KEY = "BMqtbW5-U0eoleieSN3Vn-J0q0LbgiE8hD1swfwv2yG55K04nEKR7B1uEcubkMHLOqCWGM3FD4E46SkQohtl-K4"
+VAPID_SUBJECT = "https://github.com/p-buisman/toonvast"
+
+[triggers]
+crons = ["*/15 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "toonvast-herinnering"
+database_id = "a5219a67-d779-4635-b599-ff5e18259a56"
