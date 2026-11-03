@@ -106,7 +106,8 @@ async function saveReminder(request: Request, env: Env, deviceId: string, profil
     env.DB.prepare(
       `INSERT INTO reminders (device_id, profile_id, endpoint, time, tz, last_goal_date) VALUES (?, ?, ?, ?, ?, ?)
        ON CONFLICT (device_id, profile_id) DO UPDATE SET endpoint = excluded.endpoint, time = excluded.time, tz = excluded.tz,
-         last_goal_date = COALESCE(excluded.last_goal_date, last_goal_date)`,
+         last_goal_date = COALESCE(excluded.last_goal_date, last_goal_date),
+         last_sent_date = CASE WHEN time = excluded.time THEN last_sent_date ELSE NULL END`,
     ).bind(deviceId, profileId, reminder.endpoint, reminder.time, reminder.tz, reminder.lastGoalDate),
     // A device has one push address: a new one holds for all its profiles.
     env.DB.prepare("UPDATE reminders SET endpoint = ? WHERE device_id = ?").bind(reminder.endpoint, deviceId),

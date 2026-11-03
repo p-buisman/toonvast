@@ -73,7 +73,8 @@ Engine (`src/engine/`):
   `unlockedValues` (wat een profiel per onderdeel mag kiezen), `itemReady` (nog niet getekend: grijs met "Komt nog") en
   `itemShown` (niet te koop wat iedereen gratis heeft).
 - `game/reminder.ts` - de dagelijkse herinnering, gedeeld door app, service worker en server: `REMINDER_TIMES` (kwartieren),
-  `reminderDue` (tijd gekomen, doel niet gehaald, vandaag nog niet verstuurd), `localMoment`, `reminderText` (de tekst, op het apparaat gemaakt).
+  `reminderDue` (de server: tijd gekomen, doel niet gehaald, vandaag nog niet verstuurd), `decidePush` (het apparaat: wat een push wordt), `localMoment`,
+  `reminderMessage` (titel en tekst, op het apparaat gemaakt; iOS zet er zelf "from Toonvast" bij, dus de titel is niet de appnaam).
 - `game/avatar.ts` - de avatar: de pluizenbol met blik (`FUZZBALL_EYES`), mond (`FUZZBALL_MOUTHS`), iris en accentkleur van de
   spullen (`ACCENT_COLORS`, `accentShade`: het rood van een attribuut in de accentkleur met behoud van lichtheid) (`AvatarLook`,
   `DEFAULT_LOOK`, `lookOf`: vult ontbrekende of onbekende delen aan, ook bij een profiel van het poppetje uit de eerste versie;

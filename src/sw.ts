@@ -3,7 +3,7 @@ import { clientsClaim } from "workbox-core";
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from "workbox-precaching";
 import { NavigationRoute, registerRoute } from "workbox-routing";
 import { dayKey } from "./engine/common/dates.ts";
-import { reminderDue, reminderText } from "./engine/game/reminder.ts";
+import { decidePush, FALLBACK_MESSAGE, reminderMessage, type ReminderMessage } from "./engine/game/reminder.ts";
 import { emptyWallet, rolledToDay } from "./engine/game/rules.ts";
 import { db, type Profile } from "./storage/db.ts";
 
@@ -16,8 +16,8 @@ precacheAndRoute(self.__WB_MANIFEST);
 cleanupOutdatedCaches();
 registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
 
-async function notify(body: string, profile?: Profile): Promise<void> {
-  await self.registration.showNotification("Toonvast", {
+async function notify({ title, body }: ReminderMessage, profile?: Profile): Promise<void> {
+  await self.registration.showNotification(title, {
     body,
     icon: "icons/icon-192.png",
     tag: profile ? `herinnering-${profile.id}` : "herinnering",
@@ -29,20 +29,25 @@ async function notify(body: string, profile?: Profile): Promise<void> {
 async function showDueReminders(now: Date): Promise<void> {
   const today = dayKey(now);
   const at = { date: today, minutes: now.getHours() * 60 + now.getMinutes() };
-  let shown = 0;
-  for (const profile of await db.profiles.toArray()) {
-    const reminder = profile.reminder;
-    if (!reminder) continue;
-    const wallet = rolledToDay((await db.wallets.get(profile.id)) ?? emptyWallet(today), today);
-    const test = (reminder.testUntil ?? 0) > now.getTime();
-    const due = reminderDue({ time: reminder.time, lastGoalDate: wallet.lastGoalDate, lastSentDate: reminder.lastShown ?? null }, at);
-    if (!test && !due) continue;
-    await notify(reminderText(profile.name, wallet, today), profile);
-    await db.profiles.update(profile.id, { reminder: { ...reminder, testUntil: undefined, lastShown: due ? today : reminder.lastShown } });
-    shown++;
+  const profiles = (await db.profiles.toArray()).filter((p) => p.reminder);
+  const wallets = await Promise.all(profiles.map(async (p) => rolledToDay((await db.wallets.get(p.id)) ?? emptyWallet(today), today)));
+  const decision = decidePush(
+    profiles.map((p, i) => ({
+      time: p.reminder!.time,
+      lastGoalDate: wallets[i].lastGoalDate,
+      lastSentDate: p.reminder!.lastShown ?? null,
+      testUntil: p.reminder!.testUntil ?? null,
+    })),
+    at,
+    now.getTime(),
+  );
+  for (const { index, counts } of decision.show) {
+    const profile = profiles[index];
+    await notify(reminderMessage(profile.name, wallets[index], today), profile);
+    await db.profiles.update(profile.id, { reminder: { ...profile.reminder!, testUntil: undefined, lastShown: counts ? today : profile.reminder!.lastShown } });
   }
-  // A push must always show something, or the browser takes the permission away. This happens when a reached goal did not get through.
-  if (shown === 0) await notify("Goed bezig: je hebt vandaag al geoefend.");
+  // A push must always show something, or the browser takes the permission away.
+  if (decision.fallback) await notify(FALLBACK_MESSAGE[decision.fallback]);
 }
 
 self.addEventListener("push", (event) => event.waitUntil(showDueReminders(new Date())));

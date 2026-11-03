@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isReminderTime, localMoment, reminderDue, reminderText, REMINDER_TIMES } from "../game/reminder.ts";
+import { decidePush, isReminderTime, localMoment, reminderDue, reminderMessage, REMINDER_TIMES } from "../game/reminder.ts";
 import { emptyWallet, MAX_SHIELDS, SHIELD_PRICE } from "../game/rules.ts";
 
 describe("the daily reminder", () => {
@@ -38,14 +38,46 @@ describe("the daily reminder", () => {
     expect(localMoment(new Date("2026-11-03T23:30:00Z"), "Europe/Amsterdam")).toEqual({ date: "2026-11-04", minutes: 30 });
   });
 
-  it("says what is at stake", () => {
+  it("says what is at stake, with a title that is not the app name", () => {
     const today = "2026-11-03";
     const wallet = { ...emptyWallet(today), lastGoalDate: "2026-11-02" };
-    expect(reminderText("Noor", emptyWallet(today), today)).toBe("Noor, tijd voor een rondje muziek?");
-    expect(reminderText("Noor", { ...wallet, streak: 1 }, today)).toBe("Noor, je reeks staat op 1 dag. Even oefenen?");
-    expect(reminderText("Noor", { ...wallet, streak: 3 }, today)).toBe("Noor, je reeks staat op 3 dagen. Even oefenen?");
-    expect(reminderText("Noor", { ...wallet, streak: 6 }, today)).toBe("Noor, je reeks staat op 6 dagen. Oefen vandaag en je krijgt een gratis beschermer.");
-    expect(reminderText("Noor", { ...wallet, streak: 6, shields: MAX_SHIELDS }, today)).toContain(`${SHIELD_PRICE} munten`);
-    expect(reminderText("Noor", { ...wallet, streak: 4, shields: 1, lastGoalDate: "2026-11-01" }, today)).toContain("beschermer je reeks heel");
+    const body = (w: typeof wallet) => reminderMessage("Noor", w, today).body;
+    expect(reminderMessage("Noor", emptyWallet(today), today)).toEqual({ title: "Noor, tijd om te oefenen", body: "Een kort rondje muziek?" });
+    expect(body({ ...wallet, streak: 1 })).toBe("Je reeks staat op 1 dag. Even oefenen?");
+    expect(body({ ...wallet, streak: 3 })).toBe("Je reeks staat op 3 dagen. Even oefenen?");
+    expect(body({ ...wallet, streak: 6 })).toBe("Je reeks staat op 6 dagen. Oefen vandaag en je krijgt een gratis beschermer.");
+    expect(body({ ...wallet, streak: 6, shields: MAX_SHIELDS })).toContain(`${SHIELD_PRICE} munten`);
+    expect(body({ ...wallet, streak: 4, shields: 1, lastGoalDate: "2026-11-01" })).toContain("beschermer je reeks heel");
+  });
+});
+
+describe("what a push becomes on the device", () => {
+  const today = "2026-11-03";
+  const at = (minutes: number) => ({ date: today, minutes });
+  const NOW = 1_000_000;
+  const reminder = (changes = {}) => ({ time: "18:00", lastGoalDate: "2026-10-31", lastSentDate: null, testUntil: null, ...changes });
+
+  it("shows the reminder that has not practised, also when the push is late or the clock a little behind", () => {
+    expect(decidePush([reminder()], at(18 * 60), NOW)).toEqual({ show: [{ index: 0, counts: true }], fallback: null });
+    expect(decidePush([reminder()], at(19 * 60 + 30), NOW).show).toHaveLength(1);
+    expect(decidePush([reminder()], at(18 * 60 - 3), NOW).show).toHaveLength(1);
+  });
+
+  it("does not let a test count as today's reminder", () => {
+    const test = decidePush([reminder({ testUntil: NOW + 1 })], at(18 * 60), NOW);
+    expect(test).toEqual({ show: [{ index: 0, counts: false }], fallback: null });
+    expect(decidePush([reminder({ testUntil: NOW - 1 })], at(10 * 60), NOW).show).toEqual([]);
+  });
+
+  it("shows each profile that is due, and leaves out who practised", () => {
+    const decision = decidePush([reminder({ lastGoalDate: today }), reminder(), reminder({ lastSentDate: today }), reminder()], at(18 * 60), NOW);
+    expect(decision.show.map((s) => s.index)).toEqual([1, 3]);
+  });
+
+  it("only says someone practised when that is so", () => {
+    expect(decidePush([reminder({ lastGoalDate: today })], at(18 * 60), NOW)).toEqual({ show: [], fallback: "goal" });
+    expect(decidePush([reminder()], at(10 * 60), NOW)).toEqual({ show: [], fallback: "neutral" });
+    expect(decidePush([reminder({ lastSentDate: today })], at(18 * 60), NOW)).toEqual({ show: [], fallback: "neutral" });
+    expect(decidePush([], at(18 * 60), NOW)).toEqual({ show: [], fallback: "neutral" });
   });
 });

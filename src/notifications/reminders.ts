@@ -63,7 +63,8 @@ async function pushEndpoint(): Promise<string> {
 }
 
 async function call(path: string, method: string, body?: object): Promise<void> {
-  const response = await fetch(`${SERVER}/v1/devices/${deviceId()}${path}`, { method, body: body ? JSON.stringify(body) : undefined });
+  // Keepalive: the request goes through when the app is closed right after a change.
+  const response = await fetch(`${SERVER}/v1/devices/${deviceId()}${path}`, { method, body: body ? JSON.stringify(body) : undefined, keepalive: true });
   if (!response.ok) throw new Error(`Server: ${response.status}`);
 }
 
@@ -75,8 +76,16 @@ async function saveOnServer(profileId: string, time: string, endpoint: string): 
 /** Turn the reminder on or change its time; asks for permission the first time. Resolves false when that is refused. */
 export async function setReminder(profile: Profile, time: string): Promise<boolean> {
   if ((await Notification.requestPermission()) !== "granted") return false;
-  await saveOnServer(profile.id, time, await pushEndpoint());
-  await updateProfile(profile.id, { reminder: { ...profile.reminder, time } });
+  const endpoint = await pushEndpoint();
+  // First here on the device: closed halfway, the next opening brings the server in line. Another time may go out today again.
+  const before = (await db.profiles.get(profile.id))?.reminder;
+  await updateProfile(profile.id, { reminder: before?.time === time ? before : { time } });
+  try {
+    await saveOnServer(profile.id, time, endpoint);
+  } catch (e) {
+    await updateProfile(profile.id, { reminder: before });
+    throw e;
+  }
   return true;
 }
 
@@ -93,9 +102,10 @@ export async function removeReminder(profile: Profile): Promise<void> {
 
 /** A real push through the server, shown as a test by the service worker. */
 export async function sendTestReminder(profile: Profile): Promise<void> {
-  if (!profile.reminder) return;
-  await updateProfile(profile.id, { reminder: { ...profile.reminder, testUntil: Date.now() + 60_000 } });
-  await saveOnServer(profile.id, profile.reminder.time, await pushEndpoint());
+  const reminder = (await db.profiles.get(profile.id))?.reminder;
+  if (!reminder) return;
+  await updateProfile(profile.id, { reminder: { ...reminder, testUntil: Date.now() + 60_000 } });
+  await saveOnServer(profile.id, reminder.time, await pushEndpoint());
   await call("/test", "POST");
 }
 
