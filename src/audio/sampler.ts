@@ -74,28 +74,92 @@ let lastError = "";
 let decodeErrors = 0;
 let mediaUnlocked = false;
 let mediaUrl: string | null = null;
+let restarts = 0;
+
+/**
+ * Set when iOS may have taken the audio away from the page: an interruption (a call, a notification, Siri), a
+ * trip to the background or the microphone of the tuner. A context can then report "running" and still stay
+ * silent, or hang in "interrupted"; the next tap replaces it with a fresh one.
+ */
+let stale = false;
+
+interface AudioSessionLike {
+  type: string;
+  state?: string;
+  addEventListener?: (type: "statechange", listener: () => void) => void;
+}
+
+/** WebKit's audio session (Safari 17+), absent elsewhere. */
+function audioSession(): AudioSessionLike | null {
+  if (typeof navigator === "undefined") return null;
+  return (navigator as unknown as { audioSession?: AudioSessionLike }).audioSession ?? null;
+}
+
+/**
+ * "playback" plays through the ring/silent switch and is restored after an interruption; "auto" is what the
+ * microphone needs, since a playback session cannot record.
+ */
+export function setAudioSessionType(type: "playback" | "auto"): void {
+  const session = audioSession();
+  if (!session) return;
+  try {
+    session.type = type;
+  } catch {
+    // An older WebKit may refuse a type; the media element unlock still covers it.
+  }
+}
+
+/** Tells the sampler that something else had the audio, so the next tap starts it afresh. */
+export function markAudioStale(): void {
+  stale = true;
+}
 
 /** The one audio context of the sampler; null where Web Audio is missing. */
 function getContext(): AudioContext | null {
   if (context) return context;
   const Ctor = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext) as AudioContextCtor | undefined;
   if (!Ctor) return null;
-  context = new Ctor();
-  master = context.createGain();
+  setAudioSessionType("playback");
+  const ctx = new Ctor();
+  context = ctx;
+  // A fresh context has nothing to recover from.
+  stale = false;
+  master = ctx.createGain();
   master.gain.value = 0.8;
   // Several notes at once would clip the output and sound muffled; the compressor catches the peaks.
-  const compressor = context.createDynamicsCompressor();
+  const compressor = ctx.createDynamicsCompressor();
   compressor.threshold.value = -14;
   compressor.knee.value = 12;
   compressor.ratio.value = 4;
   compressor.attack.value = 0.003;
   compressor.release.value = 0.25;
-  analyser = context.createAnalyser();
+  analyser = ctx.createAnalyser();
   analyser.fftSize = 256;
   master.connect(compressor);
   compressor.connect(analyser);
-  analyser.connect(context.destination);
-  return context;
+  analyser.connect(ctx.destination);
+  ctx.onstatechange = () => {
+    if (ctx === context && ctx.state === ("interrupted" as AudioContextState)) stale = true;
+  };
+  return ctx;
+}
+
+/**
+ * Drops the context and its graph; the next call to `getContext` builds a new one. The decoded samples stay:
+ * an AudioBuffer is not tied to the context that decoded it.
+ */
+function replaceContext(): void {
+  const old = context;
+  context = null;
+  master = null;
+  analyser = null;
+  // The silent media element has to play again for the new session.
+  mediaUnlocked = false;
+  restarts++;
+  if (old) {
+    old.onstatechange = null;
+    void old.close().catch(() => undefined);
+  }
 }
 
 /** A tenth of a second of silence as a WAV file, built here so no asset is needed. */
@@ -147,8 +211,13 @@ function unlockMedia(): void {
   }
 }
 
-/** Call from a tap or click: resumes the context (iOS), unlocks media playback and starts loading the samples. */
+/**
+ * Call from a tap or click: resumes the context (iOS), unlocks media playback and starts loading the samples.
+ * After an interruption the context is replaced instead of resumed, since iOS does not always bring an old
+ * one back; only a new context made inside a gesture is sure to sound.
+ */
 export function unlockAudio(): void {
+  if (context && (stale || context.state === ("interrupted" as AudioContextState) || context.state === "closed")) replaceContext();
   const ctx = getContext();
   if (!ctx) return;
   if (ctx.state !== "running") void ctx.resume();
@@ -157,11 +226,20 @@ export function unlockAudio(): void {
 }
 
 if (typeof document !== "undefined") {
-  // Back from the background: iOS may have suspended or interrupted the context.
+  // Back from the background: iOS may have suspended or interrupted the context, or handed the session to
+  // another app. Resume what can be resumed now; the next tap builds a fresh context.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && context && context.state !== "running") void context.resume();
+    if (document.visibilityState === "hidden") {
+      stale = true;
+      return;
+    }
+    if (context && context.state !== "running") void context.resume();
   });
 }
+
+audioSession()?.addEventListener?.("statechange", () => {
+  if (audioSession()?.state === "interrupted") stale = true;
+});
 
 export function loadSamples(timbre: Timbre = "piano"): Promise<void> {
   const pending = loading[timbre];
@@ -172,6 +250,7 @@ export function loadSamples(timbre: Timbre = "piano"): Promise<void> {
   const base = `${import.meta.env.BASE_URL}samples/${set.folder}/`;
   const job = Promise.all(
     set.notes.map(async ([name, midi]) => {
+      if (buffers[timbre].has(midi)) return;
       try {
         const res = await fetch(`${base}${name}.mp3`);
         const data = await res.arrayBuffer();
@@ -182,7 +261,11 @@ export function loadSamples(timbre: Timbre = "piano"): Promise<void> {
         lastError = e instanceof Error ? e.message : String(e);
       }
     }),
-  ).then(() => undefined);
+  ).then(() => {
+    // Replaced while decoding: an old, closed context may have refused some samples, so the next note loads
+    // what is still missing.
+    if (ctx !== context) delete loading[timbre];
+  });
   loading[timbre] = job;
   return job;
 }
@@ -206,6 +289,8 @@ export interface AudioDiagnostics {
   decodeErrors: number;
   lastPath: string;
   lastError: string;
+  /** How often the context was replaced after an interruption. */
+  restarts: number;
   /** Peak output level since the last call, 0..1. */
   peak: number;
 }
@@ -225,6 +310,7 @@ export function audioDiagnostics(): AudioDiagnostics {
     decodeErrors,
     lastPath: `${lastPath}${mediaUnlocked ? " · media" : ""}`,
     lastError,
+    restarts,
     peak,
   };
 }

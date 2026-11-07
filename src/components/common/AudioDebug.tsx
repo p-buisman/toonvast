@@ -16,8 +16,8 @@ export function AudioDebug({ inline = false }: { inline?: boolean }) {
   if (!d) return null;
   return (
     <div className={inline ? "debug inline" : "debug"}>
-      audio {d.state} · samples {d.buffers} · fouten {d.decodeErrors} · laatst {d.lastPath} · piek {d.peak.toFixed(2)} (max {maxPeak.toFixed(2)})
-      {d.lastError ? `\n${d.lastError}` : ""}
+      audio {d.state} · samples {d.buffers} · fouten {d.decodeErrors} · laatst {d.lastPath} · herstart {d.restarts} · piek {d.peak.toFixed(2)} (max{" "}
+      {maxPeak.toFixed(2)}){d.lastError ? `\n${d.lastError}` : ""}
     </div>
   );
 }

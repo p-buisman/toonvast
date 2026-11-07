@@ -97,7 +97,9 @@ De server kent geen namen of voortgang: alleen push-adres, tijd, tijdzone, laats
 wijzig je hem, dan apart uitrollen. Service worker en push werken niet in `npm run dev`: test met de launch-configuratie `toonvast-build`.
 
 Audio (`src/audio/`): `sampler.ts` (Web Audio; piano- en gitaarsamples per `Timbre`, `playNote`/`playChord` met strum,
-goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek), `pitch.ts`
+goed/fout-tonen, ontgrendelen op iOS incl. stil media-element, compressor, diagnostiek; na een onderbreking (achtergrond,
+`interrupted`, de microfoon: `markAudioStale`) vervangt de volgende tik het AudioContext door een nieuw, de samples blijven;
+`setAudioSessionType`: "playback" voor afspelen door de stilteschakelaar heen, "auto" tijdens opnemen), `pitch.ts`
 (`detectPitch`: toonhoogte uit een stuk signaal, genormaliseerde autocorrelatie) en `mic.ts` (`openMic`: microfoon zonder
 ruisonderdrukking in een eigen AudioContext dat pas na `getUserMedia` wordt gemaakt (iOS), geeft om de 80 ms 4096 samples; `micFailure` vertaalt een fout naar geweigerd/geen/bezet).
 

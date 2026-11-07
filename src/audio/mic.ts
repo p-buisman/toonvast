@@ -13,6 +13,8 @@ export function micFailure(e: unknown): MicFailure {
   return "busy";
 }
 
+import { markAudioStale, setAudioSessionType } from "./sampler.ts";
+
 type AudioContextCtor = typeof AudioContext;
 
 /**
@@ -22,14 +24,24 @@ type AudioContextCtor = typeof AudioContext;
  * The microphone gets its own audio context, created only after the stream is there: iOS switches the audio
  * session to recording at that moment, and a context from before the switch hears silence or the wrong sample
  * rate. The analyser also runs into a muted output, since WebKit only pulls a graph that reaches the speaker.
+ * The session goes to "auto" for recording and back to "playback" afterwards; the sampler's context dates from
+ * before the switch, so it is marked stale and the next tap replaces it.
  */
 export async function openMic(onFrame: (samples: Float32Array, sampleRate: number) => void, intervalMs = 80): Promise<MicHandle> {
   if (!navigator.mediaDevices?.getUserMedia) throw new TypeError("getUserMedia missing");
   const Ctor = (window.AudioContext ?? (window as unknown as { webkitAudioContext?: AudioContextCtor }).webkitAudioContext) as AudioContextCtor | undefined;
   if (!Ctor) throw new TypeError("Web Audio missing");
-  const stream = await navigator.mediaDevices.getUserMedia({
-    audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-  });
+  setAudioSessionType("auto");
+  markAudioStale();
+  let stream: MediaStream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
+    });
+  } catch (e) {
+    setAudioSessionType("playback");
+    throw e;
+  }
   const ctx = new Ctor();
   if (ctx.state !== "running") await ctx.resume().catch(() => undefined);
   const source = ctx.createMediaStreamSource(stream);
@@ -53,6 +65,8 @@ export async function openMic(onFrame: (samples: Float32Array, sampleRate: numbe
       source.disconnect();
       for (const track of stream.getTracks()) track.stop();
       void ctx.close().catch(() => undefined);
+      setAudioSessionType("playback");
+      markAudioStale();
     },
   };
 }
